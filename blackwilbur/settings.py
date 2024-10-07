@@ -45,7 +45,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
-AUTH_USER_MODEL = 'core.User'  # Replace 'core' with your app name if it's different
+AUTH_USER_MODEL = 'blackwilbur.User'  # Replace 'core' with your app name if it's different
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,7 +63,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
-ROOT_URLCONF = 'ecommerce.urls'
+ROOT_URLCONF = 'blackwilbur.urls'
 
 TEMPLATES = [
     {
@@ -92,7 +92,7 @@ DATABASES = {
     }
 }
 
-WSGI_APPLICATION = 'ecommerce.wsgi.application'
+WSGI_APPLICATION = 'blackwilbur.wsgi.application'
 
 
 # Password validation
