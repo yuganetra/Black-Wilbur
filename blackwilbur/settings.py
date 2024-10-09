@@ -84,11 +84,11 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'blackwilbur', 
-        'USER': 'root',  
-        'PASSWORD': 'root',  
-        'HOST': 'localhost', 
-        'PORT': '3306', 
+        'NAME': 'blackwilbur',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
