@@ -1,25 +1,14 @@
-from rest_framework import viewsets
-from blackwilbur.models import Category
-from blackwilbur.serializers import CategorySerializer
-from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.response import Response
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+from blackwilbur import models, serializers
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class CategoryAPIView(APIView):
+    def get(self, request):
+        try:
+            categories = models.Category.objects.all()
+        except Exception as e:
+            return Response("Categories not found.", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(serializers.CategorySerializer(categories, many=True).data)
 
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
