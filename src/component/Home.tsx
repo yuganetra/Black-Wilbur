@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import carousel1 from "../asset/chpp-carousel.jpg";
 import Tshirt from "../asset/black-tees.jpg";
-import vidImg from "../asset/carousel1.png";
+import videoSrc from "../asset/homepage-vid.mp4";
 import blackBackground from "../asset/blackBackground.png";
 
 const products = [
@@ -31,13 +31,13 @@ const products = [
     image: Tshirt,
   },
   {
-    id: 4,
+    id: 5,
     name: "T-Shirt",
     price: "3000",
     image: Tshirt,
   },
   {
-    id: 4,
+    id: 6,
     name: "T-Shirt",
     price: "3000",
     image: Tshirt,
@@ -59,6 +59,17 @@ const Home: React.FC = () => {
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "center top" }}
         />
+
+        <div className="absolute bottom-4 left-4 right-4 sm:bottom-10 sm:left-10 sm:right-10 text-white flex flex-col justify-between items-center md:items-start md:flex-row md:justify-between px-4 sm:px-10">
+          <h1 className="font-montserrat text-xl sm:text-2xl md:text-3xl lg:text-7xl font-semibold uppercase leading-tight text-center md:text-left mb-4 md:mb-0">
+            Unleash the
+            <br /> Power of Black
+          </h1>
+
+          <button className="px-4 py-2 sm:px-6 sm:py-3 bg-black text-white rounded-full hover:bg-white hover:text-black transition lg:mt-20">
+            Shop Now
+          </button>
+        </div>
       </div>
 
       {/* Best Sellers Section */}
@@ -103,13 +114,6 @@ const Home: React.FC = () => {
                     <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
                       {product.price} rs
                     </div>
-
-                    <button
-                      // onClick={() => handleAddToCart(product)}
-                      className="absolute top-4 left-4 text-white bg-black rounded-full p-2 hover:bg-gray-800 transition"
-                    >
-                      🛒
-                    </button>
                   </div>
                 );
               })}
@@ -128,7 +132,7 @@ const Home: React.FC = () => {
       <section className="py-16 bg-[#1B1B1B]">
         <div className="container mx-auto px-4 md:px-6 text-center">
           <div className="relative">
-            {/* <video
+            <video
               src={videoSrc}
               autoPlay
               loop
@@ -137,9 +141,7 @@ const Home: React.FC = () => {
               style={{ height: "100vh", objectFit: "cover" }}
             >
               Your browser does not support the video tag.
-            </video> */}
-
-            <img src={vidImg} alt="" />
+            </video>
           </div>
         </div>
       </section>
@@ -173,12 +175,6 @@ const Home: React.FC = () => {
                   <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
                     {product.price} rs
                   </div>
-                  <button
-                    // onClick={() => handleAddToCart(product)}
-                    className="absolute top-4 left-4 text-white bg-black rounded-full p-2 hover:bg-gray-800 transition"
-                  >
-                    🛒
-                  </button>
                 </div>
               );
             })}
