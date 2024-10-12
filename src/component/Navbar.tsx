@@ -59,7 +59,7 @@ const Navbar: React.FC = (): JSX.Element => {
                 onClick={toggleSidebar}
               />
               {/* Render SearchBar directly */}
-              <div className=" left-32 absolute">{/* <SearchBar /> */}</div>
+              {/* <div className=" left-32 absolute"><Sear  /></div> */}
             </div>
 
             <img
