@@ -43,11 +43,11 @@ const products = [
     image: Tshirt,
   },
 ];
-
 const Home: React.FC = () => {
-  // const handleNavigate = (path: string) => {
-  //   navigate(path);
-  // };
+  const navigate = useNavigate();
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
 
   return (
     <>
@@ -104,7 +104,7 @@ const Home: React.FC = () => {
                   >
                     <img
                       className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                      // onClick={() => handleNavigate(`/Product/${product.id}`)}
+                      onClick={() => handleNavigate(`/Product/${product.id}`)}
                       src={`${productImage}` ? `${productImage}` : undefined} // Fallback to a default image if none
                       alt={product.name}
                     />
@@ -165,7 +165,7 @@ const Home: React.FC = () => {
                 >
                   <img
                     className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                    // onClick={() => handleNavigate(`/Product/${product.id}`)}
+                    onClick={() => handleNavigate(`/Product/${product.id}`)}
                     src={`${productImage}` ? `${productImage}` : undefined}
                     alt={product.name}
                   />
