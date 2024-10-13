@@ -45,28 +45,33 @@ const products = [
 ];
 
 const Home: React.FC = () => {
-  // const handleNavigate = (path: string) => {
-  //   navigate(path);
-  // };
+  const navigate = useNavigate();
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
 
   return (
     <>
       {/* Carousel Section */}
-      <div className="relative h-screen overflow-hidden">
+      <div className="relative h-screen overflow-hidden -mt-20">
+        {" "}
         <img
           src={carousel1}
           alt="Carousel 1"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "center top" }}
         />
-
         <div className="absolute bottom-4 left-4 right-4 sm:bottom-10 sm:left-10 sm:right-10 text-white flex flex-col justify-between items-center md:items-start md:flex-row md:justify-between px-4 sm:px-10">
           <h1 className="font-montserrat text-xl sm:text-2xl md:text-3xl lg:text-7xl font-semibold uppercase leading-tight text-center md:text-left mb-4 md:mb-0">
             Unleash the
             <br /> Power of Black
           </h1>
 
-          <button className="px-4 py-2 sm:px-6 sm:py-3 bg-black text-white rounded-full hover:bg-white hover:text-black transition lg:mt-20">
+          <button
+            onClick={() => handleNavigate("/collection")}
+            className="px-4 py-2 sm:px-6 sm:py-3 bg-black text-white rounded-full hover:bg-white hover:text-black transition lg:mt-20"
+          >
             Shop Now
           </button>
         </div>
@@ -104,7 +109,7 @@ const Home: React.FC = () => {
                   >
                     <img
                       className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                      // onClick={() => handleNavigate(`/Product/${product.id}`)}
+                      onClick={() => handleNavigate(`/Product/${product.id}`)}
                       src={`${productImage}` ? `${productImage}` : undefined} // Fallback to a default image if none
                       alt={product.name}
                     />
@@ -165,7 +170,7 @@ const Home: React.FC = () => {
                 >
                   <img
                     className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                    // onClick={() => handleNavigate(`/Product/${product.id}`)}
+                    onClick={() => handleNavigate(`/Product/${product.id}`)}
                     src={`${productImage}` ? `${productImage}` : undefined}
                     alt={product.name}
                   />
@@ -183,7 +188,7 @@ const Home: React.FC = () => {
           <div className="mt-12 flex justify-center">
             <button
               className="px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition"
-              // onClick={() => handleNavigate("/collection")}
+              onClick={() => handleNavigate("/collection")}
             >
               Shop Collections
             </button>

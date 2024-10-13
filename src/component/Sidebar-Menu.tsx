@@ -11,12 +11,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  //   const navigate = useNavigate();
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for popup visibility
+  const navigate = useNavigate();
 
-  //   const handleNavigate = (path: string) => {
-  //     navigate(path);
-  //   };
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
 
   //   const handleDistributorshipClick = () => {
   //     setIsPopupOpen(true); // Open popup when 'DISTRIBUTORSHIP' is clicked
@@ -30,10 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={onClose}
-        ></div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={onClose}></div>
       )}
 
       {/* Sidebar */}
@@ -58,10 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           >
             CONTACT
           </a>
-          <a
-            // onClick={() => handleNavigate("/collection")}
-            className="text-2xl cursor-pointer"
-          >
+          <a onClick={() => handleNavigate("/collection")} className="text-2xl cursor-pointer">
             COLLECTION
           </a>
           <a

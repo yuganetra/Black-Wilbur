@@ -1,9 +1,15 @@
+import { useNavigate } from "react-router-dom";
 import { MdFacebook } from "react-icons/md";
 import { BsTwitterX } from "react-icons/bs";
 import { FaInstagram } from "react-icons/fa";
 import logo from "../asset/logo.svg";
 
 const Footer = () => {
+  const navigate = useNavigate()
+
+  const handleNavigate = (path:string)=>{
+    navigate(path)
+  }
   return (
     <div className="footer bg-[#000000] text-white w-full flex flex-col justify-center items-center p-4">
       <div className="footer-section1 flex flex-col lg:flex-row gap-12 lg:gap-24 items-center justify-center mb-8 w-full max-w-[848px] pt-[120px]">
@@ -18,7 +24,7 @@ const Footer = () => {
             </ul>
           </div>
           <div className="flex flex-col space-y-4 w-full max-w-[260px] text-center lg:text-left">
-            <h4 className="font-semibold text-lg">ABOUT US</h4>
+            <h4 onClick={()=>handleNavigate("/aboutus")} className="font-semibold cursor-pointer text-lg">ABOUT US</h4>
             <ul className="space-y-2 text-[#7d7d7d]">
               <li>Brand Story</li>
               <li>Mission & Vision</li>
@@ -47,8 +53,9 @@ const Footer = () => {
       <div className="footer-section3 mt-8 md:mt-12 text-center text-sm w-full max-w-[848px] px-4">
         <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-6">
           <p className="mt-2">Copyrights by Kiorons</p>
-          <p className="mt-2 text-[#7d7d7d]">Terms & Conditions</p>
-          <p className="mt-2 text-[#7d7d7d]">Privacy Policy</p>
+          <p onClick={()=>handleNavigate("/terms-and-condition")} className="mt-2 cursor-pointer text-[#7d7d7d]">Terms & Conditions</p>
+          <p onClick={()=>handleNavigate("/privacy-policy")} className="mt-2 cursor-pointer text-[#7d7d7d]">Privacy Policy</p>
+          <p onClick={()=>handleNavigate("/return-policy")} className="mt-2 cursor-pointer text-[#7d7d7d]">Return Policy</p>          
         </div>
       </div>
     </div>
