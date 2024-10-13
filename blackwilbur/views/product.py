@@ -2,7 +2,7 @@ from django.db.models import OuterRef, Subquery
 from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, exceptions
 
 from blackwilbur import models, serializers
 
@@ -44,3 +44,16 @@ class SearchAPIView(APIView):
             products = products.filter(name__icontains=search_term)
 
         return Response(serializers.ProductSerializer(products, many=True).data)
+
+# class ProductsAPIView(APIView):
+#     def get(self, request):
+
+
+class ProductDetailAPIView(APIView):
+    def get(self, request, product_id):
+        try:
+            product = models.Product.objects.get(pk=product_id)
+        except models.Product.DoesNotExist:
+            raise exceptions.NotFound("Product not found!")
+        
+        return Response(serializers.ProductDetailSerializer(product).data)

@@ -6,5 +6,5 @@ from blackwilbur import models
 class ProductVariationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductVariation
-        fields = [ 'size' ]
-        read_only_fields = [ 'size' ]
+        fields = [ "id", "size", ]
+        read_only_fields = [ "id", "size", ]
