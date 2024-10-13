@@ -3,7 +3,7 @@ import React from "react";
 const TermsAndConditions: React.FC = () => {
   return (
     <section className="flex flex-col items-center mb-8">
-      <h2 className="text-xl font-semibold mb-4">Terms and Conditions</h2>
+      <h2 className="text-3xl font-semibold mb-4">Terms and Conditions</h2>
       <div className="w-2/3 text-left"> {/* Set width to 2/3 and align text left */}
         <div className="mb-4">
           <h3 className="font-bold">1. INTRODUCTION</h3>
@@ -135,6 +135,7 @@ const TermsAndConditions: React.FC = () => {
             WHEN YOU USE THE SITE OR SEND EMAILS OR OTHER DATA, INFORMATION OR COMMUNICATE TO US, YOU AGREE AND UNDERSTAND THAT YOU ARE COMMUNICATING WITH US THROUGH ELECTRONIC RECORDS AND YOU CONSENT TO RECEIVE COMMUNICATIONS VIA ELECTRONIC RECORDS FROM “BLACK WILBUR” ON YOUR REGISTERED EMAIL ADDRESS.
           </p>
         </div>
+        <div className="border-b border-black mb-4" />
       </div>
     </section>
   );

@@ -15,8 +15,8 @@ const Footer = () => {
       <div className="footer-section1 flex flex-col lg:flex-row gap-12 lg:gap-24 items-center justify-center mb-8 w-full max-w-[848px] pt-[120px]">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 w-full items-center lg:items-start justify-center">
           <div className="flex flex-col space-y-4 w-full max-w-[260px] text-center lg:text-left">
-            <h4 className="font-semibold text-lg">SHOP</h4>
-            <ul className="space-y-2 text-[#7d7d7d]">
+            <h4 onClick={()=>handleNavigate("/collection")} className="font-semibold text-lg cursor-pointer">SHOP</h4>
+            <ul className="space-y-2 text-[#7d7d7d] cursor-pointer">
               <li>Oversize</li>
               <li>Round Neck</li>
               <li>Polo</li>
@@ -24,11 +24,11 @@ const Footer = () => {
             </ul>
           </div>
           <div className="flex flex-col space-y-4 w-full max-w-[260px] text-center lg:text-left">
-            <h4 onClick={()=>handleNavigate("/aboutus")} className="font-semibold cursor-pointer text-lg">ABOUT US</h4>
-            <ul className="space-y-2 text-[#7d7d7d]">
-              <li>Brand Story</li>
-              <li>Mission & Vision</li>
-              <li>Sustainability</li>
+            <h4 onClick={()=>handleNavigate("/about-us")} className="font-semibold cursor-pointer text-lg">ABOUT US</h4>
+            <ul className="space-y-2 text-[#7d7d7d] cursor-pointer">
+              <li onClick={()=>handleNavigate("/about-us/values")}>Our Values</li>
+              <li onClick={()=>handleNavigate("/about-us/mission")}>Mission</li>
+              <li onClick={()=>handleNavigate("/about-us/sustainability")}>Sustainability</li>
             </ul>
           </div>
           <div className="flex flex-col space-y-4 w-full max-w-[260px] text-center lg:text-left">

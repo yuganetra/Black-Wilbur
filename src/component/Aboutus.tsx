@@ -1,10 +1,40 @@
 // AboutUs.tsx
-
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import videoSrc from '../asset/homepage-vid.mp4';
 import ProductSustainability from './ProductSustainability'; // Import the new component
 
 const AboutUs: React.FC = () => {
+  const { section } = useParams<{ section?: string }>(); // Get the section parameter
+
+  // Create refs for each section
+  const aboutUsRef = useRef<HTMLDivElement>(null);
+  const missionRef = useRef<HTMLDivElement>(null);
+  const valuesRef = useRef<HTMLDivElement>(null);
+  const contactRef = useRef<HTMLDivElement>(null);
+  const productSustainabilityRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to the specified section on mount
+  useEffect(() => {
+    switch (section) {
+      case 'mission':
+        missionRef.current?.scrollIntoView({ behavior: 'smooth' });
+        break;
+      case 'values':
+        valuesRef.current?.scrollIntoView({ behavior: 'smooth' });
+        break;
+      case 'contact':
+        contactRef.current?.scrollIntoView({ behavior: 'smooth' });
+        break;
+      case 'sustainability':
+        productSustainabilityRef.current?.scrollIntoView({ behavior: 'smooth' });
+        break;
+      default:
+        aboutUsRef.current?.scrollIntoView({ behavior: 'smooth' });
+        break;
+    }
+  }, [section]);
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       <div className="absolute inset-0">
@@ -21,10 +51,10 @@ const AboutUs: React.FC = () => {
       <div className="relative z-10 w-full h-full overflow-auto hide-scrollbar">
         <div className="flex flex-col">
           {/* About Us Section */}
-          <section id='about-us' className="w-full h-screen flex items-center justify-center p-6 bg-black bg-opacity-50 backdrop-blur-sm">
+          <section ref={aboutUsRef} className="w-full h-screen flex items-center justify-center p-6 bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-6xl text-white mb-4">About Us</h1>
-              <p className=" text-2xl text-white">
+              <p className="text-2xl text-white">
                 Black Wilbur, as the name suggests, is a monochrome-inspired clothing brand emphasizing urban designs that highlight the wearer’s exquisite side, considering black as the universally admired color.
               </p>
               <p className="text-2xl text-white mt-4">
@@ -34,7 +64,7 @@ const AboutUs: React.FC = () => {
           </section>
           
           {/* Our Mission Section */}
-          <section id='our-missions' className="w-full h-screen flex items-center justify-center p-6 bg-black bg-opacity-50 backdrop-blur-sm">
+          <section ref={missionRef} className="w-full h-screen flex items-center justify-center p-6 bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-6xl text-white mb-4">Our Mission</h2>
               <p className="text-2xl text-white">
@@ -44,7 +74,7 @@ const AboutUs: React.FC = () => {
           </section>
 
           {/* Our Values Section */}
-          <section id='our-values' className="w-full h-screen flex items-center justify-center p-6 bg-black bg-opacity-50 backdrop-blur-sm">
+          <section ref={valuesRef} className="w-full h-screen flex items-center justify-center p-6 bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-6xl text-white mb-4">Our Values</h2>
               <p className="text-2xl text-white">
@@ -57,7 +87,7 @@ const AboutUs: React.FC = () => {
           </section>
 
           {/* Contact Us Section */}
-          <section id='aboutus' className="w-full h-screen flex items-center justify-center p-6 bg-black bg-opacity-50 backdrop-blur-sm">
+          <section ref={contactRef} className="w-full h-screen flex items-center justify-center p-6 bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-6xl text-white mb-4">Contact Us</h2>
               <p className="text-2xl text-white">
@@ -66,7 +96,10 @@ const AboutUs: React.FC = () => {
             </div>
           </section>
 
-          <ProductSustainability />
+          {/* Product Sustainability Section */}
+          <section ref={productSustainabilityRef}>
+            <ProductSustainability />
+          </section>
         </div>
       </div>
     </div>

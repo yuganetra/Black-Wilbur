@@ -23,7 +23,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   const handleCheckoutNow = () => {
-    onClose()
+    onClose();
     navigate("/checkout", {
       state: { products: cartProducts },
     });
@@ -137,19 +137,19 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                         Quantity: {product.quantity}
                       </p>
                       {/* Show quantity */}
-                      <div className="flex items-center mt-2">
+                      <div className="flex items-center mt-2 gap-2">
+                        <button
+                          onClick={() => handleUpdateQuantity(product.id, -1)}
+                          className="border rounded px-2 py-1 bg-gray-200"
+                          disabled={product.quantity <= 1} // Prevent negative quantity
+                        >
+                          -
+                        </button>
                         <button
                           onClick={() => handleUpdateQuantity(product.id, 1)}
                           className="border rounded px-2 py-1 bg-gray-200"
                         >
                           +
-                        </button>
-                        <button
-                          onClick={() => handleUpdateQuantity(product.id, -1)}
-                          className="border rounded px-2 py-1 bg-gray-200 ml-2"
-                          disabled={product.quantity <= 1} // Prevent negative quantity
-                        >
-                          -
                         </button>
                         <button
                           onClick={() => handleRemove(product.id)}

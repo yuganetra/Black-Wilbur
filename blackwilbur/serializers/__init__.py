@@ -4,3 +4,4 @@ from .product import ProductSerializer
 from .product_variation import ProductVariationSerializer
 from .order import OrderSerializer
 from .cart import CartItemSerializer
+from .product_image import ProductImageSerializer
