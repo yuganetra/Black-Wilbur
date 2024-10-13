@@ -8,7 +8,7 @@ import img5 from "../asset/Black Size Chart's/Black Size Chart's-5.png";
 import img6 from "../asset/Black Size Chart's/Black Size Chart's-6.png";
 import img7 from "../asset/Black Size Chart's/Black Size Chart's-7.png";
 
-Modal.setAppElement('#root');
+Modal.setAppElement("#root");
 
 interface SizeChartImagesProps {
   isOpen: boolean;
