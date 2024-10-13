@@ -1,2 +1,2 @@
 from .category import CategoryAPIView
-from .product import BestsellerAPIView, ExploreAPIView
+from .product import BestsellerAPIView, ExploreAPIView, SearchAPIView

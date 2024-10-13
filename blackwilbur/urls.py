@@ -9,4 +9,5 @@ urlpatterns = [
     path('categories', views.CategoryAPIView.as_view()),
     path('bestseller', views.BestsellerAPIView.as_view()),
     path('explore', views.ExploreAPIView.as_view()),
+    path('search', views.SearchAPIView.as_view()),
 ]
