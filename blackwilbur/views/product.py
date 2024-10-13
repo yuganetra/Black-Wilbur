@@ -14,6 +14,7 @@ class BestsellerAPIView(APIView):
 
         serializer = serializers.ProductSerializer(most_sold_products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
     
 class ExploreAPIView(APIView):
     def get(self, request):

@@ -3,6 +3,7 @@ import { AiOutlineLeft, AiOutlinePlus, AiOutlineRight } from "react-icons/ai";
 import { MdClose, MdFilterList } from "react-icons/md";
 import img from "../asset/collection-carousel.jpg";
 import Tshirt from "../asset/black-tees.jpg";
+import { useNavigate } from "react-router-dom";
 
 // Temp Product array without T-shirts
 const products = [
@@ -20,7 +21,7 @@ const products = [
     name: "Round Neck",
     price: "300",
     image: Tshirt,
-    size: "small",
+    sizes: [{id : 1, size:"S"}]
   },
   {
     id: 14,
@@ -28,7 +29,7 @@ const products = [
     name: "Round Neck",
     price: "1000",
     image: Tshirt,
-    size: "medium",
+    sizes: [{id : 1, size:"L"}]
   },
   {
     id: 15,
@@ -36,7 +37,7 @@ const products = [
     name: "Round Neck",
     price: "3000",
     image: Tshirt,
-    size: "large",
+    sizes: [{id : 1, size:"S"}]
   },
   {
     id: 16,
@@ -44,7 +45,7 @@ const products = [
     name: "Round Neck",
     price: "5000",
     image: Tshirt,
-    size: "X-large",
+    sizes: [{id : 1, size:"M"}]
   },
   { id: 17, category: "oversize", name: "Oversize", price: "300", image: Tshirt, size: "small" },
   { id: 18, category: "oversize", name: "Oversize", price: "1000", image: Tshirt, size: "medium" },
@@ -79,8 +80,10 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
 
     const matchesCategory = category === "collection" || product.category === category;
     // Check for size matches
-    const matchesSize = selectedSizes.length ? selectedSizes.includes(product.size) : true;
-
+    const matchesSize = selectedSizes.length
+    ? product.sizes?.some((sizeObj) => selectedSizes.includes(sizeObj.size)) ?? true
+    : true;
+  
     // Price filtering
     let matchesPrice = true;
     if (selectedPrice) {
@@ -135,6 +138,11 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
     setSelectedPrice(null);
     setSelectedCategories([]);
   };
+  const navigate = useNavigate();
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
@@ -183,6 +191,7 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
               >
                 <img
                   className="w-full h-full object-cover cursor-pointer"
+                  onClick={() => handleNavigate(`/Product/${product.id}`)}
                   src={product.image}
                   alt={product.name}
                 />

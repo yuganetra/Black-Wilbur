@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdMenu } from "react-icons/md";
 import { FaSearch, FaShoppingCart } from "react-icons/fa";
 import { FaCircleUser } from "react-icons/fa6";
 import logo from "../asset/white-logo.svg";
 import SidebarMenu from "./Sidebar-Menu";
-import CartComponent from "./Cart"; // Ensure you have this component
+import CartComponent from "./Cart"; 
 import Searchbar from "./Searchbar";
 import { useNavigate } from "react-router-dom";
+import { fetchCategories } from "../services/api";
+import { Category } from "../utiles/types";
 
 const Navbar: React.FC = (): JSX.Element => {
   const [sidebar, setSidebar] = useState<boolean>(false);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
+  const [categories, setCategories] = useState<Category[]>([]); // Use the Category interface
 
   const navigate = useNavigate();
 
@@ -31,14 +34,30 @@ const Navbar: React.FC = (): JSX.Element => {
     setShowSearchBar(!showSearchBar);
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedCategories = await fetchCategories();
+        setCategories(fetchedCategories); 
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchData();
+  }, []); 
+
   return (
     <>
       <nav className="navbar sticky top-0 left-0 w-full flex items-center justify-between pl-4 pr-4 pb-2 bg-black z-50">
         <div className="hidden md:flex h-24 flex-col w-full">
           {/* For Large Screens */}
-          <div className=" hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-2 border-white">
+          <div className="hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-2 border-white">
             <div className="flex items-center space-x-4">
-              <MdMenu className="text-4xl cursor-pointer" onClick={toggleSidebar} />
+              <MdMenu
+                className="text-4xl cursor-pointer"
+                onClick={toggleSidebar}
+              />
               <Searchbar />
             </div>
 
@@ -50,20 +69,37 @@ const Navbar: React.FC = (): JSX.Element => {
               onClick={() => handleNavigate("/")}
             />
             <div className="flex items-center space-x-4">
-              <FaCircleUser className="text-2xl cursor-pointer" />
-              <FaShoppingCart onClick={toggleCartSidebar} className="text-2xl cursor-pointer" />
+              <FaCircleUser
+                onClick={() => handleNavigate("/auth/login")}
+                className="text-2xl cursor-pointer"
+              />
+              <FaShoppingCart
+                onClick={toggleCartSidebar}
+                className="text-2xl cursor-pointer"
+              />
             </div>
           </div>
 
           {/* Mini Navbar */}
           <div className="hidden h-8 md:flex items-center justify-center w-full pl-16 pr-10 space-x-4 text-white">
-            {["Collection", "Oversize", "Round Neck", "Polo", "Knitted"].map((item) => (
+            {/* Static Collection Button */}
+            <button
+              onClick={() => handleNavigate("/collection")}
+              className="relative text-sm font-semibold px-4 py-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-0.5 after:bg-white after:transform after:scale-x-0 after:origin-right hover:after:scale-x-100 hover:after:origin-left after:transition-transform after:duration-300"
+            >
+              Collection
+            </button>
+
+            {/* Dynamic Category Buttons */}
+            {categories.map((category) => (
               <button
-                key={item}
-                onClick={() => handleNavigate(`/${item.toLowerCase().replace(/ /g, "-")}`)}
+                key={category.id} 
+                onClick={() =>
+                  handleNavigate(`/${category.name.toLowerCase().replace(/ /g, "-")}`)
+                }
                 className="relative text-sm font-semibold px-4 py-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-0.5 after:bg-white after:transform after:scale-x-0 after:origin-right hover:after:scale-x-100 hover:after:origin-left after:transition-transform after:duration-300"
               >
-                {item}
+                {category.name}
               </button>
             ))}
           </div>
@@ -79,16 +115,21 @@ const Navbar: React.FC = (): JSX.Element => {
             onClick={() => handleNavigate("/")}
           />
           <div className="flex items-center space-x-2">
-            {" "}
             <button onClick={handleSearchIconClick} className="text-lg">
               <FaSearch />
             </button>
-            <FaShoppingCart onClick={toggleCartSidebar} className="text-lg cursor-pointer" />
-            <FaCircleUser
-              // onClick={() => handleNavigate("/Login")}
+            <FaShoppingCart
+              onClick={toggleCartSidebar}
               className="text-lg cursor-pointer"
             />
-            <MdMenu className="text-2xl cursor-pointer pr-2" onClick={toggleSidebar} />
+            <FaCircleUser
+              onClick={() => handleNavigate("/auth/login")}
+              className="text-lg cursor-pointer"
+            />
+            <MdMenu
+              className="text-2xl cursor-pointer pr-2"
+              onClick={toggleSidebar}
+            />
           </div>
         </div>
         {showSearchBar && (

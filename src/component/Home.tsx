@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import carousel1 from "../asset/chpp-carousel.jpg";
 import Tshirt from "../asset/black-tees.jpg";
 import videoSrc from "../asset/homepage-vid.mp4";
 import blackBackground from "../asset/blackBackground.png";
-
+import { fetchBestSeller } from "../services/api";
+import { Bestsellers } from "../utiles/types";
 const products = [
   {
     id: 1,
-    name: "T-Shirt",
-    price: "3000",
+    category: "round-neck",
+    name: "Round Neck",
+    price: "300",
     image: Tshirt,
+    sizes: [{id : 1, size:"S"}]
   },
   {
     id: 2,
@@ -46,10 +49,37 @@ const products = [
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const productRef = useRef<HTMLDivElement | null>(null);
+  const [bestseller, setBestSeller] = useState<Bestsellers[]>([]); 
+
 
   const handleNavigate = (path: string) => {
     navigate(path);
   };
+  const scrollLeft = () => {
+    if (productRef.current) {
+      productRef.current.scrollBy({ top: 0, left: -300, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (productRef.current) {
+      productRef.current.scrollBy({ top: 0, left: 300, behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedCategories = await fetchBestSeller();
+        setBestSeller(fetchedCategories); 
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchData();
+  }, []); 
 
   return (
     <>
@@ -77,61 +107,61 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Best Sellers Section */}
-      <section className="py-16 bg-[#1B1B1B] w-full relative overflow-x-hidden">
-        <div className="container mx-auto px-4 sm:px-8">
-          <h2 className="ml-8 text-4xl lg:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
-            Our Bestsellers
-          </h2>
+{/* Best Sellers Section */}
+<section className="py-16 bg-[#1B1B1B] w-full relative overflow-x-hidden">
+  <div className="container mx-auto px-4 sm:px-8">
+    <h2 className="ml-8 text-4xl lg:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
+      Our Bestsellers
+    </h2>
 
-          <div className="flex items-center">
-            <button
-              // onClick={scrollLeft}
-              className="text-white bg-black rounded-full p-2 mr-2 hover:bg-gray-800 transition"
-            >
-              &lt;
-            </button>
-            <div
-              // ref={productRef}
-              className="flex gap-2 overflow-x-auto w-full snap-x snap-mandatory"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              {products.map((product) => {
-                const productImage = Tshirt;
-                //   product.images.length > 0 ? product.images[0] : null; // Get the first image
-                // console.log(productImage);
+    <div className="flex items-center">
+      <button
+        onClick={scrollLeft}
+        className="hidden md:block text-white bg-black rounded-full p-2 mr-2 hover:bg-gray-800 transition"
+      >
+        &lt;
+      </button>
+      <div
+        ref={productRef}
+        className="flex gap-2 overflow-x-auto w-full snap-x snap-mandatory"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {bestseller.map((bestseller) => {
+                    const productImages = bestseller.product_images; // Correct property name
+                    const imageSrc = productImages.length > 0 ? productImages[0].image : 'default-image-url.jpg'; // Fallback to a default image
 
-                return (
-                  <div
-                    key={product.id}
-                    className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center snap-start"
-                    style={{ height: "100vh" }}
-                  >
-                    <img
-                      className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                      onClick={() => handleNavigate(`/Product/${product.id}`)}
-                      src={`${productImage}` ? `${productImage}` : undefined} // Fallback to a default image if none
-                      alt={product.name}
-                    />
-                    <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
-                      {product.name.toUpperCase()}
-                    </div>
-                    <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
-                      {product.price} rs
-                    </div>
-                  </div>
-                );
-              })}
+                    return (
+                        <div
+                            key={bestseller.id}
+                            className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center snap-start"
+                            style={{ height: "100vh" }}
+                        >
+                            <img
+                                className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
+                                onClick={() => handleNavigate(`/Product/${bestseller.id}`)}
+                                src={imageSrc}
+                                alt={bestseller.name}
+                            />
+                            <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
+                                {bestseller.name.toUpperCase()}
+                            </div>
+                            <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
+                                {bestseller.price} rs
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
-            <button
-              // onClick={scrollRight}
-              className="text-white bg-black rounded-full p-2 ml-2 hover:bg-gray-800 transition"
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </section>
+      <button
+        onClick={scrollRight}
+        className="hidden md:block text-white bg-black rounded-full p-2 ml-2 hover:bg-gray-800 transition"
+      >
+        &gt;
+      </button>
+    </div>
+  </div>
+</section>
+
 
       {/* Video Section */}
       <section className="py-16 bg-[#1B1B1B]">
@@ -224,7 +254,7 @@ const Home: React.FC = () => {
             </h2>
             <button
               className="px-6 py-3 bg-white text-black rounded-full hover:bg-gray-200 transition"
-              // onClick={() => handleNavigate("/AboutUs")}
+              onClick={() => handleNavigate("/about-us")}
             >
               Learn More
             </button>
