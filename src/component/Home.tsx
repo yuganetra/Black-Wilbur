@@ -4,7 +4,8 @@ import carousel1 from "../asset/chpp-carousel.jpg";
 import Tshirt from "../asset/black-tees.jpg";
 import videoSrc from "../asset/homepage-vid.mp4";
 import blackBackground from "../asset/blackBackground.png";
-
+import { fetchBestSeller } from "../services/api";
+import { Bestsellers } from "../utiles/types";
 const products = [
   {
     id: 1,
@@ -49,6 +50,7 @@ const products = [
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const productRef = useRef<HTMLDivElement | null>(null);
+  const [bestseller, setBestSeller] = useState<Bestsellers[]>([]); 
 
 
   const handleNavigate = (path: string) => {
@@ -65,6 +67,20 @@ const Home: React.FC = () => {
       productRef.current.scrollBy({ top: 0, left: 300, behavior: "smooth" });
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedCategories = await fetchBestSeller();
+        setBestSeller(fetchedCategories); 
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchData();
+  }, []); 
+
   return (
     <>
       {/* Carousel Section */}
@@ -110,31 +126,32 @@ const Home: React.FC = () => {
         className="flex gap-2 overflow-x-auto w-full snap-x snap-mandatory"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {products.map((product) => {
-          const productImage = Tshirt; // Assuming you have a default image here
+        {bestseller.map((bestseller) => {
+                    const productImages = bestseller.product_images; // Correct property name
+                    const imageSrc = productImages.length > 0 ? productImages[0].image : 'default-image-url.jpg'; // Fallback to a default image
 
-          return (
-            <div
-              key={product.id}
-              className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center snap-start"
-              style={{ height: "100vh" }}
-            >
-              <img
-                className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                onClick={() => handleNavigate(`/Product/${product.id}`)}
-                src={`${productImage}` ? `${productImage}` : undefined} // Fallback to a default image if none
-                alt={product.name}
-              />
-              <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
-                {product.name.toUpperCase()}
-              </div>
-              <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
-                {product.price} rs
-              </div>
+                    return (
+                        <div
+                            key={bestseller.id}
+                            className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center snap-start"
+                            style={{ height: "100vh" }}
+                        >
+                            <img
+                                className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
+                                onClick={() => handleNavigate(`/Product/${bestseller.id}`)}
+                                src={imageSrc}
+                                alt={bestseller.name}
+                            />
+                            <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
+                                {bestseller.name.toUpperCase()}
+                            </div>
+                            <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
+                                {bestseller.price} rs
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
-          );
-        })}
-      </div>
       <button
         onClick={scrollRight}
         className="hidden md:block text-white bg-black rounded-full p-2 ml-2 hover:bg-gray-800 transition"

@@ -6,7 +6,7 @@ export interface Bestsellers{
     id: number,
     name: string,
     price: number,
-    prduct_images: productImage[]
+    product_images: productImage[]
 }
 export interface productImage{
     id:number, 

@@ -8,12 +8,13 @@ import CartComponent from "./Cart";
 import Searchbar from "./Searchbar";
 import { useNavigate } from "react-router-dom";
 import { fetchCategories } from "../services/api";
+import { Category } from "../utiles/types";
 
 const Navbar: React.FC = (): JSX.Element => {
   const [sidebar, setSidebar] = useState<boolean>(false);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
-  const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]); 
+  const [categories, setCategories] = useState<Category[]>([]); // Use the Category interface
 
   const navigate = useNavigate();
 
