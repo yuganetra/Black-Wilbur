@@ -4,3 +4,4 @@ from .cart import CartSerializer
 from .category import CategorySerializer
 from .distribution import DistributionPartnershipSerializer
 from .product import ProductSerializer
+from .order import OrderSerializer
