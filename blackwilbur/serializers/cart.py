@@ -1,23 +1,26 @@
 from rest_framework import serializers
 
-from blackwilbur import models, serializers
+from blackwilbur import models
+from blackwilbur.serializers import ProductSerializer
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product = serializers.ProductSerializer(read_only=True)
-    product_variation = serializers.ProductVariationSerializer(read_only=True)
-
+    product = ProductSerializer(read_only=True)
+    size = serializers.SerializerMethodField()
     class Meta:
         model = models.CartItem
         fields = [
             'id',
             'quantity',
             'product',
-            'product_variation',
+            'size',
         ]
         read_only_fields = [
             'id',
             'quantity',
             'product',
-            'product_variation',
+            'size',
         ]
+
+    def get_size(self, instance):
+        return instance.product_variation.size
