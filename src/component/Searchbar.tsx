@@ -1,130 +1,73 @@
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  useRef,
-  useCallback,
-} from "react";
+// CPUI
+import React, { useState } from "react";
 import Tshirt from "../asset/black-tees.jpg";
-// import { useCategories } from '../contexts/CategoryContext'; // Change this line
-import { useNavigate } from "react-router-dom";
 
 const products = [
-  {
-    id: 1,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 2,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 3,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 4,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 4,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 4,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
+  { id: 1, name: "T-Shirt", price: "3000", image: Tshirt },
+  { id: 2, name: "Hoodie", price: "3000", image: Tshirt },
+  { id: 3, name: "Shirt", price: "3000", image: Tshirt },
+  { id: 4, name: "Sweater", price: "3000", image: Tshirt },
+  { id: 5, name: "Knitted", price: "3000", image: Tshirt },
+  { id: 6, name: "Polo", price: "3000", image: Tshirt },
 ];
-const SearchBar: React.FC = () => {
-  const { setCategory } = useCategories(); // Use the hook instead
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState(products);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const navigate = useNavigate();
-  const searchRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const results = products.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredProducts(results);
-  }, [searchQuery, products]);
+const Searchbar: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setIsDropdownOpen(e.target.value.length > 0);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setShowModal(e.target.value.length > 0); // Show modal if there's a search term
   };
 
-  const handleProductClick = (id: number) => {
-    navigate(`/Product/${id}`);
-    setSearchQuery("");
-    setIsDropdownOpen(false);
+  const handleFocus = () => {
+    setShowModal(searchTerm.length > 0); // Show modal on focus if there's input
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setCategory(searchQuery.trim().toLowerCase()); // Set the selected category in the context
-      navigate("/collection"); // Navigate to the Collection page
-    }
+  const handleBlur = () => {
+    // Delay hiding modal to allow clicks on modal items
+    setTimeout(() => {
+      setShowModal(false);
+    }, 100);
   };
 
-  const handleClickOutside = useCallback((event: MouseEvent) => {
-    if (
-      searchRef.current &&
-      !searchRef.current.contains(event.target as Node)
-    ) {
-      setIsDropdownOpen(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [handleClickOutside]);
+  // Filter products based on the search term
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="relative" ref={searchRef}>
-      <form onSubmit={handleSearchSubmit}>
-        {" "}
-        {/* Wrap input in a form for submission */}
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          placeholder="Search products..."
-          className="p-2 rounded-full border border-gray-300 focus:outline-none focus:ring focus:ring-gray-400 text-black"
-        />
-      </form>
-      {isDropdownOpen && filteredProducts.length > 0 && (
-        <div className="absolute z-10 bg-black border border-gray-300 rounded-lg shadow-lg mt-1">
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              onClick={() => handleProductClick(product.id)}
-              className="p-2 hover:bg-gray-300 hover:text-black cursor-pointer"
-            >
-              {product.name}
-            </div>
-          ))}
+    <div className="relative w-full">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={handleInputChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        className="border border-gray-300 rounded-lg p-2 w-full text-black" // Full width for small screens
+        placeholder="Search for products..."
+      />
+      {showModal && (
+        <div className="absolute left-0 z-50 w-full max-w-xs bg-white shadow-lg border border-gray-300 rounded-lg mt-1 overflow-y-auto">
+          {/* Adjusted size and positioning */}
+          <div className="p-2">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <p
+                  key={product.id}
+                  className="text-black cursor-pointer hover:bg-gray-100 py-1 text-center"
+                >
+                  {product.name} - ${product.price}
+                </p>
+              ))
+            ) : (
+              <p className="text-black py-2 text-center">No results found</p>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-export default SearchBar;
+export default Searchbar;
