@@ -11,4 +11,5 @@ urlpatterns = [
     path('explore', views.ExploreAPIView.as_view()),
     path('search', views.SearchAPIView.as_view()),
     path('orders', views.OrdersAPIView.as_view()),
+    path('cart', views.CartAPIView.as_view()),
 ]
