@@ -1,5 +1,4 @@
-from django.db.models import OuterRef, Subquery
-from django.db.models import Count
+from django.db.models import Max, Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, exceptions
@@ -18,15 +17,16 @@ class BestsellerAPIView(APIView):
     
 class ExploreAPIView(APIView):
     def get(self, request):
-        latest_product_per_category = models.Product.objects.filter(
-            category=OuterRef('category')
-        ).order_by('-created_at')
+        latest_products = models.Product.objects.values('category').annotate(
+            latest_product_id=Max('id')
+        ).values_list('latest_product_id', flat=True)
         distinct_products = models.Product.objects.filter(
-            id__in=Subquery(latest_product_per_category.values('id')[:1])
+            id__in=latest_products
         ).order_by('-created_at')[:6]
         if len(distinct_products) < 6:
             random_products = models.Product.objects.exclude(id__in=[p.id for p in distinct_products]).order_by('?')[:6 - len(distinct_products)]
             distinct_products = list(distinct_products) + list(random_products)
+
         distinct_products = distinct_products[:6]
         serializer = serializers.ProductSerializer(distinct_products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
