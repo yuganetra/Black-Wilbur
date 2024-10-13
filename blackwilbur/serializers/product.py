@@ -15,22 +15,22 @@ class ProductSerializer(serializers.ModelSerializer):
         return instance.images.all()
 
 
-class ProductDetailSerializer(serializers):
+class ProductDetailSerializer(serializers.ModelSerializer):
     sizes = ProductVariationSerializer(many=True)
     rating = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Product
-        fields = ProductSerializer.Meta.fields + (
+        fields = ProductSerializer.Meta.fields + [
             "description",
             "sizes",
             "rating",
-        )
-        read_only_fields = ProductSerializer.Meta.fields + (
+        ]
+        read_only_fields = ProductSerializer.Meta.fields + [
             "description",
             "sizes",
             "rating",
-        )
+        ]
 
     def get_rating(self, instance):
         ratings = instance.reviews.all()
