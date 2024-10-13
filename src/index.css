@@ -2,13 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+::-webkit-scrollbar-track {
+  background: #1b1b1b; /* Track color */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #6c6c6c; /* Scrollbar color */
+  border-radius: 10px; /* Rounded corners */
+  border: 2px solid #1b1b1b; /* Optional: border around the thumb */
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #6c6c6c #1b1b1b; /* Firefox */
 }
