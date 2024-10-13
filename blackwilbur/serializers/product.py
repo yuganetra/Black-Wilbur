@@ -1,10 +1,10 @@
-from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
-from blackwilbur import models
-from blackwilbur.serializers import ProductVariationSerializer
+from blackwilbur import models, serializers
 
-class ProductSerializer(serializers.ModelSerializer):
-    product_images = serializers.SerializerMethodField()
+
+class ProductSerializer(ModelSerializer):
+    product_images = SerializerMethodField()
 
     class Meta:
         model = models.Product
@@ -12,12 +12,13 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'name', 'price', 'product_images']
 
     def get_product_images(self, instance):
-        return instance.images.all()
+        images = instance.images.all()
+        return serializers.ProductImageSerializer(images, many=True).data
 
 
-class ProductDetailSerializer(serializers.ModelSerializer):
-    sizes = ProductVariationSerializer(many=True)
-    rating = serializers.SerializerMethodField()
+class ProductDetailSerializer(ModelSerializer):
+    sizes = serializers.ProductVariationSerializer(many=True)
+    rating = SerializerMethodField()
 
     class Meta:
         model = models.Product
