@@ -14,8 +14,7 @@ const Navbar: React.FC = (): JSX.Element => {
   const [sidebar, setSidebar] = useState<boolean>(false);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
-  const [categories, setCategories] = useState<Category[]>([]); // Use the Category interface
-
+  const [categories, setCategories] = useState<Category[]>([]); 
   const navigate = useNavigate();
 
   const toggleSidebar = (): void => {
@@ -24,6 +23,19 @@ const Navbar: React.FC = (): JSX.Element => {
 
   const toggleCartSidebar = (): void => {
     setIsCartOpen(!isCartOpen);
+  };
+
+  const checkUserInfo = (): boolean => {
+    const userInfo = localStorage.getItem('user');
+    return userInfo !== null; 
+  };
+
+  const handleUserProfileNavigate = () => {
+    if (checkUserInfo()) {
+      navigate("/user-profile"); 
+    } else {
+      navigate("/auth/login"); 
+    }
   };
 
   const handleNavigate = (path: string) => {
@@ -70,7 +82,7 @@ const Navbar: React.FC = (): JSX.Element => {
             />
             <div className="flex items-center space-x-4">
               <FaCircleUser
-                onClick={() => handleNavigate("/auth/login")}
+                onClick={handleUserProfileNavigate} // Update the onClick handler
                 className="text-2xl cursor-pointer"
               />
               <FaShoppingCart
@@ -123,7 +135,7 @@ const Navbar: React.FC = (): JSX.Element => {
               className="text-lg cursor-pointer"
             />
             <FaCircleUser
-              onClick={() => handleNavigate("/auth/login")}
+              onClick={handleUserProfileNavigate} // Update the onClick handler
               className="text-lg cursor-pointer"
             />
             <MdMenu

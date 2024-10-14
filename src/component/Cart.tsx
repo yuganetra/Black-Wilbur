@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Tshirt from "../asset/black-tees.jpg";
-import Checkout from "./Checkout";
 import { fetchCartItemsFromLocalStorage } from "../services/api"; 
 
 interface Product {
