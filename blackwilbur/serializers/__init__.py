@@ -5,3 +5,5 @@ from .product import ProductSerializer
 from .order import OrderSerializer
 from .cart import CartItemSerializer
 from .product_image import ProductImageSerializer
+from .product import ProductDetailSerializer
+from .request_serializers import RegisterSerializer

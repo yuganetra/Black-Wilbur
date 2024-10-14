@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Tshirt from "../asset/black-tees.jpg";
 import Checkout from "./Checkout";
+import { fetchCartItemsFromLocalStorage } from "../services/api"; 
 
 interface Product {
   id: number;
@@ -28,32 +29,16 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       state: { products: cartProducts },
     });
   };
-
   useEffect(() => {
-    if (isOpen && cartProducts.length === 0) {
-      const fetchedCartProducts: Product[] = [
-        {
-          id: 1,
-          name: "T-shirt",
-          price: 3000,
-          image: Tshirt,
-          description: "Comfortable cotton t-shirt",
-          size: "M",
-          quantity: 1, // Initialize quantity
-        },
-        {
-          id: 2,
-          name: "T-shirt",
-          price: 3000,
-          image: Tshirt,
-          description: "Stylish T-shirt",
-          size: "L",
-          quantity: 1, // Initialize quantity
-        },
-      ];
+    if (isOpen) {
+      const fetchedCartProducts: Product[] = fetchCartItemsFromLocalStorage().map((product: Product) => ({
+        ...product,
+        quantity: typeof product.quantity === 'number' && product.quantity > 0 ? product.quantity : 1, // Ensure quantity is valid
+      }));
       setCartProducts(fetchedCartProducts);
     }
   }, [isOpen]);
+  
 
   // Remove product from cart
   const handleRemove = (productId: number) => {
@@ -63,22 +48,29 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   };
 
   // Update product quantity in cart
-  const handleUpdateQuantity = (productId: number, change: number) => {
-    setCartProducts((prev) =>
-      prev.map((product) =>
-        product.id === productId
-          ? { ...product, quantity: product.quantity + change } // Update quantity
-          : product
-      )
-    );
-  };
+// Update product quantity in cart
+const handleUpdateQuantity = (productId: number, change: number) => {
+  setCartProducts((prev) =>
+    prev.map((product) =>
+      product.id === productId
+        ? { 
+            ...product, 
+            quantity: Math.max(1, (product.quantity || 1) + change) // Ensure quantity is a valid number and never less than 1
+          }
+        : product
+    )
+  );
+};
 
-  // Calculate total amount and quantity
   const totalAmount =
     cartProducts.reduce(
-      (total, product) => total + product.price * product.quantity,
+      (total, product) =>
+        total +
+        (typeof product.price === "number"
+          ? product.price * product.quantity
+          : 0),
       0
-    ) || 0; // Calculate total based on quantity
+    ) || 0;
 
   const totalQuantity =
     cartProducts.reduce((total, product) => total + product.quantity, 0) || 0; // Calculate total quantity

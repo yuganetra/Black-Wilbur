@@ -1,76 +1,87 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoIosStar } from "react-icons/io";
-import Tshirt from "../asset/black-tees.jpg";
-import CartComponent from "./Cart"; // Import your CartComponent
+import CartComponent from "./Cart";
 import SizeChart from "../utiles/SizeChart";
-const productData = [
-  {
-    id: 1,
-    name: "T-Shirt",
-    price: 3000,
-    image: Tshirt,
-    description: "This is a sample product description.",
-    size: ["M", "L", "XL"],
-    ratings: [5, 4, 3],
-  },
-  {
-    id: 2,
-    name: "T-Shirt",
-    price: 3000,
-    image: Tshirt,
-    description: "This is a sample product description.",
-    size: ["S", "M", "L"],
-    ratings: [],
-  },
-  {
-    id: 3,
-    name: "T-Shirt",
-    price: 3000,
-    image: Tshirt,
-    description: "This is a sample product description.",
-    size: ["XL", "XXL"],
-    ratings: [],
-  },
-];
+import { fetchProductById, fetchExplore } from "../services/api";
+import { Product, ProductVariation } from "../utiles/types";
+import Skeleton from "../utiles/Skeleton";
 
 const Productpage = () => {
-  const product = productData[0];
+  const [product, setProduct] = useState<Product | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(product.size[0]);
+  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(null);
+  const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
   const [userRating, setUserRating] = useState(0);
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const handleNavigate = (path: string) => {
     navigate(path);
   };
+
   const handleBuyNow = () => {
-    navigate("/checkout", {
-      state: { products: [{ ...product, size: selectedSize }] },
-    });
+    if (product && selectedSize) {
+      navigate("/checkout", {
+        state: { products: [{ ...product, size: selectedSize.size }] },
+      });
+    }
   };
+
   const toggleCartSidebar = (): void => {
     setIsCartOpen(!isCartOpen);
   };
+
   const toggleSizeChart = (): void => {
     setIsSizeChartOpen(!isSizeChartOpen);
   };
+
   const handleRatingClick = (rating: number) => {
     setUserRating(rating);
-    product.ratings.push(rating); // Update the ratings directly
-    alert(`Rating: ${rating} stars submitted.`);
+    if (product) {
+      product.rating = rating;
+      alert(`Rating: ${rating} stars submitted.`);
+    }
   };
 
-  const averageRating =
-    product.ratings.length > 0
-      ? Number(
-          (
-            product.ratings.reduce((acc, rating) => acc + rating, 0) /
-            product.ratings.length
-          ).toFixed(1)
-        )
-      : 0;
+  const handleAddToCart = () => {
+    if (product && selectedSize) {
+      const productToAdd = { ...product, size: selectedSize.size };
+
+      // Save to local storage
+      const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      existingCart.push(productToAdd);
+      localStorage.setItem("cart", JSON.stringify(existingCart));
+
+      // Optionally, you can open the cart sidebar after adding the product
+      setIsCartOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (id) {
+          const fetchedProduct = await fetchProductById(Number(id));
+          setProduct(fetchedProduct);
+          setSelectedSize(fetchedProduct.sizes[0]);
+          const fetchedExplore = await fetchExplore();
+          setExploreProducts(fetchedExplore);
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  if (!product) {
+    return <Skeleton />;
+  }
+
+  const averageRating = product.rating || 0;
 
   return (
     <div className="bg-[#1B1B1B] text-white min-h-screen flex flex-col">
@@ -78,20 +89,18 @@ const Productpage = () => {
         {/* Image Section */}
         <div className="w-full md:h-[85vh] lg:h-[750px] lg:w-1/2 flex lg:flex-col flex-row bg-slate-50 overflow-x-hidden">
           <div className="flex lg:flex-col flex-row items-center w-full h-full overflow-x-scroll">
-            {Array(3)
-              .fill(product.image)
-              .map((image, index) => (
-                <div
-                  key={index}
-                  className="flex-shrink-0 flex items-center justify-center bg-[#7A7A7A] w-full h-full min-w-[300px] md:min-w-[400px]"
-                >
-                  <img
-                    className="w-full h-full object-cover"
-                    src={image}
-                    alt={`Product Image ${product.name}`}
-                  />
-                </div>
-              ))}
+            {product.product_images.map((imageObj, index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 flex items-center justify-center bg-[#7A7A7A] w-full h-full min-w-[300px] md:min-w-[400px]"
+              >
+                <img
+                  className="w-full h-full object-cover"
+                  src={imageObj.image}
+                  alt={`Product Image ${product.name}`}
+                />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -122,17 +131,17 @@ const Productpage = () => {
               Select Size:
             </h4>
             <div className="flex gap-2">
-              {product.size.map((size) => (
+              {product.sizes.map((sizeObj) => (
                 <div
-                  key={size}
+                  key={sizeObj.id}
                   className={`flex items-center justify-center w-12 h-12 rounded-full border-2 border-black cursor-pointer ${
-                    selectedSize === size
+                    selectedSize?.id === sizeObj.id
                       ? "bg-black text-white"
                       : "bg-white text-black"
                   }`}
-                  onClick={() => setSelectedSize(size)}
+                  onClick={() => setSelectedSize(sizeObj)}
                 >
-                  {size}
+                  {sizeObj.size}
                 </div>
               ))}
             </div>
@@ -148,7 +157,7 @@ const Productpage = () => {
 
           <div className="flex gap-4 mb-8">
             <button
-              onClick={toggleCartSidebar}
+              onClick={handleAddToCart} // Use the new function
               className="px-4 py-2 bg-[#1B1B1B] border border-white text-white rounded-full"
             >
               ADD TO CART
@@ -190,19 +199,18 @@ const Productpage = () => {
         <CartComponent isOpen={isCartOpen} onClose={toggleCartSidebar} />
       </div>
       <div className="text-black">
-        = {/* Include the SizeChart component here */}
+        {/* Include the SizeChart component here */}
         <SizeChart isOpen={isSizeChartOpen} onClose={toggleSizeChart} />
       </div>
+
       {/* "Visit More" Section */}
       <section className="mt-[80px] py-6 px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl lg:text-5xl text-left font-normal font-montserrat uppercase leading-tight text-white mb-8">
           VISIT MORE
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {productData.map((product) => {
-            const productImage = Tshirt;
-            // product.images.length > 0 ? product.images[0] : null;
-            return (
+          {exploreProducts.length > 0 ? (
+            exploreProducts.map((product) => (
               <div
                 key={product.id}
                 className="relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center"
@@ -211,18 +219,20 @@ const Productpage = () => {
                 <img
                   className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
                   onClick={() => handleNavigate(`/product/${product.id}`)}
-                  src={`${productImage}` ? `${productImage}` : undefined}
+                  src={product.product_images[0]?.image || "/placeholder.png"}
                   alt={product.name}
                 />
                 <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
                   {product.name.toUpperCase()}
                 </div>
                 <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
-                  {product.price} rs
+                  ₹{product.price}
                 </div>
               </div>
-            );
-          })}
+            ))
+          ) : (
+            <Skeleton />
+          )}
         </div>
       </section>
     </div>
