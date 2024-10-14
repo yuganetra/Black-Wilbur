@@ -19,6 +19,7 @@ class ProductSerializer(ModelSerializer):
 class ProductDetailSerializer(ModelSerializer):
     sizes = serializers.ProductVariationSerializer(many=True)
     rating = SerializerMethodField()
+    product_images = SerializerMethodField()
 
     class Meta:
         model = models.Product
@@ -26,11 +27,13 @@ class ProductDetailSerializer(ModelSerializer):
             "description",
             "sizes",
             "rating",
+            "product_images",
         ]
         read_only_fields = ProductSerializer.Meta.fields + [
             "description",
             "sizes",
             "rating",
+            "product_images",
         ]
 
     def get_rating(self, instance):
@@ -40,3 +43,8 @@ class ProductDetailSerializer(ModelSerializer):
         else:
             return 0
         return round(min(max(average_rating, 0), 5), 1)
+    
+    def get_product_images(self, instance):
+        # Fetch images based on the product ID
+        images = models.ProductImage.objects.filter(product=instance.id)
+        return serializers.ProductImageSerializer(images, many=True).data

@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { registerUser,loginUser } from "../services/api";
+import { AuthUser } from "../utiles/types";
 
 const Authentication: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  const isLogin = location.pathname === "/auth/login"; // Check if the current route is for login
+  const isLogin = location.pathname === "/auth/login";
   const [forgotPassword, setForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -29,48 +31,65 @@ const Authentication: React.FC = () => {
     e.preventDefault();
     setApiError("");
     setSuccessMessage("");
+
     const newErrors = {
-      firstName: formData.firstName ? "" : "First Name is required",
-      lastName: formData.lastName ? "" : "Last Name is required",
-      email: formData.email ? "" : "Email is required",
-      username: formData.username ? "" : "Username is required",
-      password: formData.password ? "" : "Password is required",
-      password2: formData.password2 === formData.password ? "" : "Passwords must match",
+        firstName: formData.firstName ? "" : "First Name is required",
+        lastName: formData.lastName ? "" : "Last Name is required",
+        email: formData.email ? "" : "Email is required",
+        username: formData.username ? "" : "Username is required",
+        password: formData.password ? "" : "Password is required",
+        password2: formData.password2 === formData.password ? "" : "Passwords must match",
     };
 
     setErrors(newErrors);
     if (!Object.values(newErrors).some((error) => error)) {
-      setLoading(true);
-      try {
-        // Perform API call for signup
-        setSuccessMessage("Account created successfully! Please log in.");
-        setFormData({ firstName: "", lastName: "", username: "", email: "", password: "", password2: "" });
-        navigate("/auth/login");
-      } catch (error) {
-        setApiError("Failed to create account. Please try again.");
-      } finally {
-        setLoading(false);
-      }
+        setLoading(true);
+        try {
+            const userData: AuthUser = {
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                password2: formData.password2,
+            };
+
+            const response = await registerUser(userData);
+            
+            localStorage.setItem('user', JSON.stringify(response));
+
+            setSuccessMessage("Account created successfully! Please log in.");
+            setFormData({ firstName: "", lastName: "", username: "", email: "", password: "", password2: "" });
+            navigate("/auth/login");
+        } catch (error) {
+            setApiError("Failed to create account. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     }
-  };
+};
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setApiError("");
+const handleLoginSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setApiError("");
 
-    const credentials = {
-      username: formData.username,
+  const credentials: AuthUser = {
+      email: formData.email,  
       password: formData.password,
-    };
-
-    try {
-      // Perform API call for login
-      setSuccessMessage("Login successful!");
-      navigate('/user-profile');
-    } catch (error) {
-      setApiError("Invalid credentials. Please check your username and password.");
-    }
   };
+
+  try {
+    console.log(credentials)
+      const response = await loginUser(credentials);
+      
+      localStorage.setItem('user', JSON.stringify(response));
+
+      setSuccessMessage("Login successful!");
+      navigate('/user-profile'); 
+  } catch (error) {
+      setApiError("Invalid credentials. Please check your email and password.");
+  }
+};
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-white font-montserrat">
@@ -119,12 +138,12 @@ const Authentication: React.FC = () => {
               <form onSubmit={handleLoginSubmit} className="space-y-6">
                 <div className="mb-6">
                   <input
-                    type="text"
-                    id="username"
-                    value={formData.username}
+                    type="email"
+                    id="email"
+                    value={formData.email}
                     onChange={handleInputChange}
-                    className={`block w-full h-12 p-4 border ${errors.username ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                    placeholder="Username"
+                    className={`block w-full h-12 p-4 border ${errors.Email ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                    placeholder="User Name"
                     required
                   />
                 </div>

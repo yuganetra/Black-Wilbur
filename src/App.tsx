@@ -34,6 +34,10 @@ function App() {
             path="/round-neck"
             element={<Collection category="round-neck" />}
           />
+          <Route
+            path="/hoodie"
+            element={<Collection category="hoodie" />}
+          />
           <Route path="/polo" element={<Collection category="polo" />} />
           <Route path="/knitted" element={<Collection category="knitted" />} />
           <Route path="/product/:id" element={<Productpage />} />

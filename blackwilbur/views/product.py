@@ -58,3 +58,9 @@ class ProductDetailAPIView(APIView):
             raise exceptions.NotFound("Product not found!")
         
         return Response(serializers.ProductDetailSerializer(product).data)
+    
+class CollectionAPIView(APIView):
+    def get(self, request):
+        all_products = models.Product.objects.all()
+        serializer = serializers.ProductSerializer(all_products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

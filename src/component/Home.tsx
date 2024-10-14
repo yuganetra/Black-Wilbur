@@ -1,56 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import carousel1 from "../asset/chpp-carousel.jpg";
-import Tshirt from "../asset/black-tees.jpg";
 import videoSrc from "../asset/homepage-vid.mp4";
 import blackBackground from "../asset/blackBackground.png";
-import { fetchBestSeller } from "../services/api";
-import { Bestsellers } from "../utiles/types";
-const products = [
-  {
-    id: 1,
-    category: "round-neck",
-    name: "Round Neck",
-    price: "300",
-    image: Tshirt,
-    sizes: [{id : 1, size:"S"}]
-  },
-  {
-    id: 2,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 3,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 4,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 5,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-  {
-    id: 6,
-    name: "T-Shirt",
-    price: "3000",
-    image: Tshirt,
-  },
-];
+import { fetchBestSeller, fetchExplore } from "../services/api";
+import { Product } from "../utiles/types";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const productRef = useRef<HTMLDivElement | null>(null);
-  const [bestseller, setBestSeller] = useState<Bestsellers[]>([]); 
+  const [bestseller, setBestSeller] = useState<Product[]>([]); 
+  const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
 
 
   const handleNavigate = (path: string) => {
@@ -73,6 +33,8 @@ const Home: React.FC = () => {
       try {
         const fetchedCategories = await fetchBestSeller();
         setBestSeller(fetchedCategories); 
+        const fetchedExplore = await fetchExplore();
+        setExploreProducts(fetchedExplore);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
@@ -189,26 +151,24 @@ const Home: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 px-2">
             {" "}
-            {products.map((product) => {
-              const productImage = Tshirt;
-              // product.images.length > 0 ? product.images[0] : null;
+            {exploreProducts.map((exploreProduct) => {
               return (
                 <div
-                  key={product.id}
+                  key={exploreProduct.id}
                   className="relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center"
                   style={{ height: "100vh" }}
                 >
                   <img
                     className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                    onClick={() => handleNavigate(`/Product/${product.id}`)}
-                    src={`${productImage}` ? `${productImage}` : undefined}
-                    alt={product.name}
+                    onClick={() => handleNavigate(`/Product/${exploreProduct.id}`)}
+                    src={exploreProduct.product_images[0]?.image || "/placeholder.png"}
+                    alt={exploreProduct.name}
                   />
                   <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
-                    {product.name.toUpperCase()}
+                    {exploreProduct.name.toUpperCase()}
                   </div>
                   <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
-                    {product.price} rs
+                    {exploreProduct.price} rs
                   </div>
                 </div>
               );
