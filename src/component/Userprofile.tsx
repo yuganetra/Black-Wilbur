@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Userprofile: React.FC = () => {
   const navigate = useNavigate();
 
-  // Static data
-  const staticOrders = [
+  // State to hold account details
+  const [accountDetails, setAccountDetails] = useState<any | null>(null);
+
+  // Orders remain the same
+  const orders = [
     {
       id: 1,
       status: "Shipped",
@@ -25,24 +28,22 @@ const Userprofile: React.FC = () => {
     },
   ];
 
-  const staticAccountDetails = {
-    customerName: "John Doe",
-    email: "johndoe@example.com",
-    address: {
-      address_line_1: "123 Main St",
-      city: "New York",
-      state: "NY",
-      zip_code: "10001",
-      country: "USA",
-    },
-  };
+  // Fetch user account details from local storage
+  useEffect(() => {
+    const fetchAccountDetails = () => {
+      const userInfo = localStorage.getItem("user");
+      if (userInfo) {
+        setAccountDetails(JSON.parse(userInfo)); // Parse and set account details from local storage
+      }
+    };
 
-  const [orders] = useState(staticOrders);
-  const [accountDetails] = useState(staticAccountDetails);
+    fetchAccountDetails();
+  }, []);
 
-  // Handle logout (static, just for example)
+  // Handle logout
   const handleLogout = () => {
     console.log("User logged out");
+    localStorage.removeItem("user"); // Remove user info on logout
     navigate("/auth/login");
   };
 
@@ -50,7 +51,7 @@ const Userprofile: React.FC = () => {
     <div className="min-h-screen px-4 md:px-8 bg-white text-black font-montserrat">
       <div className="container mx-auto py-12">
         <div className="flex justify-between items-center border-b pb-4">
-          <h1 className="text-2xl md:text-3xl font-semibold">My Account</h1> {/* Adjusted font size for responsiveness */}
+          <h1 className="text-2xl md:text-3xl font-semibold">My Account</h1>
           <button
             className="px-2 py-1 md:px-3 md:py-2 border border-black rounded-full hover:bg-gray-200 text-xs md:text-sm" 
             onClick={handleLogout}
@@ -93,12 +94,16 @@ const Userprofile: React.FC = () => {
             <h2 className="text-xl md:text-2xl font-semibold mb-4">Account Details</h2>
             {accountDetails ? (
               <>
-                <p>Name: {accountDetails.customerName}</p>
+                <p>Name: {accountDetails.first_name}</p>
                 <p>Email: {accountDetails.email}</p>
                 <h3 className="font-semibold mt-4">Address:</h3>
-                <p className="text-gray-700">
-                  {accountDetails.address.address_line_1}, {accountDetails.address.city}, {accountDetails.address.state}, {accountDetails.address.zip_code}, {accountDetails.address.country}
-                </p>
+                {accountDetails.address ? ( // Check if address exists
+                  <p className="text-gray-700">
+                    {accountDetails.address.address_line_1}, {accountDetails.address.city}, {accountDetails.address.state}, {accountDetails.address.zip_code}, {accountDetails.address.country}
+                  </p>
+                ) : (
+                  <p>Address information is not available.</p> // Fallback message if address is undefined
+                )}
               </>
             ) : (
               <p>Loading account details...</p>
