@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchCartItemsFromLocalStorage } from "../services/api"; 
+import { fetchCartItems } from "../services/api";
+import { Product } from "../utiles/types";
 
-interface Product {
+interface CartItem {
   id: number;
-  name: string;
-  price: number;
-  image: string;
-  description: string;
+  quantity: number;
+  product: Product;
   size: string;
-  quantity: number; // Added quantity field
 }
 
 interface CartComponentProps {
@@ -18,60 +16,71 @@ interface CartComponentProps {
 }
 
 const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
-  const [cartProducts, setCartProducts] = useState<Product[]>([]); // Initialize as an empty array
+  const [cartProducts, setCartProducts] = useState<CartItem[]>([]);
   const navigate = useNavigate();
 
   const handleCheckoutNow = () => {
     onClose();
-    navigate("/checkout", {
-      state: { products: cartProducts },
-    });
+    navigate("/checkout", { state: { products: cartProducts } });
   };
+
+  const loadCartItems = async () => {
+    try {
+      const apiCartItems = await fetchCartItems();
+      console.log("Cart Items Loaded:", apiCartItems);
+
+      apiCartItems.forEach((item: CartItem) => {
+        console.log("Product Images:", item.product.product_images);
+      });
+
+      setCartProducts(apiCartItems);
+    } catch (error) {
+      console.error("Failed to load cart items", error);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
-      const fetchedCartProducts: Product[] = fetchCartItemsFromLocalStorage().map((product: Product) => ({
-        ...product,
-        quantity: typeof product.quantity === 'number' && product.quantity > 0 ? product.quantity : 1, // Ensure quantity is valid
-      }));
-      setCartProducts(fetchedCartProducts);
+      loadCartItems();
+      const intervalId = setInterval(loadCartItems, 5000);
+      return () => clearInterval(intervalId);
     }
   }, [isOpen]);
-  
 
-  // Remove product from cart
-  const handleRemove = (productId: number) => {
+  const handleRemove = (productId: number, size: string) => {
     setCartProducts((prev) =>
-      prev.filter((product) => product.id !== productId)
+      prev.filter(
+        (item) => !(item.product.id === productId && item.size === size)
+      )
     );
   };
 
-  // Update product quantity in cart
-// Update product quantity in cart
-const handleUpdateQuantity = (productId: number, change: number) => {
-  setCartProducts((prev) =>
-    prev.map((product) =>
-      product.id === productId
-        ? { 
-            ...product, 
-            quantity: Math.max(1, (product.quantity || 1) + change) // Ensure quantity is a valid number and never less than 1
-          }
-        : product
-    )
+  const handleUpdateQuantity = (
+    productId: number,
+    size: string,
+    change: number
+  ) => {
+    setCartProducts((prev) =>
+      prev.map((item) =>
+        item.product.id === productId && item.size === size
+          ? {
+              ...item,
+              quantity: Math.max(1, item.quantity + change),
+            }
+          : item
+      )
+    );
+  };
+
+  const totalAmount = cartProducts.reduce(
+    (total, item) => total + item.product.price * item.quantity, // Directly use price
+    0
   );
-};
 
-  const totalAmount =
-    cartProducts.reduce(
-      (total, product) =>
-        total +
-        (typeof product.price === "number"
-          ? product.price * product.quantity
-          : 0),
-      0
-    ) || 0;
-
-  const totalQuantity =
-    cartProducts.reduce((total, product) => total + product.quantity, 0) || 0; // Calculate total quantity
+  const totalQuantity = cartProducts.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
   return (
     <>
@@ -86,7 +95,6 @@ const handleUpdateQuantity = (productId: number, change: number) => {
           isOpen ? "translate-x-0" : "translate-x-full"
         } h-full z-50 flex flex-col`}
       >
-        {/* Cart Header */}
         <div className="p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Your Cart</h2>
           <button
@@ -98,51 +106,61 @@ const handleUpdateQuantity = (productId: number, change: number) => {
         </div>
         <hr className="my-2 border-gray-300" />
 
-        {/* Product List Section */}
         {cartProducts.length === 0 ? (
           <p>Your cart is empty.</p>
         ) : (
           <div className="flex-grow p-4 overflow-y-auto max-h-full">
             <ul>
-              {cartProducts.map((product) => (
+              {cartProducts.map((item, index) => (
                 <li
-                  key={product.id}
+                  key={`cart-item-${item.product.id}-${item.size}-${index}`}
                   className="flex items-start justify-between border-b py-2"
                 >
                   <div className="flex">
                     <img
-                      src={product.image}
-                      alt={product.name}
+                      src={
+                        item.product.product_images &&
+                        item.product.product_images.length > 0
+                          ? item.product.product_images[0].image
+                          : "fallback-image-url.jpg"
+                      }
+                      alt={item.product.name}
                       className="w-16 h-16 object-cover mr-4"
                     />
                     <div className="text-left">
-                      <h3 className="font-medium">{product.name}</h3>
+                      <h3 className="font-medium">{item.product.name}</h3>
                       <p className="text-gray-600">
-                        Price: ${product.price.toFixed(2)}
+                        Price: $
+                        {(item.product.price * item.quantity).toFixed(2)}{" "}
+                        {/* Convert price for display */}
                       </p>
+
+                      <p className="text-sm text-gray-500">Size: {item.size}</p>
                       <p className="text-sm text-gray-500">
-                        Size: {product.size}
+                        Quantity: {item.quantity}
                       </p>
-                      <p className="text-sm text-gray-500">
-                        Quantity: {product.quantity}
-                      </p>
-                      {/* Show quantity */}
                       <div className="flex items-center mt-2 gap-2">
                         <button
-                          onClick={() => handleUpdateQuantity(product.id, -1)}
+                          onClick={() =>
+                            handleUpdateQuantity(item.product.id, item.size, -1)
+                          }
                           className="border rounded px-2 py-1 bg-gray-200"
-                          disabled={product.quantity <= 1} // Prevent negative quantity
+                          disabled={item.quantity <= 1}
                         >
                           -
                         </button>
                         <button
-                          onClick={() => handleUpdateQuantity(product.id, 1)}
+                          onClick={() =>
+                            handleUpdateQuantity(item.product.id, item.size, 1)
+                          }
                           className="border rounded px-2 py-1 bg-gray-200"
                         >
                           +
                         </button>
                         <button
-                          onClick={() => handleRemove(product.id)}
+                          onClick={() =>
+                            handleRemove(item.product.id, item.size)
+                          }
                           className="text-red-500 hover:underline ml-4"
                         >
                           Remove
@@ -156,7 +174,6 @@ const handleUpdateQuantity = (productId: number, change: number) => {
           </div>
         )}
 
-        {/* Total and Checkout Section (Fixed at the bottom) */}
         <div className="p-4 bg-gray-100 border-t mt-auto text-left">
           <div className="flex justify-between">
             <h3 className="font-medium">Total Quantity:</h3>

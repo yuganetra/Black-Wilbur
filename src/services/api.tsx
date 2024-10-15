@@ -1,16 +1,11 @@
 import axios from "axios";
-import {
-  Category,
-  Product,
-  AuthUser,
-} from "../utiles/types";
+import { Category, Product, AuthUser } from "../utiles/types";
 
-const API_BASE_URL = "http://127.0.0.1:5000/";
+const API_BASE_URL = "http://localhost:5000/";
 
 const getAuthToken = () => {
-  return localStorage.getItem('authToken');
+  return localStorage.getItem("authToken");
 };
-
 
 export const fetchCategories = async (): Promise<Category[]> => {
   const response = await axios.get<Category[]>(`${API_BASE_URL}categories`);
@@ -70,8 +65,8 @@ export const loginUser = async (loginData: AuthUser): Promise<any> => {
     });
 
     // Store the access token and refresh token
-    localStorage.setItem('authToken', response.data.access_token);
-    localStorage.setItem('refreshToken', response.data.refresh_token);
+    localStorage.setItem("authToken", response.data.access_token);
+    localStorage.setItem("refreshToken", response.data.refresh_token);
 
     return response.data.user; // Return user data for convenience
   } catch (error) {
@@ -82,4 +77,81 @@ export const loginUser = async (loginData: AuthUser): Promise<any> => {
     }
     throw new Error("An unexpected error occurred");
   }
+};
+
+export const fetchCartItems = async () => {
+  const token = getAuthToken(); 
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  const response = await axios.get(`${API_BASE_URL}cart`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const addToCart = async (productId: number, productVariationId: number, quantity: number) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  const response = await axios.post(
+    `${API_BASE_URL}/cart`,
+    {
+      product_id: productId,
+      product_variation_id: productVariationId, 
+      quantity: quantity,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+      },
+    }
+  );
+  return response.data; 
+};
+
+
+export const updateCartItem = async (
+  cartItemId: number,
+  newQuantity: number
+) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  const response = await axios.put(
+    `${API_BASE_URL}cart/${cartItemId}`,
+    {
+      quantity: newQuantity,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data; 
+};
+
+export const removeFromCart = async (cartItemId: number) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  const response = await axios.delete(
+    `${API_BASE_URL}cart/${cartItemId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data; 
 };

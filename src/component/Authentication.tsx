@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { registerUser,loginUser } from "../services/api";
+import { registerUser,loginUser, fetchCartItems } from "../services/api";
 import { AuthUser } from "../utiles/types";
 
 const Authentication: React.FC = () => {
@@ -79,15 +79,20 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
   };
 
   try {
-    console.log(credentials)
-      const response = await loginUser(credentials);
-      
-      localStorage.setItem('user', JSON.stringify(response));
+    console.log(credentials);
+    const response = await loginUser(credentials);
+    
+    // Store user data in local storage
+    localStorage.setItem('user', JSON.stringify(response));
 
-      setSuccessMessage("Login successful!");
-      navigate('/user-profile'); 
+    // Fetch the user's cart and store it in local storage
+    const cartItems = fetchCartItems(); // Make sure fetchCart is defined in your API file
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+
+    setSuccessMessage("Login successful!");
+    navigate('/user-profile'); 
   } catch (error) {
-      setApiError("Invalid credentials. Please check your email and password.");
+    setApiError("Invalid credentials. Please check your email and password.");
   }
 };
 
@@ -278,3 +283,4 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
 };
 
 export default Authentication;
+
