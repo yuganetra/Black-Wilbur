@@ -36,6 +36,8 @@ class SearchProductSerializer(serializers.Serializer):
 class AddToCartSerializer(serializers.Serializer):
     product_id = serializers.IntegerField(required=True)
     product_variation_id = serializers.IntegerField(required=True)
+    quantity = serializers.IntegerField(default=1)  
+
 
 class EditQuantitySerializer(serializers.Serializer):
     cart_item_id = serializers.IntegerField(required=True)

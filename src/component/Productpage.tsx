@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { IoIosStar } from "react-icons/io";
 import CartComponent from "./Cart";
 import SizeChart from "../utiles/SizeChart";
-import { fetchProductById, fetchExplore } from "../services/api";
+import { fetchProductById, fetchExplore, addToCart } from "../services/api";
 import { Product, ProductVariation } from "../utiles/types";
 import Skeleton from "../utiles/Skeleton";
 
@@ -45,19 +45,24 @@ const Productpage = () => {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product && selectedSize) {
-      const productToAdd = { ...product, size: selectedSize.size };
-
-      // Save to local storage
-      const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      existingCart.push(productToAdd);
-      localStorage.setItem("cart", JSON.stringify(existingCart));
-
-      // Optionally, you can open the cart sidebar after adding the product
-      setIsCartOpen(true);
+      const productToAdd = { 
+        product_id: product.id,  // Ensure this matches the ID used in your API
+        product_variation_id: selectedSize.id,  // Add the selected size ID here
+        quantity: 1,  // You can adjust this as needed
+      };
+  
+      try {
+        // Call the API function to add the product to the cart
+        await addToCart(productToAdd.product_id, productToAdd.product_variation_id, productToAdd.quantity);
+        setIsCartOpen(true);
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+      }
     }
   };
+  
 
   useEffect(() => {
     const fetchData = async () => {

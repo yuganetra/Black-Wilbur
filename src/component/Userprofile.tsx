@@ -4,10 +4,8 @@ import { useNavigate } from "react-router-dom";
 const Userprofile: React.FC = () => {
   const navigate = useNavigate();
 
-  // State to hold account details
   const [accountDetails, setAccountDetails] = useState<any | null>(null);
 
-  // Orders remain the same
   const orders = [
     {
       id: 1,
@@ -28,12 +26,11 @@ const Userprofile: React.FC = () => {
     },
   ];
 
-  // Fetch user account details from local storage
   useEffect(() => {
     const fetchAccountDetails = () => {
       const userInfo = localStorage.getItem("user");
       if (userInfo) {
-        setAccountDetails(JSON.parse(userInfo)); // Parse and set account details from local storage
+        setAccountDetails(JSON.parse(userInfo));
       }
     };
 
@@ -43,7 +40,9 @@ const Userprofile: React.FC = () => {
   // Handle logout
   const handleLogout = () => {
     console.log("User logged out");
-    localStorage.removeItem("user"); // Remove user info on logout
+    localStorage.removeItem("user");
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     navigate("/auth/login");
   };
 
