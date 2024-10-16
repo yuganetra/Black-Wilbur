@@ -1,5 +1,9 @@
 
 from django.contrib import admin
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from django.urls import path
 
 from blackwilbur import views
@@ -15,5 +19,8 @@ urlpatterns = [
     path('cart', views.CartAPIView.as_view()),
     path('products/<product_id>', views.ProductDetailAPIView.as_view()),
     path('login', views.LoginAPIView.as_view()),
-    path('register',views.RegisterAPIView.as_view())
+    path('register', views.RegisterAPIView.as_view()),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
 ]

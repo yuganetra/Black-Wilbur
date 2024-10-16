@@ -48,17 +48,38 @@ const Productpage = () => {
   const handleAddToCart = async () => {
     if (product && selectedSize) {
       const productToAdd = { 
-        product_id: product.id,  // Ensure this matches the ID used in your API
-        product_variation_id: selectedSize.id,  // Add the selected size ID here
-        quantity: 1,  // You can adjust this as needed
+        product_id: product.id,  
+        product_variation_id: selectedSize.id, 
+        quantity: 1,  
       };
   
-      try {
-        // Call the API function to add the product to the cart
-        await addToCart(productToAdd.product_id, productToAdd.product_variation_id, productToAdd.quantity);
+      const user = localStorage.getItem("user");
+  
+      if (!user) {
+        console.log("User is not logged in. Adding product to localStorage cart.");
+  
+        const cartString = localStorage.getItem("cart");
+        let existingCart = cartString ? JSON.parse(cartString) : [];
+  
+        if (!Array.isArray(existingCart)) {
+          console.error("Existing cart is not an array. Initializing a new cart.");
+          existingCart = []; 
+        }
+  
+        existingCart.push(productToAdd);
+  
+        localStorage.setItem("cart", JSON.stringify(existingCart));
+  
         setIsCartOpen(true);
-      } catch (error) {
-        console.error("Error adding to cart:", error);
+        console.log("Product added to local storage cart:", productToAdd);
+      } else {
+        try {
+          await addToCart(productToAdd.product_id, productToAdd.product_variation_id, productToAdd.quantity);
+          setIsCartOpen(true);
+          console.log("Product added to API cart:", productToAdd);
+        } catch (error) {
+          console.error("Error adding to cart:", error);
+        }
       }
     }
   };

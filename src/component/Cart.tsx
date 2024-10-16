@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchCartItems } from "../services/api";
+import {
+  fetchCartItems,
+  fetchProductById,
+  getCartItemsCount,
+  isUserLoggedIn,
+  removeFromCart,
+  updateCartItem,
+} from "../services/api";
 import { Product } from "../utiles/types";
 
 interface CartItem {
@@ -19,19 +26,55 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   const [cartProducts, setCartProducts] = useState<CartItem[]>([]);
   const navigate = useNavigate();
 
-  const handleCheckoutNow = () => {
-    onClose();
-    navigate("/checkout", { state: { products: cartProducts } });
+  const handleCheckoutNavigate = async () => {
+    const cartCount = getCartItemsCount();
+    if ((await cartCount) === 0) {
+      alert("Please add products to the cart before proceeding to checkout.");
+    } else {
+      if (isUserLoggedIn()) {
+        onClose()
+        navigate("/checkout", { state: { products: cartProducts } });
+      } else {
+        onClose()
+        navigate("/auth/login");
+      }
+    }
   };
 
   const loadCartItems = async () => {
     try {
+      if (!isUserLoggedIn()) {
+        console.log("User is not logged in. Fetching cart from localStorage.");
+        const existingCartString = localStorage.getItem("cart");
+      
+        if (existingCartString && existingCartString !== "[]") {
+          const existingCart = JSON.parse(existingCartString);
+          const validCart: CartItem[] = await Promise.all(
+            existingCart.map(async (item: {product:Product, product_id: number; quantity: any; product_variation_id: any; }) => {
+              const productDetails = await fetchProductById(item.product.id);
+              if (productDetails) {
+                return {
+                  id: item.product_id,
+                  quantity: item.quantity,
+                  product: productDetails,
+                  size: item.product_variation_id || "Default Size",
+                };
+              }
+              return null; 
+            })
+          );
+      
+          setCartProducts(validCart.filter((item) => item !== null));
+          console.log("Cart loaded from localStorage:", validCart);
+        } else {
+          console.log("No cart found in localStorage.");
+          setCartProducts([]); 
+        }
+        return; 
+      }
+      
       const apiCartItems = await fetchCartItems();
       console.log("Cart Items Loaded:", apiCartItems);
-
-      apiCartItems.forEach((item: CartItem) => {
-        console.log("Product Images:", item.product.product_images);
-      });
 
       setCartProducts(apiCartItems);
     } catch (error) {
@@ -47,33 +90,53 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  const handleRemove = (productId: number, size: string) => {
-    setCartProducts((prev) =>
-      prev.filter(
+  const handleRemove = (cartItemId: number, productId: number, size: string) => {
+    setCartProducts((prev) => {
+      const updatedCart = prev.filter(
         (item) => !(item.product.id === productId && item.size === size)
-      )
-    );
+      );  
+      removeFromCart(cartItemId)
+        .catch((error) => {
+          console.error("Error removing item from cart:", error);
+        });
+  
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+  
+      return updatedCart; 
+    });
   };
+  
 
-  const handleUpdateQuantity = (
-    productId: number,
-    size: string,
-    change: number
-  ) => {
+  const handleUpdateQuantity = async (cartItemId: number, change: number) => {
     setCartProducts((prev) =>
-      prev.map((item) =>
-        item.product.id === productId && item.size === size
-          ? {
-              ...item,
-              quantity: Math.max(1, item.quantity + change),
-            }
-          : item
-      )
+      prev.map((item) => {
+        if (item.id === cartItemId) {
+          const newQuantity = Math.max(1, item.quantity + change);
+          console.log(newQuantity);
+  
+          updateCartItem(cartItemId, newQuantity)
+            .catch((error) => {
+              console.error("Error updating cart item:", error);
+              setCartProducts((prev) =>
+                prev.map((item) =>
+                  item.id === cartItemId ? { ...item, quantity: item.quantity } : item
+                )
+              );
+            });
+  
+          return {
+            ...item,
+            quantity: newQuantity,
+          };
+        }
+        return item;
+      })
     );
   };
-
+  
+  
   const totalAmount = cartProducts.reduce(
-    (total, item) => total + item.product.price * item.quantity, // Directly use price
+    (total, item) => total + item.product.price * item.quantity,
     0
   );
 
@@ -81,7 +144,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     (total, item) => total + item.quantity,
     0
   );
-
   return (
     <>
       {isOpen && (
@@ -95,6 +157,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
           isOpen ? "translate-x-0" : "translate-x-full"
         } h-full z-50 flex flex-col`}
       >
+        {/* Cart Header */}
         <div className="p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Your Cart</h2>
           <button
@@ -119,9 +182,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                   <div className="flex">
                     <img
                       src={
-                        item.product.product_images &&
-                        item.product.product_images.length > 0
-                          ? item.product.product_images[0].image
+                        item.product.product_images?.length > 0
+                          ? item.product.product_images[0]?.image // Optional chaining here
                           : "fallback-image-url.jpg"
                       }
                       alt={item.product.name}
@@ -131,10 +193,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                       <h3 className="font-medium">{item.product.name}</h3>
                       <p className="text-gray-600">
                         Price: $
-                        {(item.product.price * item.quantity).toFixed(2)}{" "}
-                        {/* Convert price for display */}
+                        {(item.product.price * item.quantity).toFixed(2)}
                       </p>
-
                       <p className="text-sm text-gray-500">Size: {item.size}</p>
                       <p className="text-sm text-gray-500">
                         Quantity: {item.quantity}
@@ -142,7 +202,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                       <div className="flex items-center mt-2 gap-2">
                         <button
                           onClick={() =>
-                            handleUpdateQuantity(item.product.id, item.size, -1)
+                            handleUpdateQuantity(item.id, -1)
                           }
                           className="border rounded px-2 py-1 bg-gray-200"
                           disabled={item.quantity <= 1}
@@ -151,7 +211,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                         </button>
                         <button
                           onClick={() =>
-                            handleUpdateQuantity(item.product.id, item.size, 1)
+                            handleUpdateQuantity(item.id, 1)
                           }
                           className="border rounded px-2 py-1 bg-gray-200"
                         >
@@ -159,7 +219,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                         </button>
                         <button
                           onClick={() =>
-                            handleRemove(item.product.id, item.size)
+                            handleRemove(item.id,item.product.id, item.size)
                           }
                           className="text-red-500 hover:underline ml-4"
                         >
@@ -185,7 +245,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
           </div>
           <button
             className="w-full mt-4 bg-black text-white py-2 rounded hover:bg-gray-600 transition-colors"
-            onClick={handleCheckoutNow}
+            onClick={handleCheckoutNavigate}
           >
             Checkout
           </button>

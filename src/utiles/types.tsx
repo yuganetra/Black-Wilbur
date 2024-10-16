@@ -2,6 +2,9 @@ export interface Category {
     id: number,
     name: string
 }
+// Example of a response type for an array of products
+export type ProductResponse = Product[];
+
 export interface productImage{
     id:number, 
     image:string,   
