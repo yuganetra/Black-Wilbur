@@ -42,6 +42,3 @@ class AddToCartSerializer(serializers.Serializer):
 class EditQuantitySerializer(serializers.Serializer):
     cart_item_id = serializers.IntegerField(required=True)
     quantity = serializers.IntegerField(required=True)
-
-class EditQuantitySerializer(serializers.Serializer):
-    cart_item_id = serializers.IntegerField(required=True)
