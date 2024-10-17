@@ -178,7 +178,6 @@ export const updateCartItem = async (cartItemId: number, newQuantity: number) =>
   if (!token) {
     throw new Error("No access token found");
   }
-
   const response = await axiosInstance.put(`${API_BASE_URL}cart/${cartItemId}`, {
     quantity: newQuantity,
   }, {
