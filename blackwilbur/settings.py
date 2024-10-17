@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  
+    "http://localhost:3000",  
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -76,7 +76,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'blackwilbur',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': 'Mysqlkimakichu@1269',
         'HOST': 'localhost',
         'PORT': '3306',
     }

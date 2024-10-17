@@ -22,24 +22,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route
-            path="/collection"
-            element={<Collection category="collection" />}
-          />
-          <Route
-            path="/oversize"
-            element={<Collection category="oversize" />}
-          />
-          <Route
-            path="/round-neck"
-            element={<Collection category="round-neck" />}
-          />
-          <Route
-            path="/hoodie"
-            element={<Collection category="hoodie" />}
-          />
-          <Route path="/polo" element={<Collection category="polo" />} />
-          <Route path="/knitted" element={<Collection category="knitted" />} />
+          <Route path="/collection/:category?" element={<Collection />} />
           <Route path="/product/:id" element={<Productpage />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/about-us/:section?" element={<AboutUs />} />

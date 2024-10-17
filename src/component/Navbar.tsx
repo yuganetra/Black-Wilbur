@@ -4,7 +4,7 @@ import { FaSearch, FaShoppingCart } from "react-icons/fa";
 import { FaCircleUser } from "react-icons/fa6";
 import logo from "../asset/white-logo.svg";
 import SidebarMenu from "./Sidebar-Menu";
-import CartComponent from "./Cart"; 
+import CartComponent from "./Cart";
 import Searchbar from "./Searchbar";
 import { useNavigate } from "react-router-dom";
 import { fetchCategories } from "../services/api";
@@ -14,7 +14,7 @@ const Navbar: React.FC = (): JSX.Element => {
   const [sidebar, setSidebar] = useState<boolean>(false);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
-  const [categories, setCategories] = useState<Category[]>([]); 
+  const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
 
   const toggleSidebar = (): void => {
@@ -26,15 +26,15 @@ const Navbar: React.FC = (): JSX.Element => {
   };
 
   const checkUserInfo = (): boolean => {
-    const userInfo = localStorage.getItem('user');
-    return userInfo !== null; 
+    const userInfo = localStorage.getItem("user");
+    return userInfo !== null;
   };
 
   const handleUserProfileNavigate = () => {
     if (checkUserInfo()) {
-      navigate("/user-profile"); 
+      navigate("/user-profile");
     } else {
-      navigate("/auth/login"); 
+      navigate("/auth/login");
     }
   };
 
@@ -50,14 +50,14 @@ const Navbar: React.FC = (): JSX.Element => {
     const fetchData = async () => {
       try {
         const fetchedCategories = await fetchCategories();
-        setCategories(fetchedCategories); 
+        setCategories(fetchedCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
 
     fetchData();
-  }, []); 
+  }, []);
 
   return (
     <>
@@ -66,10 +66,7 @@ const Navbar: React.FC = (): JSX.Element => {
           {/* For Large Screens */}
           <div className="hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-2 border-white">
             <div className="flex items-center space-x-4">
-              <MdMenu
-                className="text-4xl cursor-pointer"
-                onClick={toggleSidebar}
-              />
+              <MdMenu className="text-4xl cursor-pointer" onClick={toggleSidebar} />
               <Searchbar />
             </div>
 
@@ -85,10 +82,7 @@ const Navbar: React.FC = (): JSX.Element => {
                 onClick={handleUserProfileNavigate} // Update the onClick handler
                 className="text-2xl cursor-pointer"
               />
-              <FaShoppingCart
-                onClick={toggleCartSidebar}
-                className="text-2xl cursor-pointer"
-              />
+              <FaShoppingCart onClick={toggleCartSidebar} className="text-2xl cursor-pointer" />
             </div>
           </div>
 
@@ -105,9 +99,9 @@ const Navbar: React.FC = (): JSX.Element => {
             {/* Dynamic Category Buttons */}
             {categories.map((category) => (
               <button
-                key={category.id} 
+                key={category.id}
                 onClick={() =>
-                  handleNavigate(`/${category.name.toLowerCase().replace(/ /g, "-")}`)
+                  handleNavigate(`/collection/${category.name.toLowerCase().replace(/ /g, "-")}`)
                 }
                 className="relative text-sm font-semibold px-4 py-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-0.5 after:bg-white after:transform after:scale-x-0 after:origin-right hover:after:scale-x-100 hover:after:origin-left after:transition-transform after:duration-300"
               >
@@ -130,18 +124,12 @@ const Navbar: React.FC = (): JSX.Element => {
             <button onClick={handleSearchIconClick} className="text-lg">
               <FaSearch />
             </button>
-            <FaShoppingCart
-              onClick={toggleCartSidebar}
-              className="text-lg cursor-pointer"
-            />
+            <FaShoppingCart onClick={toggleCartSidebar} className="text-lg cursor-pointer" />
             <FaCircleUser
               onClick={handleUserProfileNavigate} // Update the onClick handler
               className="text-lg cursor-pointer"
             />
-            <MdMenu
-              className="text-2xl cursor-pointer pr-2"
-              onClick={toggleSidebar}
-            />
+            <MdMenu className="text-2xl cursor-pointer pr-2" onClick={toggleSidebar} />
           </div>
         </div>
         {showSearchBar && (

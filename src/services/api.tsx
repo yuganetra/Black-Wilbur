@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Category, Product, AuthUser } from "../utiles/types";
 
-const API_BASE_URL = "http://localhost:5000/";
+const API_BASE_URL = "http://localhost:8000/";
 
 const getAuthToken = () => {
   return localStorage.getItem("authToken");
@@ -18,15 +18,24 @@ export const fetchBestSeller = async (): Promise<Product[]> => {
 };
 
 export const fetchProductById = async (productId: number): Promise<Product> => {
-  const response = await axios.get<Product>(
-    `${API_BASE_URL}products/${productId}`
-  );
+  const response = await axios.get<Product>(`${API_BASE_URL}products/${productId}`);
   return response.data;
 };
 
 export const fetchExplore = async (): Promise<Product[]> => {
   const response = await axios.get<Product[]>(`${API_BASE_URL}explore`);
   return response.data;
+};
+
+export const fetchCollection = async (): Promise<Product[]> => {
+  const response = await axios.get<Product[]>(`${API_BASE_URL}collections`);
+  return response.data;
+};
+
+export const fetchAllCollection = async (): Promise<Product[]> => {
+  const response = await axios.get<Product[]>(`${API_BASE_URL}collections`);
+  const data = response.data;
+  return data;
 };
 
 export const fetchCartItemsFromLocalStorage = () => {
@@ -51,9 +60,7 @@ export const registerUser = async (userData: AuthUser): Promise<any> => {
 
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      `Registration failed: ${error.response?.data?.message || error.message}`
-    );
+    throw new Error(`Registration failed: ${error.response?.data?.message || error.message}`);
   }
 };
 
@@ -71,16 +78,14 @@ export const loginUser = async (loginData: AuthUser): Promise<any> => {
     return response.data.user; // Return user data for convenience
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(
-        `Login failed: ${error.response?.data?.message || error.message}`
-      );
+      throw new Error(`Login failed: ${error.response?.data?.message || error.message}`);
     }
     throw new Error("An unexpected error occurred");
   }
 };
 
 export const fetchCartItems = async () => {
-  const token = getAuthToken(); 
+  const token = getAuthToken();
   if (!token) {
     throw new Error("No access token found");
   }
@@ -93,7 +98,11 @@ export const fetchCartItems = async () => {
   return response.data;
 };
 
-export const addToCart = async (productId: number, productVariationId: number, quantity: number) => {
+export const addToCart = async (
+  productId: number,
+  productVariationId: number,
+  quantity: number
+) => {
   const token = getAuthToken();
   if (!token) {
     throw new Error("No access token found");
@@ -103,23 +112,19 @@ export const addToCart = async (productId: number, productVariationId: number, q
     `${API_BASE_URL}/cart`,
     {
       product_id: productId,
-      product_variation_id: productVariationId, 
+      product_variation_id: productVariationId,
       quantity: quantity,
     },
     {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${token}`,
       },
     }
   );
-  return response.data; 
+  return response.data;
 };
 
-
-export const updateCartItem = async (
-  cartItemId: number,
-  newQuantity: number
-) => {
+export const updateCartItem = async (cartItemId: number, newQuantity: number) => {
   const token = getAuthToken();
   if (!token) {
     throw new Error("No access token found");
@@ -136,7 +141,7 @@ export const updateCartItem = async (
       },
     }
   );
-  return response.data; 
+  return response.data;
 };
 
 export const removeFromCart = async (cartItemId: number) => {
@@ -145,13 +150,10 @@ export const removeFromCart = async (cartItemId: number) => {
     throw new Error("No access token found");
   }
 
-  const response = await axios.delete(
-    `${API_BASE_URL}cart/${cartItemId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data; 
+  const response = await axios.delete(`${API_BASE_URL}cart/${cartItemId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
 };

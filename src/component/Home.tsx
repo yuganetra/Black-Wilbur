@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import carousel1 from "../asset/chpp-carousel.jpg";
-import videoSrc from "../asset/homepage-vid.mp4";
+import videoSrc from "../asset/homepage-vid.MOV";
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
 import { Product } from "../utiles/types";
@@ -9,9 +9,8 @@ import { Product } from "../utiles/types";
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const productRef = useRef<HTMLDivElement | null>(null);
-  const [bestseller, setBestSeller] = useState<Product[]>([]); 
+  const [bestseller, setBestSeller] = useState<Product[]>([]);
   const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
-
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -32,7 +31,7 @@ const Home: React.FC = () => {
     const fetchData = async () => {
       try {
         const fetchedCategories = await fetchBestSeller();
-        setBestSeller(fetchedCategories); 
+        setBestSeller(fetchedCategories);
         const fetchedExplore = await fetchExplore();
         setExploreProducts(fetchedExplore);
       } catch (error) {
@@ -41,7 +40,7 @@ const Home: React.FC = () => {
     };
 
     fetchData();
-  }, []); 
+  }, []);
 
   return (
     <>
@@ -69,73 +68,77 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-{/* Best Sellers Section */}
-<section className="py-16 bg-[#1B1B1B] w-full relative overflow-x-hidden">
-  <div className="container mx-auto px-4 sm:px-8">
-    <h2 className="ml-8 text-4xl lg:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
-      Our Bestsellers
-    </h2>
+      {/* Best Sellers Section */}
+      <section className="py-16 bg-[#1B1B1B] w-full relative overflow-x-hidden">
+        <div className="container mx-auto px-4 sm:px-8">
+          <h2 className="ml-8 text-4xl lg:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
+            Our Bestsellers
+          </h2>
 
-    <div className="flex items-center">
-      <button
-        onClick={scrollLeft}
-        className="hidden md:block text-white bg-black rounded-full p-2 mr-2 hover:bg-gray-800 transition"
-      >
-        &lt;
-      </button>
-      <div
-        ref={productRef}
-        className="flex gap-2 overflow-x-auto w-full snap-x snap-mandatory"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {bestseller.map((bestseller) => {
-                    const productImages = bestseller.product_images; // Correct property name
-                    const imageSrc = productImages.length > 0 ? productImages[0].image : 'default-image-url.jpg'; // Fallback to a default image
+          <div className="flex items-center">
+            <button
+              onClick={scrollLeft}
+              className="hidden md:block text-white bg-black rounded-full p-2 mr-2 hover:bg-gray-800 transition"
+            >
+              &lt;
+            </button>
+            <div
+              ref={productRef}
+              className="flex gap-2 overflow-x-auto w-full snap-x snap-mandatory"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {bestseller.map((bestseller) => {
+                const productImages = bestseller.product_images; // Correct property name
+                const imageSrc =
+                  productImages.length > 0 ? productImages[0].image : "default-image-url.jpg"; // Fallback to a default image
 
-                    return (
-                        <div
-                            key={bestseller.id}
-                            className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center snap-start"
-                            style={{ height: "100vh" }}
-                        >
-                            <img
-                                className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                                onClick={() => handleNavigate(`/Product/${bestseller.id}`)}
-                                src={imageSrc}
-                                alt={bestseller.name}
-                            />
-                            <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
-                                {bestseller.name.toUpperCase()}
-                            </div>
-                            <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
-                                {bestseller.price} rs
-                            </div>
-                        </div>
-                    );
-                })}
+                return (
+                  <div
+                    key={bestseller.id}
+                    className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center snap-start"
+                    style={{ height: "100vh" }}
+                  >
+                    <img
+                      className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
+                      onClick={() => handleNavigate(`/Product/${bestseller.id}`)}
+                      src={imageSrc}
+                      alt={bestseller.name}
+                    />
+                    <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
+                      {bestseller.name.toUpperCase()}
+                    </div>
+                    <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
+                      {bestseller.price} rs
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-      <button
-        onClick={scrollRight}
-        className="hidden md:block text-white bg-black rounded-full p-2 ml-2 hover:bg-gray-800 transition"
-      >
-        &gt;
-      </button>
-    </div>
-  </div>
-</section>
-
+            <button
+              onClick={scrollRight}
+              className="hidden md:block text-white bg-black rounded-full p-2 ml-2 hover:bg-gray-800 transition"
+            >
+              &gt;
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Video Section */}
       <section className="py-16 bg-[#1B1B1B]">
         <div className="container mx-auto px-4 md:px-6 text-center">
-          <div className="relative">
+          <div className="relative w-full h-[90vh] overflow-hidden">
             <video
               src={videoSrc}
               autoPlay
               loop
               muted
-              className="w-full max-w-full"
-              style={{ height: "100vh", objectFit: "cover" }}
+              className="absolute top-1/2 left-1/2 w-[100vh] h-auto max-w-none"
+              style={{
+                objectFit: "contain", // Maintain aspect ratio and fit within the container
+                transform: "translate(-50%, -50%) rotate(270deg)", // Center and rotate the video
+                transformOrigin: "center", // Rotate around the center
+              }}
             >
               Your browser does not support the video tag.
             </video>
