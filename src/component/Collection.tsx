@@ -1,59 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AiOutlineLeft, AiOutlinePlus, AiOutlineRight } from "react-icons/ai";
 import { MdClose, MdFilterList } from "react-icons/md";
 import img from "../asset/collection-carousel.jpg";
-import Tshirt from "../asset/black-tees.jpg";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { fetchAllCollection } from "../services/api";
+import { Product } from "../utiles/types";
 
-// Temp Product array without T-shirts
-const products = [
-  { id: 5, category: "knitted", name: "Knitted", price: "300", image: Tshirt, size: "small" },
-  { id: 6, category: "knitted", name: "Knitted", price: "1000", image: Tshirt, size: "medium" },
-  { id: 7, category: "knitted", name: "Knitted", price: "3000", image: Tshirt, size: "large" },
-  { id: 8, category: "knitted", name: "Knitted", price: "5000", image: Tshirt, size: "X-large" },
-  { id: 9, category: "polo", name: "Polo", price: "300", image: Tshirt, size: "small" },
-  { id: 10, category: "polo", name: "Polo", price: "1000", image: Tshirt, size: "medium" },
-  { id: 11, category: "polo", name: "Polo", price: "3000", image: Tshirt, size: "large" },
-  { id: 12, category: "polo", name: "Polo", price: "5000", image: Tshirt, size: "X-large" },
-  {
-    id: 13,
-    category: "round-neck",
-    name: "Round Neck",
-    price: "300",
-    image: Tshirt,
-    sizes: [{id : 1, size:"S"}]
-  },
-  {
-    id: 14,
-    category: "round-neck",
-    name: "Round Neck",
-    price: "1000",
-    image: Tshirt,
-    sizes: [{id : 1, size:"L"}]
-  },
-  {
-    id: 15,
-    category: "round-neck",
-    name: "Round Neck",
-    price: "3000",
-    image: Tshirt,
-    sizes: [{id : 1, size:"S"}]
-  },
-  {
-    id: 16,
-    category: "round-neck",
-    name: "Round Neck",
-    price: "5000",
-    image: Tshirt,
-    sizes: [{id : 1, size:"M"}]
-  },
-  { id: 17, category: "oversize", name: "Oversize", price: "300", image: Tshirt, size: "small" },
-  { id: 18, category: "oversize", name: "Oversize", price: "1000", image: Tshirt, size: "medium" },
-  { id: 19, category: "oversize", name: "Oversize", price: "3000", image: Tshirt, size: "large" },
-  { id: 20, category: "oversize", name: "Oversize", price: "5000", image: Tshirt, size: "X-large" },
-];
-
-const Collection: React.FC<{ category: string }> = ({ category }) => {
+const Collection: React.FC = () => {
+  const { category = "all" } = useParams<{ category?: string }>();
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const productsPerPage = 9;
@@ -68,26 +22,62 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
   const [showPrice, setShowPrice] = useState(false);
   const [showCategory, setShowCategory] = useState(false);
 
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const fetchProduct = await fetchAllCollection();
+        const formattedProducts = fetchProduct.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          category: item.category,
+          product_images: item.product_images.map((img: any) => ({
+            id: img.id,
+            image: img.image,
+            product_id: img.product_id,
+          })),
+          description: item.description || "",
+          sizes: item.sizes.map((size: any) => ({
+            id: size.id,
+            size: size.size,
+          })),
+          rating: item.rating || 0,
+        }));
+        setAllProducts(formattedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    setSelectedSizes([]);
+    setSelectedPrice(null);
+    setSelectedCategories([]);
+    setCurrentPage(1);
+  }, [category]);
+
   // Filter products based on selected filters
-  const filteredProducts = products.filter((product) => {
-    // if (category === "collection") return true;
+  const filteredProducts = allProducts.filter((product) => {
+    const trimmedProductCategory = product.category?.name.trim().toLowerCase();
+    const trimmedSelectedCategory = category?.trim().toLowerCase();
 
-    // const matchesCategory = selectedCategories.length
-    //   ? selectedCategories.includes(product.category)
-    //   : product.category === category;
+    const matchesCategory =
+      trimmedSelectedCategory === "collection" || // Allow all products if category is "collection"
+      (trimmedProductCategory && trimmedProductCategory === trimmedSelectedCategory);
 
-    // const matchesSize = selectedSizes.length ? selectedSizes.includes(product.size) : true;
-
-    const matchesCategory = category === "collection" || product.category === category;
-    // Check for size matches
     const matchesSize = selectedSizes.length
-    ? product.sizes?.some((sizeObj) => selectedSizes.includes(sizeObj.size)) ?? true
-    : true;
-  
+      ? product.sizes?.some((sizeObj) => selectedSizes.includes(sizeObj.size)) ?? false
+      : true;
+
     // Price filtering
     let matchesPrice = true;
     if (selectedPrice) {
-      const priceValue = parseInt(product.price, 10);
+      const priceValue = product.price;
       if (selectedPrice === "Below 1000") {
         matchesPrice = priceValue < 1000;
       } else if (selectedPrice === "1000 - 3000") {
@@ -96,23 +86,29 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
         matchesPrice = priceValue > 3000;
       }
     }
+    // Category filtering
+    const matchesSelectedCategories =
+      selectedCategories.length === 0 || selectedCategories.includes(trimmedProductCategory);
 
-    return matchesCategory && matchesSize && matchesPrice;
+    return matchesCategory && matchesSize && matchesPrice && matchesSelectedCategories; // Combine conditions
   });
 
   // Sort filtered products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (selectedPrice === "High to Low") {
-      return parseInt(b.price) - parseInt(a.price);
+      return b.price - a.price;
     } else if (selectedPrice === "Low to High") {
-      return parseInt(a.price) - parseInt(b.price);
+      return a.price - b.price;
     }
     return 0;
   });
 
   const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
   const startIdx = (currentPage - 1) * productsPerPage;
-  const currentProducts = sortedProducts.slice(startIdx, startIdx + productsPerPage);
+  const currentProducts =
+    category === "all"
+      ? allProducts // Use sortedProducts directly if category is "collection"
+      : sortedProducts.slice(startIdx, startIdx + productsPerPage).filter(Boolean);
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
@@ -125,7 +121,6 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
   };
 
   const handleApplyFilters = () => {
-    // Apply selected filters logic here
     console.log("Selected Sizes:", selectedSizes);
     console.log("Selected Price:", selectedPrice);
     console.log("Selected Categories:", selectedCategories);
@@ -138,6 +133,7 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
     setSelectedPrice(null);
     setSelectedCategories([]);
   };
+
   const navigate = useNavigate();
 
   const handleNavigate = (path: string) => {
@@ -192,7 +188,11 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
                 <img
                   className="w-full h-full object-cover cursor-pointer"
                   onClick={() => handleNavigate(`/Product/${product.id}`)}
-                  src={product.image}
+                  src={
+                    product.product_images && product.product_images.length > 0
+                      ? product.product_images[0]?.image
+                      : ""
+                  }
                   alt={product.name}
                 />
                 <div className="absolute bottom-2 left-2 text-[#282828] text-sm font-semibold">
@@ -366,3 +366,4 @@ const Collection: React.FC<{ category: string }> = ({ category }) => {
 };
 
 export default Collection;
+

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import carousel1 from "../asset/chpp-carousel.jpg";
-import videoSrc from "../asset/homepage-vid.mp4";
+import videoSrc from "../asset/homepage-vid.MOV";
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
 import { Product } from "../utiles/types";
@@ -99,15 +99,18 @@ const Home: React.FC = () => {
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {bestseller.map((bestseller) => {
+
                 const productImages = bestseller.product_images;
                 const imageSrc =
                   productImages.length > 0
                     ? productImages[0].image
                     : "default-image-url.jpg";
 
+
                 return (
                   <div
                     key={bestseller.id}
+
                     className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex flex-col items-center"
                     style={{ height: "auto" }} 
                   >
@@ -116,6 +119,7 @@ const Home: React.FC = () => {
                       onClick={() =>
                         handleNavigate(`/Product/${bestseller.id}`)
                       }
+
                       src={imageSrc}
                       alt={bestseller.name}
                     />
@@ -125,6 +129,7 @@ const Home: React.FC = () => {
                     <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
                       {bestseller.price} rs
                     </div>
+
                     <button
                       onClick={() => toggleWishlist(bestseller.id)}
                       className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${
@@ -135,6 +140,7 @@ const Home: React.FC = () => {
                     >
                       {wishlist.includes(bestseller.id) ? "♥" : "♡"}
                     </button>
+
                   </div>
                 );
               })}
@@ -152,14 +158,18 @@ const Home: React.FC = () => {
       {/* Video Section */}
       <section className="py-16 bg-[#1B1B1B]">
         <div className="container mx-auto px-4 md:px-6 text-center">
-          <div className="relative">
+          <div className="relative w-full h-[90vh] overflow-hidden">
             <video
               src={videoSrc}
               autoPlay
               loop
               muted
-              className="w-full max-w-full"
-              style={{ height: "100vh", objectFit: "cover" }}
+              className="absolute top-1/2 left-1/2 w-[100vh] h-auto max-w-none"
+              style={{
+                objectFit: "contain", // Maintain aspect ratio and fit within the container
+                transform: "translate(-50%, -50%) rotate(270deg)", // Center and rotate the video
+                transformOrigin: "center", // Rotate around the center
+              }}
             >
               Your browser does not support the video tag.
             </video>

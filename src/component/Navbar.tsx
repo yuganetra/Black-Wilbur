@@ -19,7 +19,9 @@ const Navbar: React.FC = (): JSX.Element => {
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [categories, setCategories] = useState<Category[]>([]);
+
   const [cartItemsCount, setCartItemsCount] = useState<number>(0); // To track cart count
+
   const navigate = useNavigate();
 
   const toggleSidebar = (): void => {
@@ -60,6 +62,7 @@ const Navbar: React.FC = (): JSX.Element => {
         // Fetch the cart count and update state
         const cartCount = await getCartItemsCount(); 
         setCartItemsCount(cartCount);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -73,6 +76,7 @@ const Navbar: React.FC = (): JSX.Element => {
     }, 2000); // Adjust the interval as needed
 
     return () => clearInterval(intervalId); // Cleanup the interval on component unmount
+
   }, []);
 
   return (
@@ -82,10 +86,7 @@ const Navbar: React.FC = (): JSX.Element => {
           {/* For Large Screens */}
           <div className="hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-2 border-white">
             <div className="flex items-center space-x-4">
-              <MdMenu
-                className="text-4xl cursor-pointer"
-                onClick={toggleSidebar}
-              />
+              <MdMenu className="text-4xl cursor-pointer" onClick={toggleSidebar} />
               <Searchbar />
             </div>
 
@@ -101,6 +102,7 @@ const Navbar: React.FC = (): JSX.Element => {
                 onClick={handleUserProfileNavigate} // Update the onClick handler
                 className="text-2xl cursor-pointer"
               />
+
               <div className="relative">
                 <FaShoppingCart
                   onClick={toggleCartSidebar}
@@ -110,6 +112,7 @@ const Navbar: React.FC = (): JSX.Element => {
                   {cartItemsCount || 0}
                 </span>
               </div>
+
             </div>
           </div>
 
@@ -128,9 +131,9 @@ const Navbar: React.FC = (): JSX.Element => {
               <button
                 key={category.id}
                 onClick={() =>
-                  handleNavigate(
-                    `/${category.name.toLowerCase().replace(/ /g, "-")}`
-                  )
+
+                  handleNavigate(`/collection/${category.name.toLowerCase().replace(/ /g, "-")}`)
+
                 }
                 className="relative text-sm font-semibold px-4 py-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-0.5 after:bg-white after:transform after:scale-x-0 after:origin-right hover:after:scale-x-100 hover:after:origin-left after:transition-transform after:duration-300"
               >
@@ -153,6 +156,7 @@ const Navbar: React.FC = (): JSX.Element => {
             <button onClick={handleSearchIconClick} className="text-lg">
               <FaSearch />
             </button>
+
             <div className="relative">
               <FaShoppingCart
                 onClick={toggleCartSidebar}
@@ -164,14 +168,12 @@ const Navbar: React.FC = (): JSX.Element => {
                 </span>
               )}
             </div>
+
             <FaCircleUser
               onClick={handleUserProfileNavigate} // Update the onClick handler
               className="text-lg cursor-pointer"
             />
-            <MdMenu
-              className="text-2xl cursor-pointer pr-2"
-              onClick={toggleSidebar}
-            />
+            <MdMenu className="text-2xl cursor-pointer pr-2" onClick={toggleSidebar} />
           </div>
         </div>
         {showSearchBar && (
