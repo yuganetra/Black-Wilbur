@@ -2,7 +2,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { Category, Product, AuthUser, ProductResponse } from "../utiles/types";
 
-const API_BASE_URL = "http://localhost:5000/";
+const API_BASE_URL = "http://localhost:8000/";
 
 // Axios instance for API calls
 const axiosInstance = axios.create({
@@ -14,15 +14,49 @@ const getAuthToken = () => {
   return localStorage.getItem("authToken");
 };
 
+
+export const fetchCategories = async (): Promise<Category[]> => {
+  const response = await axios.get<Category[]>(`${API_BASE_URL}categories`);
+  return response.data;
+};
+
+export const fetchBestSeller = async (): Promise<Product[]> => {
+  const response = await axios.get<Product[]>(`${API_BASE_URL}bestseller`);
+  return response.data;
+};
+
+export const fetchProductById = async (productId: number): Promise<Product> => {
+  const response = await axios.get<Product>(`${API_BASE_URL}products/${productId}`);
+  return response.data;
+
 const getTokenExpiration = (token: string): number => {
   const decoded: { exp: number } = jwtDecode(token);
   return decoded.exp * 1000; // Convert exp to milliseconds
+
 };
 
 const tokenExpiresIn = (token: string): number => {
   const expiration = getTokenExpiration(token);
   return expiration - Date.now(); // Returns time until expiration in milliseconds
 };
+
+
+export const fetchCollection = async (): Promise<Product[]> => {
+  const response = await axios.get<Product[]>(`${API_BASE_URL}collections`);
+  return response.data;
+};
+
+export const fetchAllCollection = async (): Promise<Product[]> => {
+  const response = await axios.get<Product[]>(`${API_BASE_URL}collections`);
+  const data = response.data;
+  return data;
+};
+
+export const fetchCartItemsFromLocalStorage = () => {
+  const storedCart = localStorage.getItem("cart");
+  if (!storedCart) return [];
+
+  const cartItems = JSON.parse(storedCart);
 
 // Request Interceptor for Token Management
 axiosInstance.interceptors.request.use(
@@ -42,6 +76,7 @@ axiosInstance.interceptors.request.use(
       }
     }
 
+
     return config;
   },
   (error) => {
@@ -58,9 +93,7 @@ export const registerUser = async (userData: AuthUser): Promise<any> => {
     );
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      `Registration failed: ${error.response?.data?.message || error.message}`
-    );
+    throw new Error(`Registration failed: ${error.response?.data?.message || error.message}`);
   }
 };
 
@@ -77,13 +110,17 @@ export const loginUser = async (loginData: AuthUser): Promise<any> => {
     return response.data.user;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(
-        `Login failed: ${error.response?.data?.message || error.message}`
-      );
+      throw new Error(`Login failed: ${error.response?.data?.message || error.message}`);
     }
     throw new Error("An unexpected error occurred");
   }
 };
+
+
+export const fetchCartItems = async () => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
 
 export const refreshAuthToken = async (): Promise<string | null> => {
   const refreshToken = localStorage.getItem("refreshToken");
@@ -91,6 +128,7 @@ export const refreshAuthToken = async (): Promise<string | null> => {
   if (!refreshToken) {
     console.error("No refresh token found");
     return null;
+
   }
 
   try {
@@ -119,6 +157,16 @@ export const fetchCategories = async (): Promise<Category[]> => {
   );
   return response.data;
 };
+
+
+export const addToCart = async (
+  productId: number,
+  productVariationId: number,
+  quantity: number
+) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
 
 export const fetchBestSeller = async (): Promise<Product[]> => {
   const response = await axiosInstance.get<Product[]>(
@@ -153,8 +201,59 @@ export const fetchSearchResults = async (
   } catch (error) {
     console.error("Error fetching search results:", error);
     return undefined; // Return undefined in case of error
+
   }
 };
+
+
+  const response = await axios.post(
+    `${API_BASE_URL}/cart`,
+    {
+      product_id: productId,
+      product_variation_id: productVariationId,
+      quantity: quantity,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const updateCartItem = async (cartItemId: number, newQuantity: number) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  const response = await axios.put(
+    `${API_BASE_URL}cart/${cartItemId}`,
+    {
+      quantity: newQuantity,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const removeFromCart = async (cartItemId: number) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  const response = await axios.delete(`${API_BASE_URL}cart/${cartItemId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
 
 // Cart Functions
 export const fetchCartItems = async () => {
@@ -220,4 +319,5 @@ export const removeFromCart = async (cartItemId: number) => {
       cart_item_id: cartItemId,
     },
   });
+
 };
