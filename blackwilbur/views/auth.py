@@ -7,20 +7,29 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 class LoginAPIView(APIView):
     def post(self, request):
+        print("Received request data:", request.data)
+
         serializer = LoginSerializer(data=request.data)
 
         if not serializer.is_valid():
+            print("Serializer errors:", serializer.errors)
             return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        email = serializer.validated_data['email']
+        identifier = serializer.validated_data['identifier']  # Use 'identifier' for login
         password = serializer.validated_data['password']
-        user = authenticate(request, username=email, password=password)
+        print(f"Attempting to authenticate user: {identifier}")
+
+        # Use 'username' field to authenticate with either email or username
+        user = authenticate(request, username=identifier, password=password)
 
         if user is None:
+            print("Authentication failed for user:", identifier)
             return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
         refresh = RefreshToken.for_user(user)
-        
+
+        print("User authenticated successfully:", user.username)
+
         return Response({
             'message': 'Login successful',
             'refresh_token': str(refresh),
@@ -34,13 +43,19 @@ class LoginAPIView(APIView):
             }
         }, status=status.HTTP_200_OK)
 
-
 class RegisterAPIView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            # Structure the error response more clearly
+            errors = serializer.errors  # This contains the validation errors
+            error_response = {
+                'error': {
+                    field: messages for field, messages in errors.items()
+                }
+            }
+            return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.save()
 

@@ -38,7 +38,14 @@ export interface AuthUser {
   password: string;
   password2?: string;
 }
+export interface LoginUser {
+  identifier: string; // Change this to identifier to accept either username or email
+  password: string;
+}
 
+export interface Loginuser{
+
+}
 export interface Address {
   address_line_1: string;
   address_line_2?: string;
@@ -47,4 +54,10 @@ export interface Address {
   country: string;
   zip_code: string;
   phone_number?: string;
+}
+// Define the interface for the error response
+export interface ErrorResponse {
+  error: {
+    [key: string]: string[]; // This indicates that each key can have an array of string messages
+  };
 }

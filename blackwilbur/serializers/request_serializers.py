@@ -27,8 +27,12 @@ class RegisterSerializer(serializers.Serializer):
         return user
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField(required = True)
-    password = serializers.CharField(required = True)
+    identifier = serializers.CharField(required=True) 
+    password = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        # Here you can add any custom validation logic if needed
+        return attrs
 
 class SearchProductSerializer(serializers.Serializer):
     search_term = serializers.CharField()
