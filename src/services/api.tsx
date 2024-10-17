@@ -129,7 +129,7 @@ export const fetchBestSeller = async (): Promise<Product[]> => {
 
 // Product Functions
 export const fetchProductById = async (productId: number): Promise<Product> => {
-  const response = await axiosInstance.get<Product>(
+  const response = await axios.get<Product>(
     `${API_BASE_URL}products/${productId}`
   );
   return response.data;

@@ -32,10 +32,10 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       alert("Please add products to the cart before proceeding to checkout.");
     } else {
       if (isUserLoggedIn()) {
-        onClose()
+        onClose();
         navigate("/checkout", { state: { products: cartProducts } });
       } else {
-        onClose()
+        onClose();
         navigate("/auth/login");
       }
     }
@@ -46,41 +46,58 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       if (!isUserLoggedIn()) {
         console.log("User is not logged in. Fetching cart from localStorage.");
         const existingCartString = localStorage.getItem("cart");
-      
+  
         if (existingCartString && existingCartString !== "[]") {
           const existingCart = JSON.parse(existingCartString);
           const validCart: CartItem[] = await Promise.all(
-            existingCart.map(async (item: {product:Product, product_id: number; quantity: any; product_variation_id: any; }) => {
-              const productDetails = await fetchProductById(item.product.id);
-              if (productDetails) {
-                return {
-                  id: item.product_id,
-                  quantity: item.quantity,
-                  product: productDetails,
-                  size: item.product_variation_id || "Default Size",
-                };
+            existingCart.map(
+              async (item: {
+                product: Product | null;
+                product_id: number;
+                quantity: any;
+                product_variation_id: any;
+              }) => {
+                // Use item.product_id if item.product or item.product.id is null or invalid
+                const productId = (item.product && item.product.id) || item.product_id;
+                console.log("Product ID:", productId);
+                
+                if (!productId) {
+                  console.log("No valid product ID found");
+                  return null;
+                }
+  
+                const productDetails = await fetchProductById(productId);
+                if (productDetails) {
+                  return {
+                    id: productId,
+                    quantity: item.quantity,
+                    product: productDetails,
+                    size: item.product_variation_id || "Default Size",
+                  };
+                }
+                return null;
               }
-              return null; 
-            })
+            )
           );
-      
+  
           setCartProducts(validCart.filter((item) => item !== null));
           console.log("Cart loaded from localStorage:", validCart);
         } else {
           console.log("No cart found in localStorage.");
-          setCartProducts([]); 
+          setCartProducts([]);
         }
-        return; 
+        return;
       }
-      
+  
       const apiCartItems = await fetchCartItems();
       console.log("Cart Items Loaded:", apiCartItems);
-
+  
       setCartProducts(apiCartItems);
     } catch (error) {
       console.error("Failed to load cart items", error);
     }
   };
+  
 
   useEffect(() => {
     if (isOpen) {
@@ -90,22 +107,24 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  const handleRemove = (cartItemId: number, productId: number, size: string) => {
+  const handleRemove = (
+    cartItemId: number,
+    productId: number,
+    size: string
+  ) => {
     setCartProducts((prev) => {
       const updatedCart = prev.filter(
         (item) => !(item.product.id === productId && item.size === size)
-      );  
-      removeFromCart(cartItemId)
-        .catch((error) => {
-          console.error("Error removing item from cart:", error);
-        });
-  
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-  
-      return updatedCart; 
+      );
+      removeFromCart(cartItemId).catch((error) => {
+        console.error("Error removing item from cart:", error);
+      });
+
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+
+      return updatedCart;
     });
   };
-  
 
   const handleUpdateQuantity = async (cartItemId: number, change: number) => {
     setCartProducts((prev) =>
@@ -113,17 +132,18 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
         if (item.id === cartItemId) {
           const newQuantity = Math.max(1, item.quantity + change);
           console.log(newQuantity);
-  
-          updateCartItem(cartItemId, newQuantity)
-            .catch((error) => {
-              console.error("Error updating cart item:", error);
-              setCartProducts((prev) =>
-                prev.map((item) =>
-                  item.id === cartItemId ? { ...item, quantity: item.quantity } : item
-                )
-              );
-            });
-  
+
+          updateCartItem(cartItemId, newQuantity).catch((error) => {
+            console.error("Error updating cart item:", error);
+            setCartProducts((prev) =>
+              prev.map((item) =>
+                item.id === cartItemId
+                  ? { ...item, quantity: item.quantity }
+                  : item
+              )
+            );
+          });
+
           return {
             ...item,
             quantity: newQuantity,
@@ -133,8 +153,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       })
     );
   };
-  
-  
+
   const totalAmount = cartProducts.reduce(
     (total, item) => total + item.product.price * item.quantity,
     0
@@ -201,25 +220,21 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                       </p>
                       <div className="flex items-center mt-2 gap-2">
                         <button
-                          onClick={() =>
-                            handleUpdateQuantity(item.id, -1)
-                          }
+                          onClick={() => handleUpdateQuantity(item.id, -1)}
                           className="border rounded px-2 py-1 bg-gray-200"
                           disabled={item.quantity <= 1}
                         >
                           -
                         </button>
                         <button
-                          onClick={() =>
-                            handleUpdateQuantity(item.id, 1)
-                          }
+                          onClick={() => handleUpdateQuantity(item.id, 1)}
                           className="border rounded px-2 py-1 bg-gray-200"
                         >
                           +
                         </button>
                         <button
                           onClick={() =>
-                            handleRemove(item.id,item.product.id, item.size)
+                            handleRemove(item.id, item.product.id, item.size)
                           }
                           className="text-red-500 hover:underline ml-4"
                         >
