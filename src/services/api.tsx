@@ -14,49 +14,50 @@ const getAuthToken = () => {
   return localStorage.getItem("authToken");
 };
 
-
 export const fetchCategories = async (): Promise<Category[]> => {
-  const response = await axios.get<Category[]>(`${API_BASE_URL}categories`);
+  const response = await axiosInstance.get<Category[]>(`${API_BASE_URL}categories`);
   return response.data;
 };
 
 export const fetchBestSeller = async (): Promise<Product[]> => {
-  const response = await axios.get<Product[]>(`${API_BASE_URL}bestseller`);
+  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}bestseller`);
   return response.data;
 };
 
 export const fetchProductById = async (productId: number): Promise<Product> => {
-  const response = await axios.get<Product>(`${API_BASE_URL}products/${productId}`);
+  const response = await axiosInstance.get<Product>(`${API_BASE_URL}products/${productId}`);
   return response.data;
+}
 
-const getTokenExpiration = (token: string): number => {
+export const getTokenExpiration = (token: string): number => {
   const decoded: { exp: number } = jwtDecode(token);
   return decoded.exp * 1000; // Convert exp to milliseconds
-
 };
 
-const tokenExpiresIn = (token: string): number => {
+export const tokenExpiresIn = (token: string): number => {
   const expiration = getTokenExpiration(token);
   return expiration - Date.now(); // Returns time until expiration in milliseconds
 };
 
-
 export const fetchCollection = async (): Promise<Product[]> => {
-  const response = await axios.get<Product[]>(`${API_BASE_URL}collections`);
+  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}collections`);
   return response.data;
 };
 
 export const fetchAllCollection = async (): Promise<Product[]> => {
-  const response = await axios.get<Product[]>(`${API_BASE_URL}collections`);
-  const data = response.data;
-  return data;
+  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}collections`);
+  return response.data;
 };
 
 export const fetchCartItemsFromLocalStorage = () => {
   const storedCart = localStorage.getItem("cart");
   if (!storedCart) return [];
-
   const cartItems = JSON.parse(storedCart);
+  return cartItems.map((item: any) => ({
+    ...item,
+    price: parseFloat(item.price),
+  }));
+};
 
 // Request Interceptor for Token Management
 axiosInstance.interceptors.request.use(
@@ -75,8 +76,6 @@ axiosInstance.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
-
-
     return config;
   },
   (error) => {
@@ -87,10 +86,7 @@ axiosInstance.interceptors.request.use(
 // Authentication Functions
 export const registerUser = async (userData: AuthUser): Promise<any> => {
   try {
-    const response = await axiosInstance.post(
-      `${API_BASE_URL}register`,
-      userData
-    );
+    const response = await axiosInstance.post(`${API_BASE_URL}register`, userData);
     return response.data;
   } catch (error: any) {
     throw new Error(`Registration failed: ${error.response?.data?.message || error.message}`);
@@ -116,19 +112,12 @@ export const loginUser = async (loginData: AuthUser): Promise<any> => {
   }
 };
 
-
-export const fetchCartItems = async () => {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("No access token found");
-
 export const refreshAuthToken = async (): Promise<string | null> => {
   const refreshToken = localStorage.getItem("refreshToken");
 
   if (!refreshToken) {
     console.error("No refresh token found");
     return null;
-
   }
 
   try {
@@ -138,7 +127,6 @@ export const refreshAuthToken = async (): Promise<string | null> => {
 
     const newAccessToken = response.data.access;
     localStorage.setItem("authToken", newAccessToken);
-    console.log("newAccessToken", newAccessToken);
     return newAccessToken;
   } catch (error) {
     console.error("Failed to refresh token:", error);
@@ -150,14 +138,19 @@ export const isUserLoggedIn = (): boolean => {
   return !!(localStorage.getItem("authToken") && localStorage.getItem("user"));
 };
 
-// Category Functions
-export const fetchCategories = async (): Promise<Category[]> => {
-  const response = await axiosInstance.get<Category[]>(
-    `${API_BASE_URL}categories`
-  );
+// Cart Functions
+export const fetchCartItems = async () => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
+  }
+  const response = await axiosInstance.get(`${API_BASE_URL}cart`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return response.data;
 };
-
 
 export const addToCart = async (
   productId: number,
@@ -167,20 +160,63 @@ export const addToCart = async (
   const token = getAuthToken();
   if (!token) {
     throw new Error("No access token found");
-
-export const fetchBestSeller = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(
-    `${API_BASE_URL}bestseller`
-  );
+  }
+  const response = await axiosInstance.post(`${API_BASE_URL}cart`, {
+    product_id: productId,
+    product_variation_id: productVariationId,
+    quantity,
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return response.data;
 };
 
-// Product Functions
-export const fetchProductById = async (productId: number): Promise<Product> => {
-  const response = await axiosInstance.get<Product>(
-    `${API_BASE_URL}products/${productId}`
-  );
+export const updateCartItem = async (cartItemId: number, newQuantity: number) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  const response = await axiosInstance.put(`${API_BASE_URL}cart/${cartItemId}`, {
+    quantity: newQuantity,
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return response.data;
+};
+
+export const removeFromCart = async (cartItemId: number) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  const response = await axiosInstance.delete(`${API_BASE_URL}cart/${cartItemId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const getCartItemsCount = async (): Promise<number> => {
+  try {
+    if (!isUserLoggedIn()) {
+      const localCart = localStorage.getItem("cart");
+      const cartItems = localCart ? JSON.parse(localCart) : [];
+      return cartItems.length;
+    }
+
+    const cartItems = await fetchCartItems();
+    return cartItems.length;
+  } catch (error) {
+    console.error("Error fetching cart items count:", error);
+    return 0;
+  }
 };
 
 export const fetchExplore = async (): Promise<Product[]> => {
@@ -201,123 +237,5 @@ export const fetchSearchResults = async (
   } catch (error) {
     console.error("Error fetching search results:", error);
     return undefined; // Return undefined in case of error
-
   }
-};
-
-
-  const response = await axios.post(
-    `${API_BASE_URL}/cart`,
-    {
-      product_id: productId,
-      product_variation_id: productVariationId,
-      quantity: quantity,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
-};
-
-export const updateCartItem = async (cartItemId: number, newQuantity: number) => {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("No access token found");
-  }
-
-  const response = await axios.put(
-    `${API_BASE_URL}cart/${cartItemId}`,
-    {
-      quantity: newQuantity,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
-};
-
-export const removeFromCart = async (cartItemId: number) => {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("No access token found");
-  }
-
-  const response = await axios.delete(`${API_BASE_URL}cart/${cartItemId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
-
-// Cart Functions
-export const fetchCartItems = async () => {
-  const response = await axiosInstance.get(`${API_BASE_URL}cart`);
-  return response.data;
-};
-
-export const fetchCartItemsFromLocalStorage = () => {
-  const storedCart = localStorage.getItem("cart");
-  if (!storedCart) return [];
-
-  const cartItems = JSON.parse(storedCart);
-  return cartItems.map((item: any) => ({
-    ...item,
-    price: parseFloat(item.price),
-  }));
-};
-
-export const getCartItemsCount = async (): Promise<number> => {
-  try {
-    if (!isUserLoggedIn()) {
-      const localCart = localStorage.getItem("cart");
-      const cartItems = localCart ? JSON.parse(localCart) : [];
-      return cartItems.length;
-    }
-
-    const cartItems = await fetchCartItems();
-    return cartItems.length;
-  } catch (error) {
-    console.error("Error fetching cart items count:", error);
-    return 0;
-  }
-};
-
-export const addToCart = async (
-  productId: number,
-  productVariationId: number,
-  quantity: number
-) => {
-  const response = await axiosInstance.post(`${API_BASE_URL}cart`, {
-    product_id: productId,
-    product_variation_id: productVariationId,
-    quantity,
-  });
-  return response.data;
-};
-
-export const updateCartItem = async (
-  cartItemId: number,
-  newQuantity: number
-) => {
-  await axiosInstance.put(`${API_BASE_URL}cart`, {
-    data: {
-      cart_item_id: cartItemId,
-      quantity: newQuantity,
-    },
-  });
-};
-
-export const removeFromCart = async (cartItemId: number) => {
-  await axiosInstance.delete(`${API_BASE_URL}cart`, {
-    data: {
-      cart_item_id: cartItemId,
-    },
-  });
-
 };
