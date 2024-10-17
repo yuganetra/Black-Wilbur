@@ -1,39 +1,42 @@
 import React, { useState } from "react";
-import Tshirt from "../asset/black-tees.jpg";
-
-const products = [
-  { id: 1, name: "T-Shirt", price: "3000", image: Tshirt },
-  { id: 2, name: "Hoodie", price: "3000", image: Tshirt },
-  { id: 3, name: "Shirt", price: "3000", image: Tshirt },
-  { id: 4, name: "Sweater", price: "3000", image: Tshirt },
-  { id: 5, name: "Knitted", price: "3000", image: Tshirt },
-  { id: 6, name: "Polo", price: "3000", image: Tshirt },
-];
+import { fetchSearchResults } from "../services/api"; 
+import { ProductResponse } from "../utiles/types"; 
+import { useNavigate } from "react-router-dom";
 
 const Searchbar: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [results, setResults] = useState<ProductResponse>([]); 
+  const navigate = useNavigate();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setShowModal(e.target.value.length > 0); // Show modal if there's a search term
+  const handleNavigate = (id: number) => {
+    navigate(`/product/${id}`); 
+  };
+  
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    setShowModal(term.length > 0); 
+
+    if (term) {
+      const fetchedResults = await fetchSearchResults(term); 
+      if (fetchedResults) {
+        setResults(fetchedResults); 
+      }
+    } else {
+      setResults([]); 
+    }
   };
 
   const handleFocus = () => {
-    setShowModal(searchTerm.length > 0); // Show modal on focus if there's input
+    setShowModal(searchTerm.length > 0); 
   };
 
   const handleBlur = () => {
-    // Delay hiding modal to allow clicks on modal items
     setTimeout(() => {
       setShowModal(false);
     }, 100);
   };
-
-  // Filter products based on the search term
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="relative w-full">
@@ -43,17 +46,17 @@ const Searchbar: React.FC = () => {
         onChange={handleInputChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        className="border border-gray-300 rounded-lg p-2 w-full text-black" // Full width for small screens
+        className="border border-gray-300 rounded-lg p-2 w-full text-black"
         placeholder="Search for products..."
       />
       {showModal && (
-        <div className="absolute left-0 z-50 w-full max-w-xs bg-white shadow-lg border border-gray-300 rounded-lg mt-1 overflow-y-auto">
-          {/* Adjusted size and positioning */}
+        <div className="absolute left-0 z-50 w-full max-w-xs bg-white shadow-lg border border-gray-300 rounded-lg mt-1 max-h-60 overflow-y-auto">
           <div className="p-2">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
+            {results.length > 0 ? (
+              results.map((product) => (
                 <p
                   key={product.id}
+                  onClick={() => handleNavigate(product.id)} 
                   className="text-black cursor-pointer hover:bg-gray-100 py-1 text-center"
                 >
                   {product.name} - ${product.price}

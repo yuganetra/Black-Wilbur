@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import { Product } from "../utiles/types";
+
+interface CheckoutProduct {
+  id: number;
+  quantity: number;
+  product: Product;
+  size: string;
+}
 
 interface FormValues {
   firstName: string;
@@ -17,12 +24,27 @@ interface FormValues {
   paymentMethod: string;
   saveInfo?: boolean;
   emailOffers?: boolean;
-  products: Product[]; // Include product data in the form values
+  products: CheckoutProduct[]; // Include product data in the form values
 }
 
 const Checkout: React.FC = () => {
   const location = useLocation();
-  const { products } = location.state as { products: Product[] };
+  const { products: initialProducts = [] } =
+    (location.state as { products: CheckoutProduct[] }) || {};
+  const [products, setProducts] = useState<CheckoutProduct[]>(initialProducts);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulating data fetch with a timeout
+    const fetchProducts = () => {
+      setTimeout(() => {
+        setProducts(initialProducts);
+        setLoading(false);
+      }, 1000); // Simulate a 1-second loading time
+    };
+    fetchProducts();
+  }, [initialProducts]);
 
   const {
     register,
@@ -32,12 +54,14 @@ const Checkout: React.FC = () => {
 
   const onSubmit = (data: FormValues) => {
     console.log("Submitted data:", data);
+    console.log("Products from params:", products); // Log the product data
   };
 
   const subtotal = products.reduce((total, product) => {
-    const price = Number(product.price); 
-    return total + (isNaN(price) ? 0 : price); 
+    const price = Number(product.product.price);
+    return total + (isNaN(price) ? 0 : price);
   }, 0);
+
   return (
     <div className="bg-black text-white min-h-screen flex flex-col font-montserrat">
       {/* Main Content Wrapper */}
@@ -211,49 +235,76 @@ const Checkout: React.FC = () => {
           </div>
           {/* Right side - Order Summary */}
           <div className="w-full lg:w-1/2 lg:pl-8 mt-6 lg:mt-0">
-  <h3 className="text-xl font-bold mb-4">Order Summary</h3>
-  <div className="bg-gray-100 p-4 rounded-lg">
-    {products.map((product) => {
-      console.log('Product Image:', product); // Log the product image URL
-      
-      return (
-        <div
-          key={product.id}
-          className="flex justify-between items-center mb-4"
-        >
-          <div className="flex items-center">
-            <img
-                  src={product.product_images[0]?.image || "/placeholder.png"}
-                  alt={product.name}
-              className="w-16 h-16 object-cover rounded"
-            />
-            <div className="ml-4">
-              <h4 className="text-lg font-semibold">{product.name}</h4>
-              {/* <p className="text-sm">{product.size}</p> */}
+            <h3 className="text-xl font-bold mb-4">Order Summary</h3>
+            <div className="bg-gray-100 p-4 rounded-lg">
+              {loading ? (
+                <div className="animate-pulse">
+                  <div className="h-16 bg-gray-300 rounded-lg mb-4"></div>
+                  <div className="h-16 bg-gray-300 rounded-lg mb-4"></div>
+                  <div className="h-16 bg-gray-300 rounded-lg mb-4"></div>
+                  <div className="h-16 bg-gray-300 rounded-lg mb-4"></div>
+                  <div className="flex justify-between border-t border-gray-300 pt-4">
+                    <div className="h-6 bg-gray-300 rounded-lg w-1/3"></div>
+                    <div className="h-6 bg-gray-300 rounded-lg w-1/3"></div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {Array.isArray(products) && products.length > 0 ? (
+                    products.map((checkoutProduct) => (
+                      <div
+                        key={checkoutProduct.id}
+                        className="flex justify-between items-center mb-4"
+                      >
+                        <div className="flex items-center">
+                          <img
+                            src={
+                              checkoutProduct.product.product_images?.[0]
+                                ?.image || "/placeholder.png"
+                            }
+                            alt={checkoutProduct.product.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                          <div className="ml-4">
+                            <h4 className="text-lg font-semibold">
+                              {checkoutProduct.product.name}
+                            </h4>
+                            <h4 className="text-lg font-semibold">
+                              {checkoutProduct.size}
+                            </h4>
+                          </div>
+                        </div>
+                        <p className="text-lg font-bold">
+                          $
+                          {(Number(checkoutProduct.product.price) || 0).toFixed(
+                            2
+                          )}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No products available.</p>
+                  )}
+                  <div className="flex justify-between border-t border-gray-300 pt-4">
+                    <h4 className="text-lg font-semibold">Subtotal</h4>
+                    <p className="text-lg font-semibold">
+                      ${subtotal.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="flex justify-between border-t border-gray-300 pt-4">
+                    <h4 className="text-lg font-semibold">Shipping</h4>
+                    <p className="text-lg font-semibold">Free</p>
+                  </div>
+                  <div className="flex justify-between border-t border-gray-300 pt-4">
+                    <h4 className="text-lg font-semibold">Total</h4>
+                    <p className="text-lg font-semibold">
+                      ${subtotal.toFixed(2)}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-          <p className="text-lg font-bold">
-            ${(Number(product.price) || 0).toFixed(2)}
-          </p>
-        </div>
-      );
-    })}
-
-    <div className="flex justify-between border-t border-gray-300 pt-4">
-      <h4 className="text-lg font-semibold">Subtotal</h4>
-      <p className="text-lg font-semibold">${subtotal.toFixed(2)}</p>
-    </div>
-    <div className="flex justify-between border-t border-gray-300 pt-4">
-      <h4 className="text-lg font-semibold">Shipping</h4>
-      <p className="text-lg font-semibold">Free</p>
-    </div>
-    <div className="flex justify-between border-t border-gray-300 pt-4">
-      <h4 className="text-lg font-semibold">Total</h4>
-      <p className="text-lg font-semibold">${subtotal.toFixed(2)}</p>
-    </div>
-  </div>
-</div>
-
         </div>
       </div>
     </div>

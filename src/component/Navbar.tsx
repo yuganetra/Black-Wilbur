@@ -7,7 +7,11 @@ import SidebarMenu from "./Sidebar-Menu";
 import CartComponent from "./Cart";
 import Searchbar from "./Searchbar";
 import { useNavigate } from "react-router-dom";
-import { fetchCategories } from "../services/api";
+import {
+  fetchCategories,
+  isUserLoggedIn,
+  getCartItemsCount,
+} from "../services/api"; // Add getCartItemsCount API function
 import { Category } from "../utiles/types";
 
 const Navbar: React.FC = (): JSX.Element => {
@@ -15,6 +19,9 @@ const Navbar: React.FC = (): JSX.Element => {
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [categories, setCategories] = useState<Category[]>([]);
+
+  const [cartItemsCount, setCartItemsCount] = useState<number>(0); // To track cart count
+
   const navigate = useNavigate();
 
   const toggleSidebar = (): void => {
@@ -51,12 +58,25 @@ const Navbar: React.FC = (): JSX.Element => {
       try {
         const fetchedCategories = await fetchCategories();
         setCategories(fetchedCategories);
+
+        // Fetch the cart count and update state
+        const cartCount = await getCartItemsCount(); 
+        setCartItemsCount(cartCount);
+
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
+
+    // Polling to continuously fetch cart items count every 5 seconds
+    const intervalId = setInterval(() => {
+      fetchData(); // Call the fetchData function to refresh categories and cart count
+    }, 2000); // Adjust the interval as needed
+
+    return () => clearInterval(intervalId); // Cleanup the interval on component unmount
+
   }, []);
 
   return (
@@ -82,7 +102,17 @@ const Navbar: React.FC = (): JSX.Element => {
                 onClick={handleUserProfileNavigate} // Update the onClick handler
                 className="text-2xl cursor-pointer"
               />
-              <FaShoppingCart onClick={toggleCartSidebar} className="text-2xl cursor-pointer" />
+
+              <div className="relative">
+                <FaShoppingCart
+                  onClick={toggleCartSidebar}
+                  className="text-2xl cursor-pointer"
+                />
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs px-1.5 py-0.5">
+                  {cartItemsCount || 0}
+                </span>
+              </div>
+
             </div>
           </div>
 
@@ -101,7 +131,9 @@ const Navbar: React.FC = (): JSX.Element => {
               <button
                 key={category.id}
                 onClick={() =>
+
                   handleNavigate(`/collection/${category.name.toLowerCase().replace(/ /g, "-")}`)
+
                 }
                 className="relative text-sm font-semibold px-4 py-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-0.5 after:bg-white after:transform after:scale-x-0 after:origin-right hover:after:scale-x-100 hover:after:origin-left after:transition-transform after:duration-300"
               >
@@ -124,7 +156,19 @@ const Navbar: React.FC = (): JSX.Element => {
             <button onClick={handleSearchIconClick} className="text-lg">
               <FaSearch />
             </button>
-            <FaShoppingCart onClick={toggleCartSidebar} className="text-lg cursor-pointer" />
+
+            <div className="relative">
+              <FaShoppingCart
+                onClick={toggleCartSidebar}
+                className="text-lg cursor-pointer"
+              />
+              {cartItemsCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs px-1.5 py-0.5">
+                  {cartItemsCount}
+                </span>
+              )}
+            </div>
+
             <FaCircleUser
               onClick={handleUserProfileNavigate} // Update the onClick handler
               className="text-lg cursor-pointer"
