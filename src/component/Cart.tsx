@@ -36,7 +36,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
         navigate("/checkout", { state: { products: cartProducts } });
       } else {
         onClose();
-        navigate("/auth/login");
+        navigate("/auth/login", { state: { from: "/checkout", products: cartProducts } }); // Pass cart and previous page
       }
     }
   };
@@ -49,21 +49,15 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   
         if (existingCartString && existingCartString !== "[]") {
           const existingCart = JSON.parse(existingCartString);
-          const validCart: CartItem[] = await Promise.all(
-            existingCart.map(
-              async (item: {
-                product: Product | null;
-                product_id: number;
-                quantity: any;
-                product_variation_id: any;
-              }) => {
-                // Use item.product_id if item.product or item.product.id is null or invalid
+          
+          // Ensure existingCart is an array before using .map()
+          if (Array.isArray(existingCart) && existingCart.length > 0) {
+            const validCart = await Promise.all(
+              existingCart.map(async (item: { product: Product | null; product_id: number; quantity: number; product_variation_id: string }) => {
                 const productId = (item.product && item.product.id) || item.product_id;
-                console.log("Product ID:", productId);
-                
                 if (!productId) {
                   console.log("No valid product ID found");
-                  return null;
+                  return null; // Returning null if no valid product ID is found
                 }
   
                 const productDetails = await fetchProductById(productId);
@@ -76,22 +70,24 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                   };
                 }
                 return null;
-              }
-            )
-          );
+              })
+            );
   
-          setCartProducts(validCart.filter((item) => item !== null));
-          console.log("Cart loaded from localStorage:", validCart);
-        } else {
-          console.log("No cart found in localStorage.");
-          setCartProducts([]);
+            // Filter out null values from the result
+            const filteredCart = validCart.filter((item) => item !== null) as CartItem[];
+  
+            setCartProducts(filteredCart);
+            console.log("Cart loaded from localStorage:", filteredCart);
+          } else {
+            console.log("No valid cart found in localStorage.");
+            setCartProducts([]);
+          }
         }
         return;
       }
   
       const apiCartItems = await fetchCartItems();
       console.log("Cart Items Loaded:", apiCartItems);
-  
       setCartProducts(apiCartItems);
     } catch (error) {
       console.error("Failed to load cart items", error);

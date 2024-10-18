@@ -1,10 +1,14 @@
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-8h0^js8+82kph!d%@8myyvq9sj=-f@@pwd3amu!&p$e=#5p!el'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -74,14 +78,13 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'blackwilbur',
-        'USER': 'root',
-        'PASSWORD': 'Mysqlkimakichu@1269',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
-
 WSGI_APPLICATION = 'blackwilbur.wsgi.application'
 
 AUTH_PASSWORD_VALIDATORS = [

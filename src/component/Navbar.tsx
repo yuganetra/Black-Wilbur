@@ -9,7 +9,6 @@ import Searchbar from "./Searchbar";
 import { useNavigate } from "react-router-dom";
 import {
   fetchCategories,
-  isUserLoggedIn,
   getCartItemsCount,
 } from "../services/api"; // Add getCartItemsCount API function
 import { Category } from "../utiles/types";

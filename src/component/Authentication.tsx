@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { registerUser,loginUser, fetchCartItems } from "../services/api";
+import { registerUser, loginUser, fetchCartItems } from "../services/api";
 import { AuthUser } from "../utiles/types";
 
 const Authentication: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const isLogin = location.pathname === "/auth/login";
   const [forgotPassword, setForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,91 +33,130 @@ const Authentication: React.FC = () => {
     setSuccessMessage("");
 
     const newErrors = {
-        firstName: formData.firstName ? "" : "First Name is required",
-        lastName: formData.lastName ? "" : "Last Name is required",
-        email: formData.email ? "" : "Email is required",
-        username: formData.username ? "" : "Username is required",
-        password: formData.password ? "" : "Password is required",
-        password2: formData.password2 === formData.password ? "" : "Passwords must match",
+      firstName: formData.firstName ? "" : "First Name is required",
+      lastName: formData.lastName ? "" : "Last Name is required",
+      email: formData.email ? "" : "Email is required",
+      username: formData.username ? "" : "Username is required",
+      password: formData.password ? "" : "Password is required",
+      password2:
+        formData.password2 === formData.password ? "" : "Passwords must match",
     };
 
     setErrors(newErrors);
     if (!Object.values(newErrors).some((error) => error)) {
-        setLoading(true);
-        try {
-            const userData: AuthUser = {
-                first_name: formData.firstName,
-                last_name: formData.lastName,
-                username: formData.username,
-                email: formData.email,
-                password: formData.password,
-                password2: formData.password2,
-            };
+      setLoading(true);
+      try {
+        const userData: AuthUser = {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          password2: formData.password2,
+        };
+        console.log(userData);
+        const response = await registerUser(userData);
 
-            const response = await registerUser(userData);
-            
-            localStorage.setItem('user', JSON.stringify(response));
+        localStorage.setItem("user", JSON.stringify(response));
 
-            setSuccessMessage("Account created successfully! Please log in.");
-            setFormData({ firstName: "", lastName: "", username: "", email: "", password: "", password2: "" });
-            navigate("/auth/login");
-        } catch (error) {
-            setApiError("Failed to create account. Please try again.");
-        } finally {
-            setLoading(false);
+        setSuccessMessage("Account created successfully! Please log in.");
+        setFormData({
+          firstName: "",
+          lastName: "",
+          username: "",
+          email: "",
+          password: "",
+          password2: "",
+        });
+        navigate("/auth/login");
+      } catch (error) {
+        if (error instanceof Error) {
+          setApiError(error.message); // Use the error message thrown from registerUser
+        } else {
+          setApiError("An unknown error occurred."); // Fallback for unexpected error types
         }
+      } finally {
+        setLoading(false);
+      }
     }
-};
-
-const handleLoginSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setApiError("");
-
-  const credentials: AuthUser = {
-      email: formData.email,  
-      password: formData.password,
   };
 
-  try {
-    console.log(credentials);
-    const response = await loginUser(credentials);
-    
-    // Store user data in local storage
-    localStorage.setItem('user', JSON.stringify(response));
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setApiError("");
 
-    // Fetch the user's cart and store it in local storage
-    const cartItems = fetchCartItems(); // Make sure fetchCart is defined in your API file
-    localStorage.setItem('cart', JSON.stringify(cartItems));
+    // Constructing credentials with username or email
+    const credentials: AuthUser = {
+      email: formData.email, // This will hold the input (username or email)
+      password: formData.password,
+    };
 
-    setSuccessMessage("Login successful!");
-    navigate('/user-profile'); 
-  } catch (error) {
-    setApiError("Invalid credentials. Please check your email and password.");
-  }
-};
+    try {
+      console.log(credentials);
+      const response = await loginUser(credentials); // Ensure your backend handles this properly
 
+      // Store user data in local storage
+      localStorage.setItem("user", JSON.stringify(response));
+
+      // Fetch the user's cart and store it in local storage
+      const cartItems = fetchCartItems(); // Make sure fetchCart is defined in your API file
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+
+      setSuccessMessage("Login successful!");
+      // Check if the user was redirected from a specific page (like checkout)
+      const previousState = location.state?.from || "/user-profile";
+      navigate(previousState, {
+        state: { products: location.state?.products || [] },
+      });
+    } catch (error) {
+      setApiError(
+        "Invalid credentials. Please check your email or username and password."
+      );
+    }
+  };
   return (
     <div className="flex flex-col md:flex-row h-screen bg-white font-montserrat">
-      <div className={`w-full md:w-1/2 flex items-center justify-center text-4xl md:text-6xl font-thin text-black`}>
+      <div
+        className={`w-full md:w-1/2 flex items-center justify-center text-4xl md:text-6xl font-thin text-black`}
+      >
         <div className="text-center">
-          {isLogin ? <span>Customer Login</span> : <><span>Create an</span><br /><span>Account</span></>}
+          {isLogin ? (
+            <span>Customer Login</span>
+          ) : (
+            <>
+              <span>Create an</span>
+              <br />
+              <span>Account</span>
+            </>
+          )}
         </div>
       </div>
 
       <div className="w-full md:w-1/2 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {apiError && <p className="text-red-500 text-sm text-center">{apiError}</p>}
-          {successMessage && <p className="text-green-500 text-sm text-center">{successMessage}</p>}
+          {apiError && (
+            <p className="text-red-500 text-sm text-center">{apiError}</p>
+          )}
+          {successMessage && (
+            <p className="text-green-500 text-sm text-center">
+              {successMessage}
+            </p>
+          )}
           {isLogin ? (
             forgotPassword ? (
-              <form onSubmit={(e) => e.preventDefault()} className="text-center space-y-6">
+              <form
+                onSubmit={(e) => e.preventDefault()}
+                className="text-center space-y-6"
+              >
                 <div className="mb-6">
                   <input
                     type="email"
                     id="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className={`block w-full h-12 p-4 border ${errors.email ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                    className={`block w-full h-12 p-4 border ${
+                      errors.email ? "border-red-500" : "border-black"
+                    } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
                     placeholder="Email"
                     required
                   />
@@ -143,12 +182,14 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
               <form onSubmit={handleLoginSubmit} className="space-y-6">
                 <div className="mb-6">
                   <input
-                    type="email"
-                    id="email"
-                    value={formData.email}
+                    type="text"
+                    id="email" 
+                    value={formData.email} 
                     onChange={handleInputChange}
-                    className={`block w-full h-12 p-4 border ${errors.Email ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                    placeholder="User Name"
+                    className={`block w-full h-12 p-4 border ${
+                      errors.Email ? "border-red-500" : "border-black"
+                    } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                    placeholder="Username or Email" 
                     required
                   />
                 </div>
@@ -158,12 +199,14 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
                     id="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`block w-full h-12 p-4 border ${errors.password ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                    className={`block w-full h-12 p-4 border ${
+                      errors.password ? "border-red-500" : "border-black"
+                    } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
                     placeholder="Password"
                     required
                   />
                 </div>
-                <div className="mb-6"> {/* Add margin-bottom for spacing */}
+                <div className="mb-6">
                   <button
                     type="submit"
                     className="w-44 bg-black text-white py-2 px-4 rounded-3xl hover:bg-gray-800"
@@ -198,7 +241,9 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
                   id="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${errors.firstName ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                  className={`block w-full h-12 p-4 border ${
+                    errors.firstName ? "border-red-500" : "border-black"
+                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
                   placeholder="First Name"
                   required
                 />
@@ -209,7 +254,9 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
                   id="lastName"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${errors.lastName ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                  className={`block w-full h-12 p-4 border ${
+                    errors.lastName ? "border-red-500" : "border-black"
+                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
                   placeholder="Last Name"
                   required
                 />
@@ -220,7 +267,9 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
                   id="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${errors.email ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                  className={`block w-full h-12 p-4 border ${
+                    errors.email ? "border-red-500" : "border-black"
+                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
                   placeholder="Email"
                   required
                 />
@@ -231,7 +280,9 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
                   id="username"
                   value={formData.username}
                   onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${errors.username ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                  className={`block w-full h-12 p-4 border ${
+                    errors.username ? "border-red-500" : "border-black"
+                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
                   placeholder="Username"
                   required
                 />
@@ -242,7 +293,9 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
                   id="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${errors.password ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                  className={`block w-full h-12 p-4 border ${
+                    errors.password ? "border-red-500" : "border-black"
+                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
                   placeholder="Password"
                   required
                 />
@@ -253,7 +306,9 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
                   id="password2"
                   value={formData.password2}
                   onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${errors.password2 ? "border-red-500" : "border-black"} text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
+                  className={`block w-full h-12 p-4 border ${
+                    errors.password2 ? "border-red-500" : "border-black"
+                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
                   placeholder="Confirm Password"
                   required
                 />
@@ -268,7 +323,7 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate("/auth/login")} 
+                  onClick={() => navigate("/auth/login")}
                   className="text-black hover:underline"
                 >
                   Already have an account? Log In
@@ -283,4 +338,3 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
 };
 
 export default Authentication;
-
