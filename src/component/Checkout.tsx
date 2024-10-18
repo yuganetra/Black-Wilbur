@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import { Product } from "../utiles/types";
+import { sendSms } from "../services/api"; // Import your sendSms function from the API file
 
 interface CheckoutProduct {
   id: number;
@@ -19,7 +20,7 @@ interface FormValues {
   city: string;
   state: string;
   pinCode: string;
-  phone: string;
+  phone: string; // Phone field for contact
   shippingMethod?: string;
   paymentMethod: string;
   saveInfo?: boolean;
@@ -34,6 +35,11 @@ const Checkout: React.FC = () => {
   const [products, setProducts] = useState<CheckoutProduct[]>(initialProducts);
 
   const [loading, setLoading] = useState(true);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpInput, setOtpInput] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState(""); 
+  const [resendEnabled, setResendEnabled] = useState(false); 
+  const [otpVarified, setotpVarified] = useState(false); 
 
   useEffect(() => {
     // Simulating data fetch with a timeout
@@ -46,15 +52,62 @@ const Checkout: React.FC = () => {
     fetchProducts();
   }, [initialProducts]);
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (otpSent) {
+      // Start a timer for 2 minutes
+      timer = setTimeout(() => {
+        setResendEnabled(true);
+      }, 1000); // 120000 ms = 2 minutes
+    }
+    return () => clearTimeout(timer);
+  }, [otpSent]);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>();
 
-  const onSubmit = (data: FormValues) => {
+  const handleGetOtp = async () => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+    const numbers = [otpInput]; 
+
+    try {
+      const response = await sendSms(otp, numbers); 
+      if (response) {
+        console.log("SMS sent successfully:", response.message);
+        setOtpSent(true);
+        setGeneratedOtp(otp);
+        setTimeout(() => {
+          setResendEnabled(true);
+        }, 1000); 
+      } else {
+        console.error("Error sending SMS:", response);
+      }
+    } catch (error) {
+      console.error("Error sending SMS:", error);
+    }
+  };
+
+  const handleVerifyOtp = () => {
+    const isValidOtp = otpInput === generatedOtp;
+    if (isValidOtp) {
+      alert("OTP verified successfully!");
+      setotpVarified(true);
+    } else {
+      alert("Invalid OTP, please try again.");
+    }
+  };
+
+  const onSubmit = async (data: FormValues) => {
     console.log("Submitted data:", data);
     console.log("Products from params:", products); // Log the product data
+    console.log("Entered OTP:", otpInput); // Log the entered OTP
+
+    // You might want to add OTP verification logic here
+
+    // Final form submission logic here...
   };
 
   const subtotal = products.reduce((total, product) => {
@@ -114,12 +167,64 @@ const Checkout: React.FC = () => {
                       id="contact"
                       type="text"
                       {...register("phone", { required: "Phone is required" })}
+                      onChange={(e) => setOtpInput(e.target.value)} // Capture phone number for OTP
                       className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                     />
                     {errors.phone && (
                       <p className="text-red-500 text-sm">
                         {errors.phone.message}
                       </p>
+                    )}
+                    {otpVarified && (
+                      <p className="text-green-500 text-sm">
+                        Phone number verified!
+                      </p>
+                    )}
+
+                    {!otpVarified && !otpSent && (
+                      <button
+                        type="button"
+                        onClick={handleGetOtp}
+                        className="mt-2 bg-black text-white px-4 py-2 rounded-md"
+                      >
+                        Get OTP
+                      </button>
+                    )}
+
+                    {otpSent && !otpVarified && (
+                      <>
+                        <div className="mt-2">
+                          <label
+                            htmlFor="otp"
+                            className="block text-sm font-medium"
+                          >
+                            Enter OTP
+                          </label>
+                          <input
+                            id="otp"
+                            type="text"
+                            onChange={(e) => setOtpInput(e.target.value)} // Update OTP input
+                            className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleVerifyOtp} // Handle OTP verification
+                          className="mt-2 bg-green-500 text-white px-4 py-2 rounded-md"
+                        >
+                          Verify OTP
+                        </button>
+
+                        {resendEnabled && (
+                          <button
+                            type="button"
+                            onClick={handleGetOtp}
+                            className="mt-2 bg-yellow-500 text-white px-4 py-2 rounded-md"
+                          >
+                            Resend OTP
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -199,13 +304,13 @@ const Checkout: React.FC = () => {
                       htmlFor="pinCode"
                       className="block text-sm font-medium"
                     >
-                      PIN Code
+                      Zip Code
                     </label>
                     <input
                       id="pinCode"
                       type="text"
                       {...register("pinCode", {
-                        required: "PIN Code is required",
+                        required: "Pin code is required",
                       })}
                       className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                     />
@@ -216,23 +321,17 @@ const Checkout: React.FC = () => {
                     )}
                   </div>
                 </div>
-                {/* Hidden input for product data */}
-                <input
-                  type="hidden"
-                  {...register("products")}
-                  value={JSON.stringify(products)}
-                />
-                <div>
-                  <button
-                    type="submit"
-                    className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-700 w-full sm:w-auto"
-                  >
-                    Submit
-                  </button>
-                </div>
               </div>
+
+              <button
+                type="submit"
+                className="w-full bg-black text-white px-4 py-2 rounded-md"
+              >
+                Submit
+              </button>
             </form>
           </div>
+
           {/* Right side - Order Summary */}
           <div className="w-full lg:w-1/2 lg:pl-8 mt-6 lg:mt-0">
             <h3 className="text-xl font-bold mb-4">Order Summary</h3>
@@ -246,7 +345,7 @@ const Checkout: React.FC = () => {
                   <div className="flex justify-between border-t border-gray-300 pt-4">
                     <div className="h-6 bg-gray-300 rounded-lg w-1/3"></div>
                     <div className="h-6 bg-gray-300 rounded-lg w-1/3"></div>
-                  </div>
+                    </div>
                 </div>
               ) : (
                 <>
@@ -280,7 +379,7 @@ const Checkout: React.FC = () => {
                             2
                           )}
                         </p>
-                      </div>
+                    </div>
                     ))
                   ) : (
                     <p>No products available.</p>
@@ -300,7 +399,7 @@ const Checkout: React.FC = () => {
                     <p className="text-lg font-semibold">
                       ${subtotal.toFixed(2)}
                     </p>
-                  </div>
+              </div>
                 </>
               )}
             </div>

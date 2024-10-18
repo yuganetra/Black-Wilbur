@@ -46,3 +46,10 @@ class AddToCartSerializer(serializers.Serializer):
 class EditQuantitySerializer(serializers.Serializer):
     cart_item_id = serializers.IntegerField(required=True)
     quantity = serializers.IntegerField(required=True)
+
+class SendSmsSerializer(serializers.Serializer):
+    otp = serializers.CharField(required=True, max_length=8)  # OTP should be a string of digits
+    numbers = serializers.ListField(
+        child=serializers.CharField(max_length=15),  # Adjust max_length based on your phone number format
+        required=True
+    )

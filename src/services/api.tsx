@@ -1,7 +1,7 @@
 import axios from "axios";
 import { AxiosError } from 'axios';
 import { jwtDecode } from "jwt-decode";
-import { Category, Product, AuthUser, ProductResponse, ErrorResponse } from "../utiles/types";
+import { Category, Product, AuthUser, ProductResponse, ErrorResponse, SendSmsResponse } from "../utiles/types";
 
 
 const API_BASE_URL = "http://localhost:5000/";
@@ -256,3 +256,21 @@ export const fetchSearchResults = async (
     return undefined; // Return undefined in case of error
   }
 };
+
+//sms
+// Function to send an SMS
+export const sendSms = async (otp: string, numbers: string[]): Promise<SendSmsResponse> => {
+  try {
+      const response = await axios.post(`${API_BASE_URL}send-sms/`, {
+          otp,
+          numbers
+      });
+
+      return response.data; // Assuming your backend returns JSON
+  } catch (error) {
+      // Handle error appropriately
+      console.error("Error sending SMS:", error);
+      return { error: "Failed to send SMS." };
+  }
+};
+

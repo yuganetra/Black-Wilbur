@@ -61,3 +61,8 @@ export interface ErrorResponse {
     [key: string]: string[]; // This indicates that each key can have an array of string messages
   };
 }
+
+export interface SendSmsResponse {
+  message?: string;
+  error?: string;
+}
