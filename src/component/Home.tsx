@@ -5,6 +5,7 @@ import videoSrc from "../asset/homepage-vid.MOV";
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
 import { Product } from "../utiles/types";
+import GetFeatured from "./GetFeatured";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -12,9 +13,14 @@ const Home: React.FC = () => {
   const [bestseller, setBestSeller] = useState<Product[]>([]);
   const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
   const [wishlist, setWishlist] = useState<number[]>([]); // Wishlist state
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // State for managing popup visibility
 
   const handleNavigate = (path: string) => {
     navigate(path);
+  };
+
+  const togglePopup = () => {
+    setIsPopupOpen(!isPopupOpen);
   };
 
   const scrollLeft = () => {
@@ -31,13 +37,15 @@ const Home: React.FC = () => {
 
   const toggleWishlist = (productId: number) => {
     setWishlist((prevWishlist) => {
-      if (prevWishlist.includes(productId)) {
-        return prevWishlist.filter((id) => id !== productId); // Remove from wishlist
-      } else {
-        return [...prevWishlist, productId]; // Add to wishlist
-      }
+      const newWishlist = prevWishlist.includes(productId)
+        ? prevWishlist.filter((id) => id !== productId) // Remove from wishlist
+        : [...prevWishlist, productId]; // Add to wishlist
+
+      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to local storage
+      return newWishlist;
     });
   };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,6 +60,11 @@ const Home: React.FC = () => {
     };
 
     fetchData();
+    // Fetch wishlist from local storage
+    const storedWishlist = localStorage.getItem("wishlist");
+    if (storedWishlist) {
+      setWishlist(JSON.parse(storedWishlist));
+    }
   }, []);
 
   return (
@@ -99,27 +112,23 @@ const Home: React.FC = () => {
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {bestseller.map((bestseller) => {
-
                 const productImages = bestseller.product_images;
                 const imageSrc =
                   productImages.length > 0
                     ? productImages[0].image
                     : "default-image-url.jpg";
 
-
                 return (
                   <div
                     key={bestseller.id}
-
                     className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex flex-col items-center"
-                    style={{ height: "auto" }} 
+                    style={{ height: "auto" }}
                   >
                     <img
                       className="w-full h-auto  object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
                       onClick={() =>
                         handleNavigate(`/Product/${bestseller.id}`)
                       }
-
                       src={imageSrc}
                       alt={bestseller.name}
                     />
@@ -140,7 +149,6 @@ const Home: React.FC = () => {
                     >
                       {wishlist.includes(bestseller.id) ? "♥" : "♡"}
                     </button>
-
                   </div>
                 );
               })}
@@ -155,8 +163,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Video Section */}
-      <section className="py-16 bg-[#1B1B1B]">
+      <section className="py-16 bg-[#1B1B1B] relative">
         <div className="container mx-auto px-4 md:px-6 text-center">
           <div className="relative w-full h-[90vh] overflow-hidden">
             <video
@@ -166,80 +173,111 @@ const Home: React.FC = () => {
               muted
               className="absolute top-1/2 left-1/2 w-[100vh] h-auto max-w-none"
               style={{
-                objectFit: "contain", // Maintain aspect ratio and fit within the container
-                transform: "translate(-50%, -50%) rotate(270deg)", // Center and rotate the video
-                transformOrigin: "center", // Rotate around the center
+                objectFit: "contain",
+                transform: "translate(-50%, -50%) rotate(270deg)",
+                transformOrigin: "center",
               }}
             >
               Your browser does not support the video tag.
             </video>
+            {/* Button to open the popup */}
+            <button
+              onClick={togglePopup}
+              className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-gray-800 transition"
+            >
+              Featured on BlackWilbur.com
+            </button>
           </div>
         </div>
+
+        {/* Popup for GetFeatured */}
+        {isPopupOpen && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-60">
+            <div className="relative w-full h-screen max-w-3xl flex items-center justify-center p-6 backdrop-blur-sm text-white rounded-lg shadow-lg overflow-hidden">
+              <GetFeatured />
+              <button
+                onClick={togglePopup}
+                className="absolute top-2 right-2 text-white text-2xl"
+              >
+                &times; {/* Close button */}
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Explore Our Collections Section */}
       <section className="py-16 bg-[#1b1b1b] text-white">
-  <div className="container mx-auto">
-    <h2 className="text-4xl px-2 lg:text-5xl lg:px-0 font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
-      Explore Our Collections
-    </h2>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 px-2">
-      {exploreProducts.map((exploreProduct) => {
-        return (
-          <div
-            key={exploreProduct.id}
-            className="relative card bg-[#7A7A7A] overflow-hidden flex flex-col items-center"
-            style={{ height: "auto" }} // Keep auto for flexibility
-          >
-            {/* Image Section */}
-            {exploreProduct.product_images.length > 0 ? (
-              <img
-                className="w-full h-auto max-h-[600px] object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                onClick={() => handleNavigate(`/Product/${exploreProduct.id}`)}
-                src={exploreProduct.product_images[0]?.image}
-                alt={exploreProduct.name}
-              />
-            ) : (
-              <div                 onClick={() => handleNavigate(`/Product/${exploreProduct.id}`)}
-               className="w-full h-screen max-h-[600px] bg-gray-300 animate-pulse flex items-center justify-center">
-                {/* Skeleton loader */}
-                <span className="text-white h-auto text-lg">Loading...</span>
-                
-              </div>
-            )}
+        <div className="container mx-auto">
+          <h2 className="text-4xl px-2 lg:text-5xl lg:px-0 font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
+            Explore Our Collections
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 px-2">
+            {exploreProducts.map((exploreProduct) => {
+              return (
+                <div
+                  key={exploreProduct.id}
+                  className="relative card bg-[#7A7A7A] overflow-hidden flex flex-col items-center"
+                  style={{ height: "auto" }} // Keep auto for flexibility
+                >
+                  {/* Image Section */}
+                  {exploreProduct.product_images.length > 0 ? (
+                    <img
+                      className="w-full h-auto max-h-[600px] object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
+                      onClick={() =>
+                        handleNavigate(`/Product/${exploreProduct.id}`)
+                      }
+                      src={exploreProduct.product_images[0]?.image}
+                      alt={exploreProduct.name}
+                    />
+                  ) : (
+                    <div
+                      onClick={() =>
+                        handleNavigate(`/Product/${exploreProduct.id}`)
+                      }
+                      className="w-full h-screen max-h-[600px] bg-gray-300 animate-pulse flex items-center justify-center"
+                    >
+                      {/* Skeleton loader */}
+                      <span className="text-white h-auto text-lg">
+                        Loading...
+                      </span>
+                    </div>
+                  )}
 
-            {/* Product Name and Price */}
-            <div className="absolute bottom-4 left-4 text-[#282828] text-lg sm:text-sm font-semibold">
-              {exploreProduct.name.toUpperCase()}
-            </div>
-            <div className="absolute bottom-4 right-4 text-[#636363] text-lg sm:text-sm font-semibold">
-              {exploreProduct.price} rs
-            </div>
+                  {/* Product Name and Price */}
+                  <div className="absolute bottom-4 left-4 text-[#282828] text-lg sm:text-sm font-semibold">
+                    {exploreProduct.name.toUpperCase()}
+                  </div>
+                  <div className="absolute bottom-4 right-4 text-[#636363] text-lg sm:text-sm font-semibold">
+                    {exploreProduct.price} rs
+                  </div>
 
-            {/* Wishlist Button */}
+                  {/* Wishlist Button */}
+                  <button
+                    onClick={() => toggleWishlist(exploreProduct.id)}
+                    className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${
+                      wishlist.includes(exploreProduct.id)
+                        ? "bg-red-500"
+                        : "bg-gray-500"
+                    } text-white`}
+                  >
+                    {wishlist.includes(exploreProduct.id) ? "♥" : "♡"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-12 flex justify-center">
             <button
-              onClick={() => toggleWishlist(exploreProduct.id)}
-              className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${
-                wishlist.includes(exploreProduct.id) ? "bg-red-500" : "bg-gray-500"
-              } text-white`}
+              className="px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition"
+              onClick={() => handleNavigate("/collection")}
             >
-              {wishlist.includes(exploreProduct.id) ? "♥" : "♡"}
+              Shop Collections
             </button>
           </div>
-        );
-      })}
-    </div>
-
-    <div className="mt-12 flex justify-center">
-      <button
-        className="px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition"
-        onClick={() => handleNavigate("/collection")}
-      >
-        Shop Collections
-      </button>
-    </div>
-  </div>
-</section>
+        </div>
+      </section>
 
       {/* Why Black Section */}
       <section className="relative py-16 bg-black mb-28">

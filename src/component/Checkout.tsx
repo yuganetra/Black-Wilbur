@@ -1,51 +1,51 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
-import { Product } from "../utiles/types";
-import { sendSms } from "../services/api"; // Import your sendSms function from the API file
+import { Product ,CartItem} from "../utiles/types";
+import { createOrder, sendSms } from "../services/api";
 
-interface CheckoutProduct {
+interface CheckoutProductForbackend{
   id: number;
   quantity: number;
-  product: Product;
-  size: string;
+  product_id: number;
+  product_variation_id: number;
 }
 
-interface FormValues {
-  firstName: string;
-  lastName: string;
+interface Order {
+  order_id: string;
   email: string;
-  address: string;
-  apartment?: string;
+  payment_method: string; 
+  status: string;
+  phone_number: string;
+  address_line_1: string;
+  address_line_2?: string;
   city: string;
   state: string;
-  pinCode: string;
-  phone: string; // Phone field for contact
-  shippingMethod?: string;
-  paymentMethod: string;
-  saveInfo?: boolean;
-  emailOffers?: boolean;
-  products: CheckoutProduct[]; // Include product data in the form values
+  zip_code: string;
+  country: string;
+  user: number;
+  products: CheckoutProductForbackend[]; 
 }
 
 const Checkout: React.FC = () => {
   const location = useLocation();
   const { products: initialProducts = [] } =
-    (location.state as { products: CheckoutProduct[] }) || {};
-  const [products, setProducts] = useState<CheckoutProduct[]>(initialProducts);
+    (location.state as { products: CartItem[] }) || {};
+  const [products, setProducts] = useState<CartItem[]>(initialProducts);
 
   const [loading, setLoading] = useState(true);
   const [otpSent, setOtpSent] = useState(false);
   const [otpInput, setOtpInput] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState(""); 
-  const [resendEnabled, setResendEnabled] = useState(false); 
-  const [otpVarified, setotpVarified] = useState(false); 
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [resendEnabled, setResendEnabled] = useState(false);
+  const [otpVarified, setotpVarified] = useState(false);
 
   useEffect(() => {
     // Simulating data fetch with a timeout
     const fetchProducts = () => {
       setTimeout(() => {
         setProducts(initialProducts);
+        console.log("initialProducts",initialProducts)
         setLoading(false);
       }, 1000); // Simulate a 1-second loading time
     };
@@ -57,31 +57,32 @@ const Checkout: React.FC = () => {
     if (otpSent) {
       // Start a timer for 2 minutes
       timer = setTimeout(() => {
+        console.log("Fetched products from params:", initialProducts); // Log the products
         setResendEnabled(true);
       }, 1000); // 120000 ms = 2 minutes
     }
     return () => clearTimeout(timer);
-  }, [otpSent]);
+  }, [initialProducts, otpSent]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormValues>();
+  } = useForm<Order>();
 
   const handleGetOtp = async () => {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
-    const numbers = [otpInput]; 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const numbers = [otpInput];
 
     try {
-      const response = await sendSms(otp, numbers); 
+      const response = await sendSms(otp, numbers);
       if (response) {
         console.log("SMS sent successfully:", response.message);
         setOtpSent(true);
         setGeneratedOtp(otp);
         setTimeout(() => {
           setResendEnabled(true);
-        }, 1000); 
+        }, 1000);
       } else {
         console.error("Error sending SMS:", response);
       }
@@ -100,19 +101,83 @@ const Checkout: React.FC = () => {
     }
   };
 
-  const onSubmit = async (data: FormValues) => {
-    console.log("Submitted data:", data);
-    console.log("Products from params:", products); // Log the product data
-    console.log("Entered OTP:", otpInput); // Log the entered OTP
-
-    // You might want to add OTP verification logic here
-
-    // Final form submission logic here...
+  const generateOrderId = (): string => {
+    // Create a random number for the order ID
+    const randomPart = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit random number
+  
+    // Add a timestamp to ensure uniqueness
+    const timestampPart = Date.now().toString(); // Current timestamp in milliseconds
+  
+    // Combine both parts to form the order ID
+    const orderId = `ORDER-${randomPart}-${timestampPart}`;
+  
+    return orderId;
   };
+  
+
+  const onSubmit = async (data: Order) => {
+    // if (!otpVarified) {
+    //   alert("Please verify your phone number.");
+    //   return;
+    // }
+    const orderId = generateOrderId();
+    console.log("Generated Order ID:", orderId);
+    const user = localStorage.getItem("user");
+    let userId: number | undefined; 
+  
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      userId = parsedUser.id;
+    }
+    console.log("products",products)
+    // Transform products from frontend type to backend type
+    const orderProducts: CheckoutProductForbackend[] = products.map((p) => ({
+      id: p.id,
+      quantity: p.quantity,
+      product_id: p.product.id, 
+      product_variation_id: p.size.id,
+    }));
+    console.log(orderProducts,products)
+    const orderData: Order = {
+      order_id:orderId,
+      status: "pending",
+      phone_number: data.phone_number,
+      address_line_1: data.address_line_1,
+      address_line_2: data.address_line_2 || "",
+      city: data.city,
+      state: data.state,
+      zip_code: data.zip_code,
+      country: data.country,
+      email: data.email,
+      products: orderProducts, 
+      payment_method: data.payment_method,
+      user: 0,
+    };
+  
+    if (userId !== undefined) {
+      orderData.user = userId;
+    }  
+    try {
+      console.log(orderData);
+      const response = await createOrder(orderData);
+      if (response) {
+        alert("Order placed successfully!");
+      } else {
+        alert("Failed to place order.");
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+    }
+  };
+  
 
   const subtotal = products.reduce((total, product) => {
-    const price = Number(product.product.price);
-    return total + (isNaN(price) ? 0 : price);
+    // Check if product and product.product are defined
+    if (product && product.product) {
+      const price = Number(product.product.price);
+      return total + (isNaN(price) ? 0 : price);
+    }
+    return total; // Return total if product or product.product is undefined
   }, 0);
 
   return (
@@ -144,17 +209,6 @@ const Checkout: React.FC = () => {
                         {errors.email.message}
                       </p>
                     )}
-                    <div className="mt-2 flex items-center">
-                      <input
-                        id="emailOffers"
-                        type="checkbox"
-                        {...register("emailOffers")}
-                        className="mr-2"
-                      />
-                      <label htmlFor="emailOffers" className="text-sm">
-                        Email me with news and offers
-                      </label>
-                    </div>
                   </div>
                   <div className="w-full sm:w-1/2">
                     <label
@@ -166,13 +220,15 @@ const Checkout: React.FC = () => {
                     <input
                       id="contact"
                       type="text"
-                      {...register("phone", { required: "Phone is required" })}
+                      {...register("phone_number", {
+                        required: "Phone is required",
+                      })}
                       onChange={(e) => setOtpInput(e.target.value)} // Capture phone number for OTP
                       className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                     />
-                    {errors.phone && (
+                    {errors.phone_number && (
                       <p className="text-red-500 text-sm">
-                        {errors.phone.message}
+                        {errors.phone_number.message}
                       </p>
                     )}
                     {otpVarified && (
@@ -230,56 +286,79 @@ const Checkout: React.FC = () => {
                 </div>
                 <div>
                   <label
-                    htmlFor="address"
+                    htmlFor="address_line_1"
                     className="block text-sm font-medium"
                   >
-                    Address
+                    Address 1
                   </label>
                   <input
-                    id="address"
+                    id="address_line_1"
                     type="text"
-                    {...register("address", {
+                    {...register("address_line_1", {
                       required: "Address is required",
                     })}
                     className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                   />
-                  {errors.address && (
+                  {errors.address_line_1 && (
                     <p className="text-red-500 text-sm">
-                      {errors.address.message}
+                      {errors.address_line_1.message}
                     </p>
                   )}
                 </div>
                 <div>
                   <label
-                    htmlFor="apartment"
+                    htmlFor="address_line_2"
                     className="block text-sm font-medium"
                   >
-                    Apartment, suite, etc. (optional)
+                    Address 2 (optional)
                   </label>
                   <input
                     id="apartment"
                     type="text"
-                    {...register("apartment")}
+                    {...register("address_line_2")}
                     className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                   />
                 </div>
-                <div>
-                  <label htmlFor="city" className="block text-sm font-medium">
-                    City
-                  </label>
-                  <input
-                    id="city"
-                    type="text"
-                    {...register("city", { required: "City is required" })}
-                    className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
-                  />
-                  {errors.city && (
-                    <p className="text-red-500 text-sm">
-                      {errors.city.message}
-                    </p>
-                  )}
+                <div className="flex flex-col sm:flex-row justify-evenly space-y-4 sm:space-y-0">
+                  <div className="w-full sm:w-1/3">
+                    <label htmlFor="city" className="block text-sm font-medium">
+                      City
+                    </label>
+                    <input
+                      id="state"
+                      type="text"
+                      {...register("city", { required: "City is required" })}
+                      className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
+                    />
+                    {errors.city && (
+                      <p className="text-red-500 text-sm">
+                        {errors.city.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="w-full sm:w-1/3">
+                    <label
+                      htmlFor="country"
+                      className="block text-sm font-medium"
+                    >
+                      Country
+                    </label>
+                    <input
+                      id="country"
+                      type="text"
+                      {...register("country", {
+                        required: "Pin code is required",
+                      })}
+                      className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
+                    />
+                    {errors.country && (
+                      <p className="text-red-500 text-sm">
+                        {errors.country.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0">
+                <div className="flex flex-col sm:flex-row justify-evenly space-y-4 sm:space-y-0">
                   <div className="w-full sm:w-1/3">
                     <label
                       htmlFor="state"
@@ -301,25 +380,50 @@ const Checkout: React.FC = () => {
                   </div>
                   <div className="w-full sm:w-1/3">
                     <label
-                      htmlFor="pinCode"
+                      htmlFor="zip_code"
                       className="block text-sm font-medium"
                     >
                       Zip Code
                     </label>
                     <input
-                      id="pinCode"
+                      id="zip_code"
                       type="text"
-                      {...register("pinCode", {
+                      {...register("zip_code", {
                         required: "Pin code is required",
                       })}
                       className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                     />
-                    {errors.pinCode && (
+                    {errors.zip_code && (
                       <p className="text-red-500 text-sm">
-                        {errors.pinCode.message}
+                        {errors.zip_code.message}
                       </p>
                     )}
                   </div>
+                </div>
+                {/* Payment Method Dropdown */}
+                <div>
+                  <label
+                    htmlFor="paymentMethod"
+                    className="block text-sm font-medium"
+                  >
+                    Payment Method
+                  </label>
+                  <select
+                    id="paymentMethod"
+                    {...register("payment_method", {
+                      required: "Payment method is required",
+                    })}
+                    className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
+                  >
+                    <option value="">Select a payment method</option>
+                    <option value="UPI">UPI</option>
+                    <option value="cash_on_delivery">Cash on Delivery</option>
+                  </select>
+                  {errors.payment_method && (
+                    <p className="text-red-500 text-sm">
+                      {errors.payment_method.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -345,42 +449,46 @@ const Checkout: React.FC = () => {
                   <div className="flex justify-between border-t border-gray-300 pt-4">
                     <div className="h-6 bg-gray-300 rounded-lg w-1/3"></div>
                     <div className="h-6 bg-gray-300 rounded-lg w-1/3"></div>
-                    </div>
+                  </div>
                 </div>
               ) : (
                 <>
                   {Array.isArray(products) && products.length > 0 ? (
-                    products.map((checkoutProduct) => (
-                      <div
-                        key={checkoutProduct.id}
-                        className="flex justify-between items-center mb-4"
-                      >
-                        <div className="flex items-center">
-                          <img
-                            src={
-                              checkoutProduct.product.product_images?.[0]
-                                ?.image || "/placeholder.png"
-                            }
-                            alt={checkoutProduct.product.name}
-                            className="w-16 h-16 object-cover rounded"
-                          />
-                          <div className="ml-4">
-                            <h4 className="text-lg font-semibold">
-                              {checkoutProduct.product.name}
-                            </h4>
-                            <h4 className="text-lg font-semibold">
-                              {checkoutProduct.size}
-                            </h4>
+                    products.map((checkoutProduct) => {
+                      // Ensure checkoutProduct and its product property are defined
+                      const product = checkoutProduct.product || {};
+                      const productImages = product.product_images || [];
+                      const imageSrc =
+                        productImages.length > 0
+                          ? productImages[0].image
+                          : "/placeholder.png";
+
+                      return (
+                        <div
+                          key={checkoutProduct.id}
+                          className="flex justify-between items-center mb-4"
+                        >
+                          <div className="flex items-center">
+                            <img
+                              src={imageSrc}
+                              alt={product.name || "Product Image"}
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                            <div className="ml-4">
+                              <h4 className="text-lg font-semibold">
+                                {product.name || "Unnamed Product"}
+                              </h4>
+                              <h4 className="text-lg font-semibold">
+                                {checkoutProduct.size.size || "Size not specified"}
+                              </h4>
+                            </div>
                           </div>
+                          <p className="text-lg font-bold">
+                            ${(Number(product.price) || 0).toFixed(2)}
+                          </p>
                         </div>
-                        <p className="text-lg font-bold">
-                          $
-                          {(Number(checkoutProduct.product.price) || 0).toFixed(
-                            2
-                          )}
-                        </p>
-                    </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p>No products available.</p>
                   )}
@@ -399,7 +507,7 @@ const Checkout: React.FC = () => {
                     <p className="text-lg font-semibold">
                       ${subtotal.toFixed(2)}
                     </p>
-              </div>
+                  </div>
                 </>
               )}
             </div>

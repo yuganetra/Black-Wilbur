@@ -3,7 +3,7 @@ import { AiOutlineLeft, AiOutlinePlus, AiOutlineRight } from "react-icons/ai";
 import { MdClose, MdFilterList } from "react-icons/md";
 import img from "../asset/collection-carousel.jpg";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchAllCollection } from "../services/api";
+import { fetchCollection } from "../services/api";
 import { Product } from "../utiles/types";
 
 const Collection: React.FC = () => {
@@ -21,13 +21,24 @@ const Collection: React.FC = () => {
   const [showSize, setShowSize] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
   const [showCategory, setShowCategory] = useState(false);
-
+  const [wishlist, setWishlist] = useState<number[]>([]); // Wishlist state
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+
+  const toggleWishlist = (productId: number) => {
+    setWishlist((prevWishlist) => {
+      const newWishlist = prevWishlist.includes(productId)
+        ? prevWishlist.filter((id) => id !== productId) // Remove from wishlist
+        : [...prevWishlist, productId]; // Add to wishlist
+
+      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to local storage
+      return newWishlist;
+    });
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const fetchProduct = await fetchAllCollection();
+        const fetchProduct = await fetchCollection();
         const formattedProducts = fetchProduct.map((item: any) => ({
           id: item.id,
           name: item.name,
@@ -52,6 +63,11 @@ const Collection: React.FC = () => {
     };
 
     fetchProducts();
+        // Fetch wishlist from local storage
+        const storedWishlist = localStorage.getItem("wishlist");
+        if (storedWishlist) {
+          setWishlist(JSON.parse(storedWishlist));
+        }
   }, []);
 
   useEffect(() => {
@@ -68,10 +84,13 @@ const Collection: React.FC = () => {
 
     const matchesCategory =
       trimmedSelectedCategory === "collection" || // Allow all products if category is "collection"
-      (trimmedProductCategory && trimmedProductCategory === trimmedSelectedCategory);
+      (trimmedProductCategory &&
+        trimmedProductCategory === trimmedSelectedCategory);
 
     const matchesSize = selectedSizes.length
-      ? product.sizes?.some((sizeObj) => selectedSizes.includes(sizeObj.size)) ?? false
+      ? product.sizes?.some((sizeObj) =>
+          selectedSizes.includes(sizeObj.size)
+        ) ?? false
       : true;
 
     // Price filtering
@@ -88,9 +107,15 @@ const Collection: React.FC = () => {
     }
     // Category filtering
     const matchesSelectedCategories =
-      selectedCategories.length === 0 || selectedCategories.includes(trimmedProductCategory);
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(trimmedProductCategory);
 
-    return matchesCategory && matchesSize && matchesPrice && matchesSelectedCategories; // Combine conditions
+    return (
+      matchesCategory &&
+      matchesSize &&
+      matchesPrice &&
+      matchesSelectedCategories
+    ); // Combine conditions
   });
 
   // Sort filtered products
@@ -108,7 +133,9 @@ const Collection: React.FC = () => {
   const currentProducts =
     category === "all"
       ? allProducts // Use sortedProducts directly if category is "collection"
-      : sortedProducts.slice(startIdx, startIdx + productsPerPage).filter(Boolean);
+      : sortedProducts
+          .slice(startIdx, startIdx + productsPerPage)
+          .filter(Boolean);
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
@@ -201,6 +228,16 @@ const Collection: React.FC = () => {
                 <div className="absolute bottom-2 right-2 text-[#636363] text-sm font-semibold">
                   {product.price} rs
                 </div>
+                <button
+                  onClick={() => toggleWishlist(product.id)}
+                  className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${
+                    wishlist.includes(product.id)
+                      ? "bg-red-500"
+                      : "bg-gray-500"
+                  } text-white`}
+                >
+                  {wishlist.includes(product.id) ? "♥" : "♡"}
+                </button>
               </div>
             ))}
           </div>
@@ -259,7 +296,10 @@ const Collection: React.FC = () => {
             {showSize && (
               <div className="mt-2 flex flex-col">
                 {["small", "medium", "large", "X-large"].map((size) => (
-                  <label key={size} className="flex items-center cursor-pointer">
+                  <label
+                    key={size}
+                    className="flex items-center cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       className="mr-2"
@@ -293,7 +333,10 @@ const Collection: React.FC = () => {
             {showPrice && (
               <div className="mt-2 flex flex-col">
                 {["Low to High", "High to Low"].map((sortOption) => (
-                  <label key={sortOption} className="flex items-center cursor-pointer">
+                  <label
+                    key={sortOption}
+                    className="flex items-center cursor-pointer"
+                  >
                     <input
                       type="radio"
                       className="mr-2"
@@ -366,4 +409,3 @@ const Collection: React.FC = () => {
 };
 
 export default Collection;
-

@@ -31,7 +31,6 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
 
     def validate(self, attrs):
-        # Here you can add any custom validation logic if needed
         return attrs
 
 class SearchProductSerializer(serializers.Serializer):
@@ -48,8 +47,8 @@ class EditQuantitySerializer(serializers.Serializer):
     quantity = serializers.IntegerField(required=True)
 
 class SendSmsSerializer(serializers.Serializer):
-    otp = serializers.CharField(required=True, max_length=8)  # OTP should be a string of digits
+    otp = serializers.CharField(required=True, max_length=8)  
     numbers = serializers.ListField(
-        child=serializers.CharField(max_length=15),  # Adjust max_length based on your phone number format
+        child=serializers.CharField(max_length=15),
         required=True
     )

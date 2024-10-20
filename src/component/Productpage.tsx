@@ -3,7 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { IoIosStar } from "react-icons/io";
 import CartComponent from "./Cart";
 import SizeChart from "../utiles/SizeChart";
-import { fetchProductById, fetchExplore, addToCart } from "../services/api";
+import {
+  fetchProductById,
+  fetchExplore,
+  addToCart,
+  isUserLoggedIn,
+} from "../services/api";
 import { Product, ProductVariation } from "../utiles/types";
 import Skeleton from "../utiles/Skeleton";
 
@@ -11,7 +16,9 @@ const Productpage = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(null);
+  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(
+    null
+  );
   const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
   const [userRating, setUserRating] = useState(0);
   const navigate = useNavigate();
@@ -21,14 +28,39 @@ const Productpage = () => {
     navigate(path);
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (product && selectedSize) {
-      navigate("/checkout", {
-        state: { products: [{ ...product, size: selectedSize.size }] },
-      });
+      const cartItem = {
+        id: product.id, // Assuming you want to keep this same id for the CartItem
+        quantity: 1,
+        product: {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          availability: true, // Assuming it's always available
+          product_images: product.product_images, // Use the images directly
+        },
+        size: selectedSize.size,
+        product_variation_id: selectedSize.id,
+      };
+      
+      if (isUserLoggedIn()) {
+        navigate("/checkout", {
+          state: { products: [cartItem] }, // Pass the structured cartItem as an array
+        });
+      } else {
+        navigate("/auth/login", {  
+          state: {
+            from: "/checkout",
+            products: [cartItem], // Pass the structured cartItem as an array
+          },
+        });
+      }
     }
   };
-
+   
+  
   const toggleCartSidebar = (): void => {
     setIsCartOpen(!isCartOpen);
   };
@@ -47,36 +79,42 @@ const Productpage = () => {
 
   const handleAddToCart = async () => {
     if (product && selectedSize) {
-
-      const productToAdd = { 
-        product_id: product.id,  
-        product_variation_id: selectedSize.id, 
-        quantity: 1,  
+      const productToAdd = {
+        product_id: product.id,
+        product_variation_id: selectedSize.id,
+        quantity: 1,
       };
-  
+
       const user = localStorage.getItem("user");
-  
+
       if (!user) {
-        console.log("User is not logged in. Adding product to localStorage cart.");
-  
+        console.log(
+          "User is not logged in. Adding product to localStorage cart."
+        );
+
         const cartString = localStorage.getItem("cart");
         let existingCart = cartString ? JSON.parse(cartString) : [];
-  
+
         if (!Array.isArray(existingCart)) {
-          console.error("Existing cart is not an array. Initializing a new cart.");
-          existingCart = []; 
+          console.error(
+            "Existing cart is not an array. Initializing a new cart."
+          );
+          existingCart = [];
         }
-  
+
         existingCart.push(productToAdd);
-  
+
         localStorage.setItem("cart", JSON.stringify(existingCart));
-  
 
         setIsCartOpen(true);
         console.log("Product added to local storage cart:", productToAdd);
       } else {
         try {
-          await addToCart(productToAdd.product_id, productToAdd.product_variation_id, productToAdd.quantity);
+          await addToCart(
+            productToAdd.product_id,
+            productToAdd.product_variation_id,
+            productToAdd.quantity
+          );
           setIsCartOpen(true);
           console.log("Product added to API cart:", productToAdd);
         } catch (error) {
@@ -133,28 +171,38 @@ const Productpage = () => {
 
         {/* Product Details Section */}
         <div className="w-full lg:w-1/2 flex flex-col text-left p-4">
-          <h1 className="text-2xl lg:text-4xl font-bold mb-2">{product.name}</h1>
+          <h1 className="text-2xl lg:text-4xl font-bold mb-2">
+            {product.name}
+          </h1>
           <p className="text-lg lg:text-xl mb-4">Price: ₹{product.price}</p>
 
           <div className="flex items-center mb-4">
-            <span className="text-lg mr-2">Average Rating: {averageRating} / 5</span>
+            <span className="text-lg mr-2">
+              Average Rating: {averageRating} / 5
+            </span>
             {[...Array(5)].map((_, index) => (
               <IoIosStar
                 key={index}
-                className={`w-6 h-6 ${index < averageRating ? "text-yellow-500" : "text-white"}`}
+                className={`w-6 h-6 ${
+                  index < averageRating ? "text-yellow-500" : "text-white"
+                }`}
               />
             ))}
           </div>
 
           {/* Size Selection */}
           <div className="mb-4">
-            <h4 className="text-sm font-medium text-white mb-2">Select Size:</h4>
+            <h4 className="text-sm font-medium text-white mb-2">
+              Select Size:
+            </h4>
             <div className="flex gap-2">
               {product.sizes.map((sizeObj) => (
                 <div
                   key={sizeObj.id}
                   className={`flex items-center justify-center w-12 h-12 rounded-full border-2 border-black cursor-pointer ${
-                    selectedSize?.id === sizeObj.id ? "bg-black text-white" : "bg-white text-black"
+                    selectedSize?.id === sizeObj.id
+                      ? "bg-black text-white"
+                      : "bg-white text-black"
                   }`}
                   onClick={() => setSelectedSize(sizeObj)}
                 >
@@ -193,7 +241,9 @@ const Productpage = () => {
             <p className="text-sm mb-2">{product.description}</p>
 
             {/* User Rating Section */}
-            <h4 className="font-medium text-xl text-left text-white mb-2">Rate this product:</h4>
+            <h4 className="font-medium text-xl text-left text-white mb-2">
+              Rate this product:
+            </h4>
             <div className="flex items-center mb-2">
               {[...Array(5)].map((_, index) => (
                 <IoIosStar
