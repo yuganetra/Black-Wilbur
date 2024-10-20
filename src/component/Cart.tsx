@@ -8,14 +8,8 @@ import {
   removeFromCart,
   updateCartItem,
 } from "../services/api";
-import { Product } from "../utiles/types";
+import { Product,CartItem } from "../utiles/types";
 
-interface CartItem {
-  id: number;
-  quantity: number;
-  product: Product;
-  size: string;
-}
 
 interface CartComponentProps {
   isOpen: boolean;
@@ -33,6 +27,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     } else {
       if (isUserLoggedIn()) {
         onClose();
+        console.log("cartProductsc",cartProducts)
         navigate("/checkout", { state: { products: cartProducts } });
       } else {
         onClose();
@@ -57,7 +52,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                 const productId = (item.product && item.product.id) || item.product_id;
                 if (!productId) {
                   console.log("No valid product ID found");
-                  return null; // Returning null if no valid product ID is found
+                  return null; 
                 }
   
                 const productDetails = await fetchProductById(productId);
@@ -72,10 +67,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                 return null;
               })
             );
-  
             // Filter out null values from the result
-            const filteredCart = validCart.filter((item) => item !== null) as CartItem[];
-  
+            const filteredCart = validCart.filter((item) => item !== null) as unknown as CartItem[];
             setCartProducts(filteredCart);
             console.log("Cart loaded from localStorage:", filteredCart);
           } else {
@@ -98,7 +91,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       loadCartItems();
-      const intervalId = setInterval(loadCartItems, 5000);
+      const intervalId = setInterval(loadCartItems, 50000);
       return () => clearInterval(intervalId);
     }
   }, [isOpen]);
@@ -110,14 +103,14 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   ) => {
     setCartProducts((prev) => {
       const updatedCart = prev.filter(
-        (item) => !(item.product.id === productId && item.size === size)
+        (item) => !(item.product.id === productId && item.size.size === size)
       );
       removeFromCart(cartItemId).catch((error) => {
         console.error("Error removing item from cart:", error);
       });
 
       localStorage.setItem("cart", JSON.stringify(updatedCart));
-
+      loadCartItems();
       return updatedCart;
     });
   };
@@ -210,7 +203,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                         Price: $
                         {(item.product.price * item.quantity).toFixed(2)}
                       </p>
-                      <p className="text-sm text-gray-500">Size: {item.size}</p>
+                      <p className="text-sm text-gray-500">Size: {item.size.size}</p>
                       <p className="text-sm text-gray-500">
                         Quantity: {item.quantity}
                       </p>
@@ -230,7 +223,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                         </button>
                         <button
                           onClick={() =>
-                            handleRemove(item.id, item.product.id, item.size)
+                            handleRemove(item.id, item.product.id, item.size.size)
                           }
                           className="text-red-500 hover:underline ml-4"
                         >

@@ -1,8 +1,17 @@
 import axios from "axios";
-import { AxiosError } from 'axios';
+import { AxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
-import { Category, Product, AuthUser, ProductResponse, ErrorResponse, SendSmsResponse } from "../utiles/types";
-
+import {
+  Category,
+  Product,
+  AuthUser,
+  ProductResponse,
+  ErrorResponse,
+  SendSmsResponse,
+  Order,
+  CartItem,
+  GetOrder,
+} from "../utiles/types";
 
 const API_BASE_URL = "http://localhost:5000/";
 
@@ -22,14 +31,18 @@ export const fetchCategories = async (): Promise<Category[]> => {
 };
 
 export const fetchBestSeller = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}bestseller`);
+  const response = await axiosInstance.get<Product[]>(
+    `${API_BASE_URL}bestseller`
+  );
   return response.data;
 };
 
 export const fetchProductById = async (productId: number): Promise<Product> => {
-  const response = await axiosInstance.get<Product>(`${API_BASE_URL}products/${productId}`);
+  const response = await axiosInstance.get<Product>(
+    `${API_BASE_URL}products/${productId}`
+  );
   return response.data;
-}
+};
 
 export const getTokenExpiration = (token: string): number => {
   const decoded: { exp: number } = jwtDecode(token);
@@ -42,12 +55,9 @@ export const tokenExpiresIn = (token: string): number => {
 };
 
 export const fetchCollection = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}collections`);
-  return response.data;
-};
-
-export const fetchAllCollection = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}collections`);
+  const response = await axiosInstance.get<Product[]>(
+    `${API_BASE_URL}collections`
+  );
   return response.data;
 };
 
@@ -90,18 +100,16 @@ export const registerUser = async (userData: AuthUser): Promise<any> => {
     const response = await axios.post(`${API_BASE_URL}register`, userData);
     return response.data;
   } catch (error) {
-    const axiosError = error as AxiosError<ErrorResponse>; // Type assertion to AxiosError with the custom interface
+    const axiosError = error as AxiosError<ErrorResponse>;
 
-    let errorMessage = 'An unknown error occurred.';
+    let errorMessage = "An unknown error occurred.";
 
     if (axiosError.response && axiosError.response.data) {
-      // Check if error structure exists and format it accordingly
       const serverErrors = axiosError.response.data.error;
       if (serverErrors) {
-        errorMessage = JSON.stringify(serverErrors); // This will show all server errors
+        errorMessage = JSON.stringify(serverErrors);
       }
     } else if (error instanceof Error) {
-      // If it's a general error, get its message
       errorMessage = error.message;
     }
 
@@ -112,19 +120,20 @@ export const registerUser = async (userData: AuthUser): Promise<any> => {
 export const loginUser = async (loginData: AuthUser): Promise<any> => {
   try {
     const response = await axios.post(`${API_BASE_URL}login`, {
-      identifier: loginData.email, // This can be either username or email
+      identifier: loginData.email,
       password: loginData.password,
     });
 
-    // Store tokens in local storage
     localStorage.setItem("authToken", response.data.access_token);
     localStorage.setItem("refreshToken", response.data.refresh_token);
 
-    return response.data.user; // Returning the user data
+    return response.data.user;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      // Throw specific error message if available
-      const errorMessage = error.response?.data?.error || error.message || "Login failed. Please try again.";
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Login failed. Please try again.";
       throw new Error(errorMessage);
     }
     throw new Error("An unexpected error occurred");
@@ -157,17 +166,9 @@ export const isUserLoggedIn = (): boolean => {
 };
 
 // Cart Functions
-export const fetchCartItems = async () => {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("No access token found");
-  }
-  const response = await axiosInstance.get(`${API_BASE_URL}cart`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
+export const fetchCartItems = async (): Promise<CartItem[]> => {
+  const response = await axiosInstance.get(`${API_BASE_URL}cart`);
+  return response.data; // Ensure that response.data is in the CartItem format
 };
 
 export const addToCart = async (
@@ -175,49 +176,33 @@ export const addToCart = async (
   productVariationId: number,
   quantity: number
 ) => {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("No access token found");
-  }
   const response = await axiosInstance.post(`${API_BASE_URL}cart`, {
     product_id: productId,
     product_variation_id: productVariationId,
     quantity,
-  }, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
   return response.data;
 };
 
-export const updateCartItem = async (cartItemId: number, newQuantity: number) => {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("No access token found");
-  }
-  const response = await axiosInstance.put(`${API_BASE_URL}cart/${cartItemId}`, {
-    quantity: newQuantity,
-  }, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const updateCartItem = async (
+  cartItemId: number,
+  newQuantity: number
+) => {
+  const response = await axiosInstance.put(
+    `${API_BASE_URL}cart/${cartItemId}`,
+    {
+      quantity: newQuantity,
+    }
+  );
   return response.data;
 };
 
 export const removeFromCart = async (cartItemId: number) => {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("No access token found");
-  }
-
-  const response = await axiosInstance.delete(`${API_BASE_URL}cart/${cartItemId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
+  await axiosInstance.delete(`${API_BASE_URL}cart`, {
+    data: {
+      cart_item_id: cartItemId,
     },
   });
-  return response.data;
 };
 
 export const getCartItemsCount = async (): Promise<number> => {
@@ -250,27 +235,57 @@ export const fetchSearchResults = async (
       headers: { "Content-Type": "application/json" },
     });
 
-    return response.data as ProductResponse; // Return data for further use in your component
+    return response.data as ProductResponse;
   } catch (error) {
     console.error("Error fetching search results:", error);
-    return undefined; // Return undefined in case of error
+    return undefined;
   }
 };
 
-//sms
 // Function to send an SMS
-export const sendSms = async (otp: string, numbers: string[]): Promise<SendSmsResponse> => {
+export const sendSms = async (
+  otp: string,
+  numbers: string[]
+): Promise<SendSmsResponse> => {
   try {
-      const response = await axios.post(`${API_BASE_URL}send-sms/`, {
-          otp,
-          numbers
-      });
+    const response = await axios.post(`${API_BASE_URL}send-sms/`, {
+      otp,
+      numbers,
+    });
 
-      return response.data; // Assuming your backend returns JSON
+    return response.data;
   } catch (error) {
-      // Handle error appropriately
-      console.error("Error sending SMS:", error);
-      return { error: "Failed to send SMS." };
+    console.error("Error sending SMS:", error);
+    return { error: "Failed to send SMS." };
   }
 };
 
+// Function to get all orders of the current user
+export const getOrders = async (): Promise<GetOrder[]> => {
+  const response = await axiosInstance.get<GetOrder[]>(
+    `${API_BASE_URL}orders`
+  );
+  if (!response.data) {
+    throw new Error("Failed to fetch orders");
+  }
+  return response.data;
+};
+
+// Function to create a new order
+export const createOrder = async (orderData: Order) => {
+  try {
+    const response = await axiosInstance.post(
+      `${API_BASE_URL}orders`,
+      orderData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating order:");
+    throw error;
+  }
+};

@@ -1,5 +1,6 @@
 from django.db import models
 from blackwilbur.models import User
+from blackwilbur.models import Product
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -13,4 +14,10 @@ class Order(models.Model):
     state = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
-    
+    order_id = models.CharField(max_length=255)  # Temporarily allow null
+    email = models.EmailField(max_length=255)  # Allow null temporarily
+    payment_method = models.CharField(max_length=50)  # Add this line
+    products = models.ManyToManyField(Product, through='OrderItem')
+
+
+
