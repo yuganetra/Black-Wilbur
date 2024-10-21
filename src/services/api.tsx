@@ -13,7 +13,7 @@ import {
   GetOrder,
 } from "../utiles/types";
 
-const API_BASE_URL = "http://localhost:5000/";
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
 // Axios instance for API calls
 const axiosInstance = axios.create({
@@ -31,16 +31,12 @@ export const fetchCategories = async (): Promise<Category[]> => {
 };
 
 export const fetchBestSeller = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(
-    `${API_BASE_URL}bestseller`
-  );
+  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}bestseller`);
   return response.data;
 };
 
 export const fetchProductById = async (productId: number): Promise<Product> => {
-  const response = await axiosInstance.get<Product>(
-    `${API_BASE_URL}products/${productId}`
-  );
+  const response = await axiosInstance.get<Product>(`${API_BASE_URL}products/${productId}`);
   return response.data;
 };
 
@@ -55,9 +51,7 @@ export const tokenExpiresIn = (token: string): number => {
 };
 
 export const fetchCollection = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(
-    `${API_BASE_URL}collections`
-  );
+  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}collections`);
   return response.data;
 };
 
@@ -131,9 +125,7 @@ export const loginUser = async (loginData: AuthUser): Promise<any> => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        "Login failed. Please try again.";
+        error.response?.data?.error || error.message || "Login failed. Please try again.";
       throw new Error(errorMessage);
     }
     throw new Error("An unexpected error occurred");
@@ -184,16 +176,10 @@ export const addToCart = async (
   return response.data;
 };
 
-export const updateCartItem = async (
-  cartItemId: number,
-  newQuantity: number
-) => {
-  const response = await axiosInstance.put(
-    `${API_BASE_URL}cart/${cartItemId}`,
-    {
-      quantity: newQuantity,
-    }
-  );
+export const updateCartItem = async (cartItemId: number, newQuantity: number) => {
+  const response = await axiosInstance.put(`${API_BASE_URL}cart/${cartItemId}`, {
+    quantity: newQuantity,
+  });
   return response.data;
 };
 
@@ -243,10 +229,7 @@ export const fetchSearchResults = async (
 };
 
 // Function to send an SMS
-export const sendSms = async (
-  otp: string,
-  numbers: string[]
-): Promise<SendSmsResponse> => {
+export const sendSms = async (otp: string, numbers: string[]): Promise<SendSmsResponse> => {
   try {
     const response = await axios.post(`${API_BASE_URL}send-sms/`, {
       otp,
@@ -262,9 +245,7 @@ export const sendSms = async (
 
 // Function to get all orders of the current user
 export const getOrders = async (): Promise<GetOrder[]> => {
-  const response = await axiosInstance.get<GetOrder[]>(
-    `${API_BASE_URL}orders`
-  );
+  const response = await axiosInstance.get<GetOrder[]>(`${API_BASE_URL}orders`);
   if (!response.data) {
     throw new Error("Failed to fetch orders");
   }
@@ -274,15 +255,11 @@ export const getOrders = async (): Promise<GetOrder[]> => {
 // Function to create a new order
 export const createOrder = async (orderData: Order) => {
   try {
-    const response = await axiosInstance.post(
-      `${API_BASE_URL}orders`,
-      orderData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await axiosInstance.post(`${API_BASE_URL}orders`, orderData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Error creating order:");
@@ -290,30 +267,28 @@ export const createOrder = async (orderData: Order) => {
   }
 };
 
-
 export const fetchRatings = async (productId: number) => {
   try {
     const response = await axiosInstance.get(`${API_BASE_URL}ratings/?product_id=${productId}`);
-    console.log(response.data); 
+    console.log(response.data);
     return response.data; // Return the fetched ratings
   } catch (error) {
     console.error("Error getting ratings:");
-    throw error;  
+    throw error;
   }
 };
 
-
 export const addRating = async (productId: number, rating: number) => {
-    const ratingData = {
-        product_id: productId,
-        rating: rating, 
-    };
+  const ratingData = {
+    product_id: productId,
+    rating: rating,
+  };
 
-    try {
-        const response = await axiosInstance.post(`${API_BASE_URL}ratings/`, ratingData);
-        console.log('Rating added:', response.data); 
-    } catch (error) {
-        console.error('Error adding rating:');
-        throw error
-    }
+  try {
+    const response = await axiosInstance.post(`${API_BASE_URL}ratings/`, ratingData);
+    console.log("Rating added:", response.data);
+  } catch (error) {
+    console.error("Error adding rating:");
+    throw error;
+  }
 };
