@@ -8,8 +8,7 @@ import {
   removeFromCart,
   updateCartItem,
 } from "../services/api";
-import { Product,CartItem } from "../utiles/types";
-
+import { Product, CartItem } from "../utiles/types";
 
 interface CartComponentProps {
   isOpen: boolean;
@@ -20,6 +19,21 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   const [cartProducts, setCartProducts] = useState<CartItem[]>([]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent scrolling
+      document.body.style.overflow = "hidden";
+    } else {
+      // Allow scrolling again
+      document.body.style.overflow = "unset";
+    }
+
+    // Cleanup to reset overflow when the component unmounts
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   const handleCheckoutNavigate = async () => {
     const cartCount = getCartItemsCount();
     if ((await cartCount) === 0) {
@@ -27,7 +41,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     } else {
       if (isUserLoggedIn()) {
         onClose();
-        console.log("cartProductsc",cartProducts)
+        console.log("cartProductsc", cartProducts);
         navigate("/checkout", { state: { products: cartProducts } });
       } else {
         onClose();
@@ -41,31 +55,38 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       if (!isUserLoggedIn()) {
         console.log("User is not logged in. Fetching cart from localStorage.");
         const existingCartString = localStorage.getItem("cart");
-  
+
         if (existingCartString && existingCartString !== "[]") {
           const existingCart = JSON.parse(existingCartString);
-          
+
           // Ensure existingCart is an array before using .map()
           if (Array.isArray(existingCart) && existingCart.length > 0) {
             const validCart = await Promise.all(
-              existingCart.map(async (item: { product: Product | null; product_id: number; quantity: number; product_variation_id: string }) => {
-                const productId = (item.product && item.product.id) || item.product_id;
-                if (!productId) {
-                  console.log("No valid product ID found");
-                  return null; 
+              existingCart.map(
+                async (item: {
+                  product: Product | null;
+                  product_id: number;
+                  quantity: number;
+                  product_variation_id: string;
+                }) => {
+                  const productId = (item.product && item.product.id) || item.product_id;
+                  if (!productId) {
+                    console.log("No valid product ID found");
+                    return null;
+                  }
+
+                  const productDetails = await fetchProductById(productId);
+                  if (productDetails) {
+                    return {
+                      id: productId,
+                      quantity: item.quantity,
+                      product: productDetails,
+                      size: item.product_variation_id || "Default Size",
+                    };
+                  }
+                  return null;
                 }
-  
-                const productDetails = await fetchProductById(productId);
-                if (productDetails) {
-                  return {
-                    id: productId,
-                    quantity: item.quantity,
-                    product: productDetails,
-                    size: item.product_variation_id || "Default Size",
-                  };
-                }
-                return null;
-              })
+              )
             );
             // Filter out null values from the result
             const filteredCart = validCart.filter((item) => item !== null) as unknown as CartItem[];
@@ -78,7 +99,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
         }
         return;
       }
-  
+
       const apiCartItems = await fetchCartItems();
       console.log("Cart Items Loaded:", apiCartItems);
       setCartProducts(apiCartItems);
@@ -86,7 +107,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       console.error("Failed to load cart items", error);
     }
   };
-  
 
   useEffect(() => {
     if (isOpen) {
@@ -96,11 +116,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  const handleRemove = (
-    cartItemId: number,
-    productId: number,
-    size: string
-  ) => {
+  const handleRemove = (cartItemId: number, productId: number, size: string) => {
     setCartProducts((prev) => {
       const updatedCart = prev.filter(
         (item) => !(item.product.id === productId && item.size.size === size)
@@ -126,9 +142,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
             console.error("Error updating cart item:", error);
             setCartProducts((prev) =>
               prev.map((item) =>
-                item.id === cartItemId
-                  ? { ...item, quantity: item.quantity }
-                  : item
+                item.id === cartItemId ? { ...item, quantity: item.quantity } : item
               )
             );
           });
@@ -148,30 +162,19 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     0
   );
 
-  const totalQuantity = cartProducts.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
+  const totalQuantity = cartProducts.reduce((total, item) => total + item.quantity, 0);
   return (
     <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={onClose}
-        />
-      )}
+      {isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-[60]" onClick={onClose} />}
       <div
         className={`fixed top-0 right-0 w-80 bg-white shadow-lg transition-transform transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
-        } h-full z-50 flex flex-col`}
+        } h-full z-[70] flex flex-col`}
       >
         {/* Cart Header */}
         <div className="p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Your Cart</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-600 hover:text-black text-2xl"
-          >
+          <button onClick={onClose} className="text-gray-600 hover:text-black text-2xl">
             &times;
           </button>
         </div>
@@ -200,13 +203,10 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                     <div className="text-left">
                       <h3 className="font-medium">{item.product.name}</h3>
                       <p className="text-gray-600">
-                        Price: $
-                        {(item.product.price * item.quantity).toFixed(2)}
+                        Price: ${(item.product.price * item.quantity).toFixed(2)}
                       </p>
                       <p className="text-sm text-gray-500">Size: {item.size.size}</p>
-                      <p className="text-sm text-gray-500">
-                        Quantity: {item.quantity}
-                      </p>
+                      <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                       <div className="flex items-center mt-2 gap-2">
                         <button
                           onClick={() => handleUpdateQuantity(item.id, -1)}
@@ -222,9 +222,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                           +
                         </button>
                         <button
-                          onClick={() =>
-                            handleRemove(item.id, item.product.id, item.size.size)
-                          }
+                          onClick={() => handleRemove(item.id, item.product.id, item.size.size)}
                           className="text-red-500 hover:underline ml-4"
                         >
                           Remove

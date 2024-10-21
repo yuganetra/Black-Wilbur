@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdClose, MdFacebook } from "react-icons/md";
 import { BsTwitterX } from "react-icons/bs";
@@ -13,6 +13,21 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for popup visibility
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent scrolling
+      document.body.style.overflow = "hidden";
+    } else {
+      // Allow scrolling again
+      document.body.style.overflow = "unset";
+    }
+
+    // Cleanup to reset overflow when the component unmounts
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   const handleNavigate = (path: string) => {
     onClose();
@@ -35,15 +50,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={onClose}
-        ></div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60]" onClick={onClose}></div>
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#141414] text-white transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`fixed top-0 left-0 h-full w-64 bg-[#141414] text-white transform transition-transform duration-300 ease-in-out z-[70] ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -54,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           {menuItems.map((item, index) => (
             <a
               key={index}
-              onClick={() => item.action ? item.action() : handleNavigate(item.path)}
+              onClick={() => (item.action ? item.action() : handleNavigate(item.path))}
               className="text-2xl cursor-pointer transition duration-200 hover:border-b-2 hover:border-white" // Added hover border
             >
               {item.label}
