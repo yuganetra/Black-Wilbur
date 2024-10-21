@@ -1,7 +1,7 @@
 #!/bin/bash
+pip install -r requirements.txt
 
+python manage.py collectstatic --no-input
 # Activate the virtual environment
 source venv/bin/activate
 
-# Start your application (adjust this for Django or Flask)
-npm run server:start
