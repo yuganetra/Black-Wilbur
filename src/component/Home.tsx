@@ -46,7 +46,6 @@ const Home: React.FC = () => {
     });
   };
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -163,7 +162,8 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-16 bg-[#1B1B1B] relative">
+      {/* Large Screen Section (Visible only for screens over 1000px) */}
+      <section className="py-16 bg-[#1B1B1B] relative hidden md:block">
         <div className="container mx-auto px-4 md:px-6 text-center">
           <div className="relative w-full h-[90vh] overflow-hidden">
             <video
@@ -184,6 +184,50 @@ const Home: React.FC = () => {
             <button
               onClick={togglePopup}
               className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-gray-800 transition"
+            >
+              Featured on BlackWilbur.com
+            </button>
+          </div>
+        </div>
+
+        {/* Popup for GetFeatured */}
+        {isPopupOpen && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-60">
+            <div className="relative w-full h-screen max-w-3xl flex items-center justify-center p-6 backdrop-blur-sm text-white rounded-lg shadow-lg overflow-hidden">
+              <GetFeatured />
+              <button
+                onClick={togglePopup}
+                className="absolute top-2 right-2 text-white text-2xl"
+              >
+                &times; {/* Close button */}
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Small Screen Section (Visible only for screens under 1000px) */}
+      <section className="py-16 bg-[#1B1B1B] relative block md:hidden">
+        <div className="container mx-auto px-4 md:px-6 text-center">
+          <div className="relative w-full h-[90vh] overflow-hidden">
+            <video
+              src={videoSrc}
+              autoPlay
+              loop
+              muted
+              className="absolute top-1/2 left-1/2 w-full h-full max-w-none"
+              style={{
+                objectFit: "contain",
+                transform: "translate(-50%, -50%) rotate(270deg)",
+                transformOrigin: "center",
+              }}
+            >
+              Your browser does not support the video tag.
+            </video>
+            {/* Button to open the popup */}
+            <button
+              onClick={togglePopup}
+              className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:bg-gray-800 transition text-lg md:text-xl" // Increased padding and font size
             >
               Featured on BlackWilbur.com
             </button>

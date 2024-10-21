@@ -8,6 +8,8 @@ import {
   fetchExplore,
   addToCart,
   isUserLoggedIn,
+  fetchRatings,
+  addRating
 } from "../services/api";
 import { Product, ProductVariation } from "../utiles/types";
 import Skeleton from "../utiles/Skeleton";
@@ -21,6 +23,7 @@ const Productpage = () => {
   );
   const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
   const [userRating, setUserRating] = useState(0);
+  const [ratings, setRatings] = useState<any[]>([]); // Store fetched ratings
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -31,15 +34,15 @@ const Productpage = () => {
   const handleBuyNow = async () => {
     if (product && selectedSize) {
       const cartItem = {
-        id: product.id, // Assuming you want to keep this same id for the CartItem
+        id: product.id, 
         quantity: 1,
         product: {
           id: product.id,
           name: product.name,
           description: product.description,
           price: product.price,
-          availability: true, // Assuming it's always available
-          product_images: product.product_images, // Use the images directly
+          availability: true, 
+          product_images: product.product_images, 
         },
         size: selectedSize.size,
         product_variation_id: selectedSize.id,
@@ -47,13 +50,13 @@ const Productpage = () => {
       
       if (isUserLoggedIn()) {
         navigate("/checkout", {
-          state: { products: [cartItem] }, // Pass the structured cartItem as an array
+          state: { products: [cartItem] }, 
         });
       } else {
         navigate("/auth/login", {  
           state: {
             from: "/checkout",
-            products: [cartItem], // Pass the structured cartItem as an array
+            products: [cartItem], 
           },
         });
       }
@@ -69,13 +72,40 @@ const Productpage = () => {
     setIsSizeChartOpen(!isSizeChartOpen);
   };
 
-  const handleRatingClick = (rating: number) => {
+  // const handleRatingClick = (rating: number) => {
+  //   setUserRating(rating);
+  //   if (product) {
+  //     product.rating = rating;
+  //     alert(`Rating: ${rating} stars submitted.`);
+  //   }
+  // };
+
+  const handleRatingClick = async (rating: number) => {
     setUserRating(rating);
     if (product) {
-      product.rating = rating;
-      alert(`Rating: ${rating} stars submitted.`);
+      try {
+        // Call addRating with product ID and user rating
+        await addRating(product.id, rating);
+        alert(`Rating: ${rating} stars submitted.`);
+        fetchRatingsForProduct(); // Fetch updated ratings after submission
+      } catch (error) {
+        console.error("Error submitting rating:", error);
+        alert("Failed to submit rating. Please try again.");
+      }
     }
   };
+
+  const fetchRatingsForProduct = async () => {
+    if (product) {
+      try {
+        const fetchedRatings = await fetchRatings(product.id);
+        setRatings(fetchedRatings); // Update state with fetched ratings
+      } catch (error) {
+        console.error("Error fetching ratings:", error);
+      }
+    }
+  };
+
 
   const handleAddToCart = async () => {
     if (product && selectedSize) {
@@ -146,7 +176,7 @@ const Productpage = () => {
     return <Skeleton />;
   }
 
-  const averageRating = product.rating || 0;
+  const averageRating = ratings.length > 0 ? ratings.reduce((acc, rating) => acc + rating.rating, 0) / ratings.length : 0;
 
   return (
     <div className="bg-[#1B1B1B] text-white min-h-screen flex flex-col">
@@ -244,14 +274,12 @@ const Productpage = () => {
             <h4 className="font-medium text-xl text-left text-white mb-2">
               Rate this product:
             </h4>
-            <div className="flex items-center mb-2">
-              {[...Array(5)].map((_, index) => (
+            <div className="flex items-center mb-4">
+              {[1, 2, 3, 4, 5].map((ratingValue) => (
                 <IoIosStar
-                  key={index}
-                  className={`w-6 h-6 cursor-pointer ${
-                    index < userRating ? "text-yellow-500" : "text-white"
-                  }`}
-                  onClick={() => handleRatingClick(index + 1)}
+                  key={ratingValue}
+                  className={`w-6 h-6 cursor-pointer ${ratingValue <= userRating ? "text-yellow-500" : "text-white"}`}
+                  onClick={() => handleRatingClick(ratingValue)}
                 />
               ))}
             </div>
@@ -268,38 +296,39 @@ const Productpage = () => {
         <SizeChart isOpen={isSizeChartOpen} onClose={toggleSizeChart} />
       </div>
 
-      {/* "Visit More" Section */}
-      <section className="mt-[80px] py-6 px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl lg:text-5xl text-left font-normal font-montserrat uppercase leading-tight text-white mb-8">
-          VISIT MORE
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          {exploreProducts.length > 0 ? (
-            exploreProducts.map((product) => (
-              <div
-                key={product.id}
-                className="relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center"
-                style={{ height: "100vh" }}
-              >
-                <img
-                  className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                  onClick={() => handleNavigate(`/product/${product.id}`)}
-                  src={product.product_images[0]?.image || "/placeholder.png"}
-                  alt={product.name}
-                />
-                <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
-                  {product.name.toUpperCase()}
-                </div>
-                <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
-                  ₹{product.price}
-                </div>
-              </div>
-            ))
-          ) : (
-            <Skeleton />
-          )}
+{/* "Visit More" Section */}
+<section className="mt-[80px] py-6 px-4 sm:px-6 lg:px-8">
+  <h2 className="text-2xl lg:text-5xl text-left font-normal font-montserrat uppercase leading-tight text-white mb-8">
+    VISIT MORE
+  </h2>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> {/* Increased gap for better spacing */}
+    {exploreProducts.length > 0 ? (
+      exploreProducts.map((product) => (
+        <div
+          key={product.id}
+          className="relative card bg-[#7A7A7A] overflow-hidden flex items-center justify-center"
+          style={{ height: "auto", aspectRatio: "3 / 4" }} 
+        >
+          <img
+            className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
+            onClick={() => handleNavigate(`/product/${product.id}`)}
+            src={product.product_images[0]?.image || "/placeholder.png"}
+            alt={product.name}
+          />
+          <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
+            {product.name.toUpperCase()}
+          </div>
+          <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
+            ₹{product.price}
+          </div>
         </div>
-      </section>
+      ))
+    ) : (
+      <Skeleton />
+    )}
+  </div>
+</section>
+
     </div>
   );
 };

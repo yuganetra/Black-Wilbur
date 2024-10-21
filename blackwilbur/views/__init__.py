@@ -4,3 +4,4 @@ from .product import BestsellerAPIView, ExploreAPIView, SearchAPIView, ProductDe
 from .orders import OrdersAPIView
 from .cart import CartAPIView
 from .sendsmsview import SendSmsView
+from .rating import RatingAPIView

@@ -116,7 +116,7 @@ const Userprofile: React.FC = () => {
                             <li
                               key={`${item.product.id}-${item.product_variation_id.id}-${index}`}
                             >
-                              Product ID: {item.product.id}, Quantity:{" "}
+                              Product Name: {item.product.name}, Quantity:{" "}
                               {item.quantity}, Size:{" "}
                               {item.product_variation_id.size}
                             </li>
