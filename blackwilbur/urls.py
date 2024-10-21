@@ -23,4 +23,6 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('send-sms/', views.SendSmsView.as_view(), name='send_sms'),
+    path('ratings/', views.RatingAPIView.as_view(), name='rating-list'),
+
 ]

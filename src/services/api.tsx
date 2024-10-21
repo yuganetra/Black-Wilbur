@@ -289,3 +289,31 @@ export const createOrder = async (orderData: Order) => {
     throw error;
   }
 };
+
+
+export const fetchRatings = async (productId: number) => {
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}ratings/?product_id=${productId}`);
+    console.log(response.data); 
+    return response.data; // Return the fetched ratings
+  } catch (error) {
+    console.error("Error getting ratings:");
+    throw error;  
+  }
+};
+
+
+export const addRating = async (productId: number, rating: number) => {
+    const ratingData = {
+        product_id: productId,
+        rating: rating, 
+    };
+
+    try {
+        const response = await axiosInstance.post(`${API_BASE_URL}ratings/`, ratingData);
+        console.log('Rating added:', response.data); 
+    } catch (error) {
+        console.error('Error adding rating:');
+        throw error
+    }
+};

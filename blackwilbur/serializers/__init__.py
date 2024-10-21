@@ -6,3 +6,4 @@ from .order import OrderItemSerializer,OrderSerializer
 from .cart import CartItemSerializer
 from .product_image import ProductImageSerializer
 from .request_serializers import SendSmsSerializer 
+from .rating import RatingSerializer

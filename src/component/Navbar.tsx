@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MdMenu } from "react-icons/md";
 import { FaSearch, FaShoppingCart } from "react-icons/fa";
 import { FaCircleUser } from "react-icons/fa6";
@@ -18,7 +18,7 @@ const Navbar: React.FC = (): JSX.Element => {
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [categories, setCategories] = useState<Category[]>([]);
-
+  const searchBarRef = useRef<HTMLDivElement | null>(null); // Correctly typing the ref
   const [cartItemsCount, setCartItemsCount] = useState<number>(0); // To track cart count
 
   const navigate = useNavigate();
@@ -49,7 +49,13 @@ const Navbar: React.FC = (): JSX.Element => {
   };
 
   const handleSearchIconClick = () => {
-    setShowSearchBar(!showSearchBar);
+    setShowSearchBar((prev) => !prev);
+  };
+
+  const handleOutsideClick = (event: { target: any; }) => {
+    if (searchBarRef.current && !searchBarRef.current.contains(event.target)) {
+      setShowSearchBar(false);
+    }
   };
 
   useEffect(() => {
@@ -78,6 +84,15 @@ const Navbar: React.FC = (): JSX.Element => {
 
   }, []);
 
+  useEffect(() => {
+    // Add event listener for clicks outside the search bar
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      // Clean up the event listener on component unmount
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
+
   return (
     <>
       <nav className="navbar sticky top-0 left-0 w-full flex items-center justify-between pl-4 pr-4 pb-2 bg-black z-50">
@@ -86,13 +101,23 @@ const Navbar: React.FC = (): JSX.Element => {
           <div className="hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-2 border-white">
             <div className="flex items-center space-x-4">
               <MdMenu className="text-4xl cursor-pointer" onClick={toggleSidebar} />
-              <Searchbar />
+              {!showSearchBar ? (
+                <button onClick={handleSearchIconClick} className="text-2xl">
+                  <FaSearch />
+                </button>
+              ) : null}
+              {showSearchBar && (
+                <div ref={searchBarRef}>
+                  <Searchbar />
+                </div>
+              )}
             </div>
 
+            {/* Absolute positioning for logo */}
             <img
               src={logo}
               alt="BlackWilbur"
-              className="h-18 w-40 text-white cursor-pointer lg:mr-24 md:mr-14"
+              className="absolute left-1/2 transform -translate-x-1/2 h-18 w-40 text-white cursor-pointer"
               style={{ filter: "invert(1)" }}
               onClick={() => handleNavigate("/")}
             />
@@ -111,7 +136,6 @@ const Navbar: React.FC = (): JSX.Element => {
                   {cartItemsCount || 0}
                 </span>
               </div>
-
             </div>
           </div>
 
@@ -130,9 +154,7 @@ const Navbar: React.FC = (): JSX.Element => {
               <button
                 key={category.id}
                 onClick={() =>
-
                   handleNavigate(`/collection/${category.name.toLowerCase().replace(/ /g, "-")}`)
-
                 }
                 className="relative text-sm font-semibold px-4 py-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-0.5 after:bg-white after:transform after:scale-x-0 after:origin-right hover:after:scale-x-100 hover:after:origin-left after:transition-transform after:duration-300"
               >
@@ -144,6 +166,22 @@ const Navbar: React.FC = (): JSX.Element => {
 
         {/* For Medium and Small Screens */}
         <div className="flex md:hidden items-center justify-between w-full h-12 p-1 text-white">
+          {/* Left Icons */}
+          <div className="flex items-center space-x-2">
+            <MdMenu className="text-2xl cursor-pointer" onClick={toggleSidebar} />
+            {!showSearchBar ? (
+              <button onClick={handleSearchIconClick} className="text-lg">
+                <FaSearch />
+              </button>
+            ) : null}
+            {showSearchBar && (
+              <div ref={searchBarRef}>
+                <Searchbar />
+              </div>
+            )}
+          </div>
+
+          {/* Center Logo */}
           <img
             src={logo}
             alt="BlackWilbur"
@@ -151,11 +189,9 @@ const Navbar: React.FC = (): JSX.Element => {
             style={{ filter: "invert(1)" }}
             onClick={() => handleNavigate("/")}
           />
-          <div className="flex items-center space-x-2">
-            <button onClick={handleSearchIconClick} className="text-lg">
-              <FaSearch />
-            </button>
 
+          {/* Right Icons */}
+          <div className="flex items-center space-x-2">
             <div className="relative">
               <FaShoppingCart
                 onClick={toggleCartSidebar}
@@ -172,14 +208,8 @@ const Navbar: React.FC = (): JSX.Element => {
               onClick={handleUserProfileNavigate} // Update the onClick handler
               className="text-lg cursor-pointer"
             />
-            <MdMenu className="text-2xl cursor-pointer pr-2" onClick={toggleSidebar} />
           </div>
         </div>
-        {showSearchBar && (
-          <div className="absolute top-0 right-0 w-48 mt-12 mr-4 p-2 bg-black z-40">
-            <Searchbar />
-          </div>
-        )}
       </nav>
 
       {/* Sidebar component */}

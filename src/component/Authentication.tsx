@@ -115,223 +115,188 @@ const Authentication: React.FC = () => {
     }
   };
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-white font-montserrat">
-      <div
-        className={`w-full md:w-1/2 flex items-center justify-center text-4xl md:text-6xl font-thin text-black`}
-      >
-        <div className="text-center">
-          {isLogin ? (
-            <span>Customer Login</span>
-          ) : (
-            <>
-              <span>Create an</span>
-              <br />
-              <span>Account</span>
-            </>
-          )}
+    <div className="flex items-center justify-center min-h-[80vh] bg-white font-montserrat px-4">
+      <div className="w-full max-w-md p-6 bg-white shadow-lg rounded-lg">
+        {/* Display Title Dynamically */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-semibold text-black">
+            {isLogin ? "Customer Login" : "Create an Account"}
+          </h1>
         </div>
-      </div>
 
-      <div className="w-full md:w-1/2 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {apiError && (
-            <p className="text-red-500 text-sm text-center">{apiError}</p>
-          )}
-          {successMessage && (
-            <p className="text-green-500 text-sm text-center">
-              {successMessage}
-            </p>
-          )}
-          {isLogin ? (
-            forgotPassword ? (
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="text-center space-y-6"
-              >
-                <div className="mb-6">
-                  <input
-                    type="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={`block w-full h-12 p-4 border ${
-                      errors.email ? "border-red-500" : "border-black"
-                    } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                    placeholder="Email"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col items-center space-y-4">
-                  <button
-                    type="submit"
-                    className="w-44 bg-black text-white py-2 px-4 rounded-3xl hover:bg-gray-800"
-                    disabled={loading}
-                  >
-                    {loading ? "Submitting..." : "Submit"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setForgotPassword(false)}
-                    className="text-black hover:underline"
-                  >
-                    Back to Login
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleLoginSubmit} className="space-y-6">
-                <div className="mb-6">
-                  <input
-                    type="text"
-                    id="email" 
-                    value={formData.email} 
-                    onChange={handleInputChange}
-                    className={`block w-full h-12 p-4 border ${
-                      errors.Email ? "border-red-500" : "border-black"
-                    } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                    placeholder="Username or Email" 
-                    required
-                  />
-                </div>
-                <div className="mb-6">
-                  <input
-                    type="password"
-                    id="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`block w-full h-12 p-4 border ${
-                      errors.password ? "border-red-500" : "border-black"
-                    } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                    placeholder="Password"
-                    required
-                  />
-                </div>
-                <div className="mb-6">
-                  <button
-                    type="submit"
-                    className="w-44 bg-black text-white py-2 px-4 rounded-3xl hover:bg-gray-800"
-                    disabled={loading}
-                  >
-                    {loading ? "Logging in..." : "Log In"}
-                  </button>
-                </div>
-                <div className="flex flex-col items-center space-y-4">
-                  <button
-                    type="button"
-                    onClick={() => setForgotPassword(true)}
-                    className="text-black hover:underline"
-                  >
-                    Forgot Password?
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/auth/signup")} // Navigate to signup
-                    className="text-black hover:underline"
-                  >
-                    Create an Account
-                  </button>
-                </div>
-              </form>
-            )
-          ) : (
-            <form onSubmit={handleSignupSubmit} className="space-y-6">
-              <div className="mb-6">
-                <input
-                  type="text"
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${
-                    errors.firstName ? "border-red-500" : "border-black"
-                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                  placeholder="First Name"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <input
-                  type="text"
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${
-                    errors.lastName ? "border-red-500" : "border-black"
-                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                  placeholder="Last Name"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <input
-                  type="email"
-                  id="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${
-                    errors.email ? "border-red-500" : "border-black"
-                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                  placeholder="Email"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <input
-                  type="text"
-                  id="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${
-                    errors.username ? "border-red-500" : "border-black"
-                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                  placeholder="Username"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <input
-                  type="password"
-                  id="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${
-                    errors.password ? "border-red-500" : "border-black"
-                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                  placeholder="Password"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <input
-                  type="password"
-                  id="password2"
-                  value={formData.password2}
-                  onChange={handleInputChange}
-                  className={`block w-full h-12 p-4 border ${
-                    errors.password2 ? "border-red-500" : "border-black"
-                  } text-black placeholder-gray-500 focus:outline-none focus:border-black text-sm`}
-                  placeholder="Confirm Password"
-                  required
-                />
-              </div>
-              <div className="flex flex-col items-center space-y-4">
+        {/* Display any API error or success message */}
+        {apiError && (
+          <p className="text-red-500 text-center mb-4">{apiError}</p>
+        )}
+        {successMessage && (
+          <p className="text-green-500 text-center mb-4">{successMessage}</p>
+        )}
+
+        {/* Conditional Forms based on Login/Signup */}
+        {isLogin ? (
+          forgotPassword ? (
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+              <input
+                type="email"
+                id="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`block w-full h-12 p-4 border ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                } rounded focus:outline-none focus:border-black`}
+                placeholder="Email"
+                required
+              />
+              <div className="text-center">
                 <button
                   type="submit"
-                  className="w-44 bg-black text-white py-2 px-4 rounded-3xl hover:bg-gray-800"
+                  className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800"
                   disabled={loading}
                 >
-                  {loading ? "Creating account..." : "Sign Up"}
+                  {loading ? "Submitting..." : "Submit"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate("/auth/login")}
-                  className="text-black hover:underline"
+                  onClick={() => setForgotPassword(false)}
+                  className="text-black mt-4 hover:underline"
                 >
-                  Already have an account? Log In
+                  Back to Login
                 </button>
               </div>
             </form>
-          )}
-        </div>
+          ) : (
+            <form onSubmit={handleLoginSubmit} className="space-y-6">
+              <input
+                type="text"
+                id="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`block w-full h-12 p-4 border ${
+                  errors.Email ? "border-red-500" : "border-gray-300"
+                } rounded focus:outline-none focus:border-black`}
+                placeholder="Username or Email"
+                required
+              />
+              <input
+                type="password"
+                id="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`block w-full h-12 p-4 border ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                } rounded focus:outline-none focus:border-black`}
+                placeholder="Password"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800"
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Log In"}
+              </button>
+              <div className="flex justify-between mt-4">
+                <button
+                  type="button"
+                  onClick={() => setForgotPassword(true)}
+                  className="text-black hover:underline"
+                >
+                  Forgot Password?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/auth/signup")}
+                  className="text-black hover:underline"
+                >
+                  Create an Account
+                </button>
+              </div>
+            </form>
+          )
+        ) : (
+          <form onSubmit={handleSignupSubmit} className="space-y-6">
+            <input
+              type="text"
+              id="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              className={`block w-full h-12 p-4 border ${
+                errors.firstName ? "border-red-500" : "border-gray-300"
+              } rounded focus:outline-none focus:border-black`}
+              placeholder="First Name"
+              required
+            />
+            <input
+              type="text"
+              id="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              className={`block w-full h-12 p-4 border ${
+                errors.lastName ? "border-red-500" : "border-gray-300"
+              } rounded focus:outline-none focus:border-black`}
+              placeholder="Last Name"
+              required
+            />
+            <input
+              type="email"
+              id="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={`block w-full h-12 p-4 border ${
+                errors.email ? "border-red-500" : "border-gray-300"
+              } rounded focus:outline-none focus:border-black`}
+              placeholder="Email"
+              required
+            />
+            <input
+              type="text"
+              id="username"
+              value={formData.username}
+              onChange={handleInputChange}
+              className={`block w-full h-12 p-4 border ${
+                errors.username ? "border-red-500" : "border-gray-300"
+              } rounded focus:outline-none focus:border-black`}
+              placeholder="Username"
+              required
+            />
+            <input
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className={`block w-full h-12 p-4 border ${
+                errors.password ? "border-red-500" : "border-gray-300"
+              } rounded focus:outline-none focus:border-black`}
+              placeholder="Password"
+              required
+            />
+            <input
+              type="password"
+              id="password2"
+              value={formData.password2}
+              onChange={handleInputChange}
+              className={`block w-full h-12 p-4 border ${
+                errors.password2 ? "border-red-500" : "border-gray-300"
+              } rounded focus:outline-none focus:border-black`}
+              placeholder="Confirm Password"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800"
+              disabled={loading}
+            >
+              {loading ? "Creating account..." : "Sign Up"}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/auth/login")}
+              className="text-black hover:underline mt-4"
+            >
+              Already have an account? Log In
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
