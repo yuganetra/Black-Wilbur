@@ -10,8 +10,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['black-wilbur-4qud.onrender.com','blackwilbur.com', 'localhost', '127.0.0.1']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,7 +52,9 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  
+    "http://localhost:3000",
+    "https://blackwilbur.com",
+    "http://blackwilbur.com"
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -111,6 +112,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'  # URL prefix for static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Change 'staticfiles' to your desired directory
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
