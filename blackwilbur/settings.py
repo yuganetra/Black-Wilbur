@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['black-wilbur.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['black-wilbur-4qud.onrender.com','blackwilbur.com', 'localhost', '127.0.0.1']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,7 +53,8 @@ MIDDLEWARE = [
 ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://blackwilbur.com"  
+    "https://blackwilbur.com",
+    "http://blackwilbur.com"
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
