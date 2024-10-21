@@ -10,8 +10,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['blackwilbur.com', 'localhost']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,7 +52,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  
+    "http://localhost:3000",
+    "https://blackwilbur.com"  
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
