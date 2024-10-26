@@ -2,7 +2,7 @@ import React from "react";
 
 const PrivacyPolicy: React.FC = () => {
   return (
-    <section className="flex flex-col items-center mb-8">
+    <section className="flex flex-col items-center  bg-black text-white min-h-screen">
       <h2 className="text-3xl font-semibold mb-4">Privacy Policy</h2>
       <div className="w-2/3 text-left">
         {/* Set width to 2/3 and align text left */}
@@ -14,7 +14,7 @@ const PrivacyPolicy: React.FC = () => {
             INFORMATION WHEN YOU VISIT WWW.BLACKWILBUR.COM.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">2. INFORMATION WE COLLECT</h3>
           <p>
@@ -32,7 +32,7 @@ const PrivacyPolicy: React.FC = () => {
             THE PAGES YOU VISIT ON OUR WEBSITE.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">3. HOW WE USE YOUR INFORMATION</h3>
           <p>
@@ -52,7 +52,7 @@ const PrivacyPolicy: React.FC = () => {
             ONLINE SERVICES.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">4. COOKIES</h3>
           <p>
@@ -63,7 +63,7 @@ const PrivacyPolicy: React.FC = () => {
             RECOGNISE YOUR BROWSER AND CAPTURE AND REMEMBER CERTAIN INFORMATION.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">5. SHARING YOUR INFORMATION</h3>
           <p>
@@ -77,7 +77,7 @@ const PrivacyPolicy: React.FC = () => {
             CONFIDENTIAL.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">6. DATA SECURITY</h3>
           <p>
@@ -86,7 +86,7 @@ const PrivacyPolicy: React.FC = () => {
             TRANSMISSION OVER THE INTERNET OR ELECTRONIC STORAGE IS 100% SECURE.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">7. YOUR RIGHTS</h3>
           <p>
@@ -95,7 +95,7 @@ const PrivacyPolicy: React.FC = () => {
             CONTACT@BLACKWILBUR.COM.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">8. CHANGES TO THIS PRIVACY POLICY</h3>
           <p>
@@ -105,7 +105,7 @@ const PrivacyPolicy: React.FC = () => {
             PERIODICALLY FOR THE LATEST INFORMATION ON OUR PRIVACY PRACTICES.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">9. CONTACT US</h3>
           <p>
@@ -124,7 +124,7 @@ const PrivacyPolicy: React.FC = () => {
             trust, we commit that our interactions with you will be based on:
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">1. Transparency</h3>
           <p>
@@ -141,7 +141,7 @@ const PrivacyPolicy: React.FC = () => {
             for you to unsubscribe and will honour your request.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">2. Accountability</h3>
           <p>
@@ -156,7 +156,7 @@ const PrivacyPolicy: React.FC = () => {
             practices and privacy in our industry.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
+        <div className="border-b border-white mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">3. Security</h3>
           <p>
@@ -166,11 +166,15 @@ const PrivacyPolicy: React.FC = () => {
             limit access to personal information as much as possible, protect
             personal information against loss and unauthorised access, use, and
             disclosure, and require appropriate security standards for external
-            vendors that touch personal information. We do not store credit card
-            information on our systems.
+            vendors who provide services to us. We will periodically review our
+            practices to protect your information as technology evolves. The
+            strength of our security measures reflects the level of sensitivity
+            of the data we collect, use, and store, along with industry
+            standards and legal requirements. The brand is committed to
+            safeguarding consumer information and actively updates its practices
+            in response to technological developments.
           </p>
         </div>
-        <div className="border-b border-black mb-4" />
       </div>
     </section>
   );

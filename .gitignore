@@ -313,3 +313,4 @@ cython_debug/
 .history
 .ionide
 node_modules
+django-test.json

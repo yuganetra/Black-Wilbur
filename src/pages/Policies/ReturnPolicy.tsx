@@ -2,19 +2,17 @@ import React from "react";
 
 const ReturnPolicy: React.FC = () => {
   return (
-    <section className="flex flex-col items-center mb-8">
-      <h2 className="text-3xl font-semibold mb-4">Return Policy</h2>
-      <div className="w-2/3 text-left">
-        {/* Set width to 2/3 and align text left */}
-
+    <section className="flex flex-col bg-black text-white items-center">
+      <h2 className="text-3xl md:text-4xl sm:text-2xl font-semibold mb-4">Return Policy</h2>
+      <div className="w-5/6 md:w-2/3 text-left">
         <div className="mb-4">
-          <p className="mt-4 text-justify">
+          <p className="mt-4 text-justify text-sm md:text-base">
             Our purpose is to guarantee your full satisfaction. If, for any
             reason whatsoever, you are not satisfied with your order, you may
             exercise your right to return purchased products within 7 days from
             the date on which you received them from www.blackwilbur.com.
           </p>
-          <p className="mt-4 text-justify">
+          <p className="mt-4 text-justify text-sm md:text-base">
             ONCE YOUR EXCHANGE/RETURN QUERY HAS BEEN ACCEPTED BY OUR TEAM, A
             NOTIFICATION WILL BE SENT TO YOUR REGISTERED EMAIL AND YOUR ORDER
             WILL BE PICKED UP BY OUR LOGISTICS PARTNER WITHIN 24-48 HOURS.
@@ -26,7 +24,7 @@ const ReturnPolicy: React.FC = () => {
             ESTIMATED DELIVERY OF ALL EXCHANGE QUERIES FALL BETWEEN 7-10 WORKING
             DAYS.
           </p>
-          <p className="mt-4 text-justify">
+          <p className="mt-4 text-justify text-sm md:text-base">
             CANCELLATION OF ORDERS ARE ONLY PERMITTED ON COD ORDERS WHICH WILL
             BE POSSIBLE IF AND TILL THE ORDER HAS NOT BEEN DISPATCHED FROM OUR
             WAREHOUSE. ALL PREPAID ORDERS ARE FINAL. WE DO NOT OFFER ANY
@@ -35,11 +33,11 @@ const ReturnPolicy: React.FC = () => {
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4">EXCHANGE/RETURN OF PRODUCTS:</h3>
-          <p className="text-justify">
+          <h3 className="font-bold mt-4 text-base md:text-lg">EXCHANGE/RETURN OF PRODUCTS:</h3>
+          <p className="text-justify text-sm md:text-base">
             YOU MAY INITIATE THE REQUEST OF AN EXCHANGE/RETURN OF A PRODUCT IF:
           </p>
-          <ol className="list-decimal ml-8">
+          <ol className="list-decimal ml-8 text-sm md:text-base">
             <li>PRODUCT DOES NOT FIT;</li>
             <li>BOTH THE PRODUCT AND SHIPPING PACKAGE HAVE BEEN DAMAGED;</li>
             <li>PRODUCT IS DEFECTIVE;</li>
@@ -48,12 +46,12 @@ const ReturnPolicy: React.FC = () => {
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4">CONDITIONS FOR EXCHANGE/RETURN:</h3>
-          <p className="text-justify">
+          <h3 className="font-bold mt-4 text-base md:text-lg">CONDITIONS FOR EXCHANGE/RETURN:</h3>
+          <p className="text-justify text-sm md:text-base">
             YOU CAN EXCHANGE/RETURN THE PRODUCT(S) PURCHASED FROM US PROVIDED
             THE PRODUCT(S) SATISFY THE FOLLOWING MANDATORY CONDITIONS:
           </p>
-          <ul className="list-disc ml-8">
+          <ul className="list-disc ml-8 text-sm md:text-base">
             <li>
               THE PRODUCT HAS NOT BEEN WORN, CLEANED, OR TAMPERED WITH BY YOU.
             </li>
@@ -72,7 +70,7 @@ const ReturnPolicy: React.FC = () => {
               OR DAMAGE ON THE PRODUCT.
             </li>
           </ul>
-          <p className="mt-4 text-justify">
+          <p className="mt-4 text-justify text-sm md:text-base">
             RETURN OF PURCHASED PRODUCTS ARE FACILITATED THROUGH OUR
             REVERSE-LOGISTICS PARTNERS. ON RECEIPT OF REQUEST FOR RETURN OF
             PRODUCT ON BLACKWILBUR.COM AND THE SAME BEING DULY ACKNOWLEDGED BY
@@ -81,15 +79,15 @@ const ReturnPolicy: React.FC = () => {
             RIGHT TO REJECT THE EXCHANGE/RETURN REQUEST FOR A PRODUCT IF IT DOES
             NOT SATISFY THE AFOREMENTIONED CONDITIONS.
           </p>
-          <p className="mt-4 text-justify">
+          <p className="mt-4 text-justify text-sm md:text-base">
             The time period for refunding the amount you paid for purchasing the
             returned products depends on the payment type used.
           </p>
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4">CUSTOMER SUPPORT:</h3>
-          <p className="text-justify">
+          <h3 className="font-bold mt-4 text-base md:text-lg">CUSTOMER SUPPORT:</h3>
+          <p className="text-justify text-sm md:text-base">
             ANY QUERIES OR CONCERNS RELATING TO THE RETURN AND CANCELLATION MAY
             BE DIRECTED BY YOU TO OUR CUSTOMER SUPPORT TEAM WHO CAN BE CONTACTED
             AT: CALL US AT +91 ——————- OR WRITE TO US AT ———————-.COM.

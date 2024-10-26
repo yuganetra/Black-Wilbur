@@ -13,7 +13,7 @@ import {
   GetOrder,
 } from "../utiles/types";
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+const API_BASE_URL = "https://backendapi.blackwilbur.com/";
 
 // Axios instance for API calls
 const axiosInstance = axios.create({
