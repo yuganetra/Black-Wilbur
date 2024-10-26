@@ -47,7 +47,7 @@ const Checkout: React.FC = () => {
         setProducts(initialProducts);
         console.log("initialProducts",initialProducts)
         setLoading(false);
-      }, 1000); // Simulate a 1-second loading time
+      }, 10000); // Simulate a 1-second loading time
     };
     fetchProducts();
   }, [initialProducts]);
@@ -59,7 +59,7 @@ const Checkout: React.FC = () => {
       timer = setTimeout(() => {
         console.log("Fetched products from params:", initialProducts); // Log the products
         setResendEnabled(true);
-      }, 1000); // 120000 ms = 2 minutes
+      }, 120000); // 120000 ms = 2 minutes
     }
     return () => clearTimeout(timer);
   }, [initialProducts, otpSent]);

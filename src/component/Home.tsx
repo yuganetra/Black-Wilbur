@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import carousel1 from "../asset/chpp-carousel.jpg";
-import videoSrc from "../asset/homepage-vid.MOV";
+import videoSrc from "../asset/homepage-vide-updated.MOV";
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
 import { Product } from "../utiles/types";
@@ -50,6 +50,7 @@ const Home: React.FC = () => {
     const fetchData = async () => {
       try {
         const fetchedCategories = await fetchBestSeller();
+        console.log(fetchedCategories);
         setBestSeller(fetchedCategories);
         const fetchedExplore = await fetchExplore();
         setExploreProducts(fetchedExplore);
@@ -164,18 +165,16 @@ const Home: React.FC = () => {
 
       {/* Large Screen Section (Visible only for screens over 1000px) */}
       <section className="py-16 bg-[#1B1B1B] relative hidden md:block">
-        <div className="container mx-auto px-4 md:px-6 text-center">
+        <div className="container mx-auto md:px-6 text-center">
           <div className="relative w-full h-[90vh] overflow-hidden">
             <video
               src={videoSrc}
               autoPlay
               loop
               muted
-              className="absolute top-1/2 left-1/2 w-[100vh] h-auto max-w-none"
+              className="absolute top-1/2 left-1/2 w-full h-full object-contain"
               style={{
-                objectFit: "contain",
-                transform: "translate(-50%, -50%) rotate(270deg)",
-                transformOrigin: "center",
+                transform: "translate(-50%, -50%)",
               }}
             >
               Your browser does not support the video tag.
@@ -218,7 +217,7 @@ const Home: React.FC = () => {
               className="absolute top-1/2 left-1/2 w-full h-full max-w-none"
               style={{
                 objectFit: "contain",
-                transform: "translate(-50%, -50%) rotate(270deg)",
+                transform: "translate(-50%, -50%)",
                 transformOrigin: "center",
               }}
             >

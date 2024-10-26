@@ -2,7 +2,7 @@ import React from "react";
 
 const TermsAndConditions: React.FC = () => {
   return (
-    <section className="flex flex-col items-center mb-8">
+    <section className="flex flex-col items-center  bg-black text-white">
       <h2 className="text-3xl font-semibold mb-4">Terms and Conditions</h2>
       <div className="w-2/3 text-left"> {/* Set width to 2/3 and align text left */}
         <div className="mb-4">
