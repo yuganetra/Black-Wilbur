@@ -13,27 +13,43 @@ import ScrollToTop from "./utiles/ScrollToTop";
 import Collection from "./component/Collection";
 import Userprofile from "./component/Userprofile";
 import Authentication from "./component/Authentication";
+import AdminPanel from "./admin/adminPanel";
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <ScrollToTop />
-        <Navbar />
+        {/* Render Navbar and Footer only if not in admin routes */}
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/collection/:category?" element={<Collection />} />
-          <Route path="/product/:id" element={<Productpage />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/about-us/:section?" element={<AboutUs />} />
-          <Route path="/terms-and-condition" element={<TermsAndConditions />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/return-policy" element={<ReturnPolicy />} />
-          <Route path="/user-profile" element={<Userprofile />} />
-          <Route path="/auth/login" element={<Authentication />} />
-          <Route path="/auth/signup" element={<Authentication />} />{" "}
+          <Route
+            path="/admin/*"
+            element={<AdminPanel />}
+          />
+          {/* All other routes */}
+          <Route
+            path="*"
+            element={
+              <>
+                <Navbar />
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/collection/:category?" element={<Collection />} />
+                  <Route path="/product/:id" element={<Productpage />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/about-us/:section?" element={<AboutUs />} />
+                  <Route path="/terms-and-condition" element={<TermsAndConditions />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/return-policy" element={<ReturnPolicy />} />
+                  <Route path="/user-profile" element={<Userprofile />} />
+                  <Route path="/auth/login" element={<Authentication />} />
+                  <Route path="/auth/signup" element={<Authentication />} />
+                </Routes>
+                <Footer />
+              </>
+            }
+          />
         </Routes>
-        <Footer />
       </BrowserRouter>
     </div>
   );

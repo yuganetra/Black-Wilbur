@@ -63,3 +63,38 @@ class CollectionAPIView(APIView):
         all_products = models.Product.objects.all()
         serializer = serializers.CollectionsSerializer(all_products, many=True) 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProductManageAPIView(APIView):
+    def get(self, request):
+        """Retrieve a list of all products."""
+        products = models.Product.objects.all()
+        serializer = serializers.ProductSerializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        serializer = serializers.ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            product = serializer.save()
+            return Response(serializers.ProductSerializer(product).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, product_id):
+        try:
+            product = models.Product.objects.get(pk=product_id)
+        except models.Product.DoesNotExist:
+            raise exceptions.NotFound("Product not found!")
+
+        serializer = serializers.ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            product = serializer.save()
+            return Response(serializers.ProductSerializer(product).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, product_id):
+        try:
+            product = models.Product.objects.get(pk=product_id)
+            product.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except models.Product.DoesNotExist:
+            raise exceptions.NotFound("Product not found!")

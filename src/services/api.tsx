@@ -30,6 +30,40 @@ export const fetchCategories = async (): Promise<Category[]> => {
   return response.data;
 };
 
+export const addCategory = async (
+  name: string,
+  description: string
+) => {
+  console.log("name = ",name);
+  console.log("description = ",description);
+  const response = await axios.post(`${API_BASE_URL}categories`, {
+    name,
+    description,
+  });
+  return response.data;
+};
+
+export const updateCategory = async (currentCategoryId: number, categoryName: string, categoryDescription: string) => {
+  const response = await axiosInstance.put(`${API_BASE_URL}categories`, {
+    id: currentCategoryId,
+    data: {
+      name: categoryName,
+      description: categoryDescription,
+    },
+  });
+  return response.data;
+};
+
+export const deleteCategory = async (currentCategoryId: number) => {
+  await axiosInstance.delete(`${API_BASE_URL}categories`, {
+    data: {
+      id: currentCategoryId,
+    },
+  });
+};
+
+
+
 export const fetchBestSeller = async (): Promise<Product[]> => {
   const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}bestseller`);
   return response.data;
@@ -289,6 +323,49 @@ export const addRating = async (productId: number, rating: number) => {
     console.log("Rating added:", response.data);
   } catch (error) {
     console.error("Error adding rating:");
+    throw error;
+  }
+};
+
+
+export const fetchProducts = async (): Promise<Product[]> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}products-manage`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw error;
+  }
+};
+
+// Add Product
+export const addProduct = async (product: Product): Promise<Product> => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}products-manage`, product);
+    return response.data;
+  } catch (error) {
+    console.error("Error adding product:", error);
+    throw error;
+  }
+};
+
+// Update Product
+export const updateProduct = async (productId: number, product: Product): Promise<Product> => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}products-manage${productId}`, product);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw error;
+  }
+};
+
+// Delete Product
+export const deleteProduct = async (productId: number): Promise<void> => {
+  try {
+    await axios.delete(`${API_BASE_URL}products-manage${productId}`);
+  } catch (error) {
+    console.error("Error deleting product:", error);
     throw error;
   }
 };

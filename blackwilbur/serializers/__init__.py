@@ -5,5 +5,5 @@ from .product import ProductSerializer ,ProductDetailSerializer ,CollectionsSeri
 from .order import OrderItemSerializer,OrderSerializer
 from .cart import CartItemSerializer
 from .product_image import ProductImageSerializer
-from .request_serializers import SendSmsSerializer 
+from .request_serializers import SendSmsSerializer ,EditCategory
 from .rating import RatingSerializer
