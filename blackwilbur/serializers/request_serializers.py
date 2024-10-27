@@ -46,6 +46,16 @@ class EditQuantitySerializer(serializers.Serializer):
     cart_item_id = serializers.IntegerField(required=True)
     quantity = serializers.IntegerField(required=True)
 
+class EditCategory(serializers.Serializer):
+    name = serializers.CharField(required=True)
+    description = serializers.CharField(required=False)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.description = validated_data.get('description', instance.description)
+        instance.save()
+        return instance
+
 class SendSmsSerializer(serializers.Serializer):
     otp = serializers.CharField(required=True, max_length=8)  
     numbers = serializers.ListField(
