@@ -50,7 +50,7 @@ const Home: React.FC = () => {
     const fetchData = async () => {
       try {
         const fetchedCategories = await fetchBestSeller();
-        console.log(fetchedCategories);
+        // console.log("fetchedCategories ", fetchedCategories);
         setBestSeller(fetchedCategories);
         const fetchedExplore = await fetchExplore();
         setExploreProducts(fetchedExplore);
@@ -70,7 +70,7 @@ const Home: React.FC = () => {
   return (
     <>
       {/* Carousel Section */}
-      <div className="relative h-screen overflow-hidden -mt-20">
+      <div className="relative h-[98vh] overflow-hidden -mt-20">
         <img
           src={carousel1}
           alt="Carousel 1"
@@ -95,7 +95,7 @@ const Home: React.FC = () => {
       {/* Best Sellers Section */}
       <section className="py-16 bg-[#1B1B1B] w-full relative overflow-x-hidden">
         <div className="container mx-auto px-4 sm:px-8">
-          <h2 className="ml-8 text-4xl lg:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
+          <h2 className="md:ml-8 text-[25px] sm:text-4xl md:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
             Our Bestsellers
           </h2>
 
@@ -108,43 +108,39 @@ const Home: React.FC = () => {
             </button>
             <div
               ref={productRef}
-              className="flex gap-2 overflow-x-auto w-full snap-x snap-mandatory"
+              className="flex gap-1 sm:gap-2 overflow-x-auto w-full snap-x snap-mandatory "
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {bestseller.map((bestseller) => {
                 const productImages = bestseller.product_images;
                 const imageSrc =
-                  productImages.length > 0
-                    ? productImages[0].image
-                    : "default-image-url.jpg";
+                  productImages.length > 0 ? productImages[0].image : "default-image-url.jpg";
 
                 return (
                   <div
                     key={bestseller.id}
-                    className="min-w-[300px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#7A7A7A] overflow-hidden flex flex-col items-center"
-                    style={{ height: "auto" }}
+                    className="sm:min-h-[52vh] max-h-[72vh] min-w-[200px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-white overflow-hidden flex flex-col items-center rounded-md"
                   >
                     <img
-                      className="w-full h-auto  object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                      onClick={() =>
-                        handleNavigate(`/Product/${bestseller.id}`)
-                      }
+                      className="w-full h-[94%] object-contain transition-transform duration-300 ease-in-out transform hover:scale-110"
+                      onClick={() => handleNavigate(`/Product/${bestseller.id}`)}
                       src={imageSrc}
                       alt={bestseller.name}
                     />
-                    <div className="absolute bottom-4 left-4 text-[#282828] text-lg font-semibold">
-                      {bestseller.name.toUpperCase()}
-                    </div>
-                    <div className="absolute bottom-4 right-4 text-[#636363] text-lg font-semibold">
-                      {bestseller.price} rs
+                    <div className="flex justify-between pl-2  pr-2 w-full">
+                      {" "}
+                      <div className="right-4 text-[#282828] text-[10px] sm:text-base md:text-base font-semibold">
+                        {bestseller.name.toUpperCase()}
+                      </div>
+                      <div className="right-4 text-[#58595B] text-[10px] sm:text-base md:text-base font-semibold">
+                        ₹ {bestseller.price}
+                      </div>
                     </div>
 
                     <button
                       onClick={() => toggleWishlist(bestseller.id)}
                       className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${
-                        wishlist.includes(bestseller.id)
-                          ? "bg-red-500"
-                          : "bg-gray-500"
+                        wishlist.includes(bestseller.id) ? "bg-red-500" : "bg-gray-500"
                       } text-white`}
                     >
                       {wishlist.includes(bestseller.id) ? "♥" : "♡"}
@@ -194,10 +190,7 @@ const Home: React.FC = () => {
           <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-60">
             <div className="relative w-full h-screen max-w-3xl flex items-center justify-center p-6 backdrop-blur-sm text-white rounded-lg shadow-lg overflow-hidden">
               <GetFeatured />
-              <button
-                onClick={togglePopup}
-                className="absolute top-2 right-2 text-white text-2xl"
-              >
+              <button onClick={togglePopup} className="absolute top-2 right-2 text-white text-3xl">
                 &times; {/* Close button */}
               </button>
             </div>
@@ -238,10 +231,7 @@ const Home: React.FC = () => {
           <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-60">
             <div className="relative w-full h-screen max-w-3xl flex items-center justify-center p-6 backdrop-blur-sm text-white rounded-lg shadow-lg overflow-hidden">
               <GetFeatured />
-              <button
-                onClick={togglePopup}
-                className="absolute top-2 right-2 text-white text-2xl"
-              >
+              <button onClick={togglePopup} className="absolute top-2 right-2 text-white text-2xl">
                 &times; {/* Close button */}
               </button>
             </div>
@@ -252,63 +242,48 @@ const Home: React.FC = () => {
       {/* Explore Our Collections Section */}
       <section className="py-16 bg-[#1b1b1b] text-white">
         <div className="container mx-auto">
-          <h2 className="text-4xl px-2 lg:text-5xl lg:px-0 font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
+          <h2 className=" ml-2 text-[20px] sm:text-4xl md:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-4 text-start">
             Explore Our Collections
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 px-2">
-            {exploreProducts.map((exploreProduct) => {
-              return (
+          <div className="product-container w-full mt-6 px-0">
+            <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
+              {exploreProducts.map((product) => (
                 <div
-                  key={exploreProduct.id}
-                  className="relative card bg-[#7A7A7A] overflow-hidden flex flex-col items-center"
-                  style={{ height: "auto" }} // Keep auto for flexibility
+                  key={product.id}
+                  className="relative bg-white overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
                 >
-                  {/* Image Section */}
-                  {exploreProduct.product_images.length > 0 ? (
-                    <img
-                      className="w-full h-auto max-h-[600px] object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                      onClick={() =>
-                        handleNavigate(`/Product/${exploreProduct.id}`)
-                      }
-                      src={exploreProduct.product_images[0]?.image}
-                      alt={exploreProduct.name}
-                    />
-                  ) : (
-                    <div
-                      onClick={() =>
-                        handleNavigate(`/Product/${exploreProduct.id}`)
-                      }
-                      className="w-full h-screen max-h-[600px] bg-gray-300 animate-pulse flex items-center justify-center"
-                    >
-                      {/* Skeleton loader */}
-                      <span className="text-white h-auto text-lg">
-                        Loading...
-                      </span>
+                  <img
+                    className="w-full h-[93%] object-contain cursor-pointer"
+                    onClick={() => handleNavigate(`/Product/${product.id}`)}
+                    src={
+                      product.product_images && product.product_images.length > 0
+                        ? product.product_images[0]?.image
+                        : ""
+                    }
+                    alt={product.name}
+                  />
+                  <div className="flex justify-between items-center p-1">
+                    {" "}
+                    {/* Flex container for name and price */}
+                    <div className="text-[#282828] text-[8px] sm:text-base md:text-base font-semibold">
+                      {product.name}
                     </div>
-                  )}
-
-                  {/* Product Name and Price */}
-                  <div className="absolute bottom-4 left-4 text-[#282828] text-lg sm:text-sm font-semibold">
-                    {exploreProduct.name.toUpperCase()}
-                  </div>
-                  <div className="absolute bottom-4 right-4 text-[#636363] text-lg sm:text-sm font-semibold">
-                    {exploreProduct.price} rs
+                    <div className="text-[#58595B] text-[8px] sm:text-sm md:text-base font-semibold">
+                      ₹ {product.price}
+                    </div>
                   </div>
 
-                  {/* Wishlist Button */}
                   <button
-                    onClick={() => toggleWishlist(exploreProduct.id)}
-                    className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${
-                      wishlist.includes(exploreProduct.id)
-                        ? "bg-red-500"
-                        : "bg-gray-500"
-                    } text-white`}
+                    onClick={() => toggleWishlist(product.id)}
+                    className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
+                      wishlist.includes(product.id) ? "bg-red-500" : "bg-gray-500"
+                    } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
                   >
-                    {wishlist.includes(exploreProduct.id) ? "♥" : "♡"}
+                    {wishlist.includes(product.id) ? "♥" : "♡"}
                   </button>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
 
           <div className="mt-12 flex justify-center">
@@ -324,10 +299,7 @@ const Home: React.FC = () => {
 
       {/* Why Black Section */}
       <section className="relative py-16 bg-black mb-28">
-        <div
-          className="absolute inset-0"
-          style={{ width: "100%", height: "706px" }}
-        >
+        <div className="absolute inset-0 w-[100%] h-[706px]">
           <img
             src={blackBackground}
             alt="Black Background"

@@ -63,11 +63,11 @@ const Collection: React.FC = () => {
     };
 
     fetchProducts();
-        // Fetch wishlist from local storage
-        const storedWishlist = localStorage.getItem("wishlist");
-        if (storedWishlist) {
-          setWishlist(JSON.parse(storedWishlist));
-        }
+    // Fetch wishlist from local storage
+    const storedWishlist = localStorage.getItem("wishlist");
+    if (storedWishlist) {
+      setWishlist(JSON.parse(storedWishlist));
+    }
   }, []);
 
   useEffect(() => {
@@ -84,13 +84,10 @@ const Collection: React.FC = () => {
 
     const matchesCategory =
       trimmedSelectedCategory === "collection" || // Allow all products if category is "collection"
-      (trimmedProductCategory &&
-        trimmedProductCategory === trimmedSelectedCategory);
+      (trimmedProductCategory && trimmedProductCategory === trimmedSelectedCategory);
 
     const matchesSize = selectedSizes.length
-      ? product.sizes?.some((sizeObj) =>
-          selectedSizes.includes(sizeObj.size)
-        ) ?? false
+      ? product.sizes?.some((sizeObj) => selectedSizes.includes(sizeObj.size)) ?? false
       : true;
 
     // Price filtering
@@ -107,15 +104,9 @@ const Collection: React.FC = () => {
     }
     // Category filtering
     const matchesSelectedCategories =
-      selectedCategories.length === 0 ||
-      selectedCategories.includes(trimmedProductCategory);
+      selectedCategories.length === 0 || selectedCategories.includes(trimmedProductCategory);
 
-    return (
-      matchesCategory &&
-      matchesSize &&
-      matchesPrice &&
-      matchesSelectedCategories
-    ); // Combine conditions
+    return matchesCategory && matchesSize && matchesPrice && matchesSelectedCategories; // Combine conditions
   });
 
   // Sort filtered products
@@ -133,9 +124,7 @@ const Collection: React.FC = () => {
   const currentProducts =
     category === "all"
       ? allProducts // Use sortedProducts directly if category is "collection"
-      : sortedProducts
-          .slice(startIdx, startIdx + productsPerPage)
-          .filter(Boolean);
+      : sortedProducts.slice(startIdx, startIdx + productsPerPage).filter(Boolean);
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
@@ -169,7 +158,7 @@ const Collection: React.FC = () => {
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
-      <div className="image-container w-full h-[100vh] -mt-28">
+      <div className="image-container w-full h-[60vh] sm:h-[90vh] -mt-28">
         <img
           className="w-full h-full object-cover"
           src={img}
@@ -205,15 +194,14 @@ const Collection: React.FC = () => {
 
         {/* Product grid */}
         <div className="product-container w-full mt-6 px-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1 w-full">
+          <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
             {currentProducts.map((product) => (
               <div
                 key={product.id}
-                className="relative bg-[#7A7A7A] rounded-sm overflow-hidden flex items-center justify-center"
-                style={{ height: "95vh" }}
+                className="relative bg-white overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
               >
                 <img
-                  className="w-full h-full object-cover cursor-pointer"
+                  className="w-full h-[93%] object-contain cursor-pointer"
                   onClick={() => handleNavigate(`/Product/${product.id}`)}
                   src={
                     product.product_images && product.product_images.length > 0
@@ -222,19 +210,22 @@ const Collection: React.FC = () => {
                   }
                   alt={product.name}
                 />
-                <div className="absolute bottom-2 left-2 text-[#282828] text-sm font-semibold">
-                  {product.name}
+                <div className="flex justify-between items-center p-1">
+                  {" "}
+                  {/* Flex container for name and price */}
+                  <div className="text-[#282828] text-[8px] sm:text-base md:text-base font-semibold">
+                    {product.name}
+                  </div>
+                  <div className="text-[#58595B] text-[8px] sm:text-sm md:text-base font-semibold">
+                    ₹ {product.price}
+                  </div>
                 </div>
-                <div className="absolute bottom-2 right-2 text-[#636363] text-sm font-semibold">
-                  {product.price} rs
-                </div>
+
                 <button
                   onClick={() => toggleWishlist(product.id)}
-                  className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${
-                    wishlist.includes(product.id)
-                      ? "bg-red-500"
-                      : "bg-gray-500"
-                  } text-white`}
+                  className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
+                    wishlist.includes(product.id) ? "bg-red-500" : "bg-gray-500"
+                  } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
                 >
                   {wishlist.includes(product.id) ? "♥" : "♡"}
                 </button>
@@ -296,10 +287,7 @@ const Collection: React.FC = () => {
             {showSize && (
               <div className="mt-2 flex flex-col">
                 {["small", "medium", "large", "X-large"].map((size) => (
-                  <label
-                    key={size}
-                    className="flex items-center cursor-pointer"
-                  >
+                  <label key={size} className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       className="mr-2"
@@ -333,10 +321,7 @@ const Collection: React.FC = () => {
             {showPrice && (
               <div className="mt-2 flex flex-col">
                 {["Low to High", "High to Low"].map((sortOption) => (
-                  <label
-                    key={sortOption}
-                    className="flex items-center cursor-pointer"
-                  >
+                  <label key={sortOption} className="flex items-center cursor-pointer">
                     <input
                       type="radio"
                       className="mr-2"
