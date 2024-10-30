@@ -81,9 +81,8 @@ class CollectionAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
-# Replace with your Azure Storage account details
-AZURE_STORAGE_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=blackwilbur;AccountKey=Vv2HZ0MjxWAibKuMgX6E3TmntwvLNHZz+lQpswpEvoXtuHdXP/M9OOoMv43rADP1xiYvpd33XI4O+AStYbhjXw==;EndpointSuffix=core.windows.net'
 CONTAINER_NAME = 'blackwilbur-image'
+AZURE_STORAGE_CONNECTION_STRING = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
 
 class ProductManageAPIView(APIView):
     blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
