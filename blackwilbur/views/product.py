@@ -80,7 +80,6 @@ class CollectionAPIView(APIView):
         serializer = serializers.CollectionsSerializer(all_products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
 CONTAINER_NAME = 'blackwilbur-image'
 AZURE_STORAGE_CONNECTION_STRING = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
 
