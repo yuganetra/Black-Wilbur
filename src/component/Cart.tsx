@@ -65,7 +65,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
               existingCart.map(
                 async (item: {
                   product: Product | null;
-                  product_id: number;
+                  product_id: string;
                   quantity: number;
                   product_variation_id: string;
                 }) => {
@@ -116,7 +116,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  const handleRemove = (cartItemId: number, productId: number, size: string) => {
+  const handleRemove = (cartItemId: number, productId: string, size: string) => {
     setCartProducts((prev) => {
       const updatedCart = prev.filter(
         (item) => !(item.product.id === productId && item.size.size === size)
@@ -193,8 +193,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                   <div className="flex">
                     <img
                       src={
-                        item.product.product_images?.length > 0
-                          ? item.product.product_images[0]?.image // Optional chaining here
+                        item.product.image?.length > 0
+                          ? item.product.image // Optional chaining here
                           : "fallback-image-url.jpg"
                       }
                       alt={item.product.name}

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, exceptions
 from rest_framework.permissions import IsAuthenticated
 from blackwilbur import models, serializers
-
+import uuid  # Import the uuid module
 
 class CartAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -39,14 +39,16 @@ class CartAPIView(APIView):
         except models.ProductVariation.DoesNotExist:
             raise exceptions.NotFound("Product size not found!")
 
+        # Generate a UUID for the new cart item
         cart_item = models.CartItem.objects.create(
+            id=uuid.uuid4(),  # Assign the generated UUID as the primary key
             cart=cart,
             product=product,
             product_variation=product_variation,
             quantity=1,
         )
 
-        return Response(serializers.CartItemSerializer(cart_item).data)
+        return Response(serializers.CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
 
     def put(self, request):
         data = request.data.get('data', {})

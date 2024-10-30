@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from blackwilbur.serializers import LoginSerializer,RegisterSerializer
+from blackwilbur.serializers import LoginSerializer, RegisterSerializer
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from blackwilbur.models import User  # Import your User model
 
 class LoginAPIView(APIView):
     def post(self, request):
@@ -19,8 +20,13 @@ class LoginAPIView(APIView):
         password = serializer.validated_data['password']
         print(f"Attempting to authenticate user: {identifier}")
 
-        # Use 'username' field to authenticate with either email or username
-        user = authenticate(request, username=identifier, password=password)
+        # Try to retrieve the user by UUID or username/email
+        try:
+            # Try to get user by UUID
+            user = User.objects.get(pk=identifier)  # Assuming 'identifier' can be a UUID
+        except (User.DoesNotExist, ValueError):
+            # If not found by UUID, try authenticating with username/email
+            user = authenticate(request, username=identifier, password=password)
 
         if user is None:
             print("Authentication failed for user:", identifier)
@@ -35,13 +41,14 @@ class LoginAPIView(APIView):
             'refresh_token': str(refresh),
             'access_token': str(refresh.access_token),
             'user': {
-                'id': user.id,
+                'id': str(user.id),  # Convert UUID to string
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'username': user.username,
                 'email': user.email,
             }
         }, status=status.HTTP_200_OK)
+
 
 class RegisterAPIView(APIView):
     def post(self, request):
@@ -57,7 +64,7 @@ class RegisterAPIView(APIView):
             }
             return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
 
-        user = serializer.save()
+        user = serializer.save()  # Save user and generate UUID in the serializer
 
         refresh = RefreshToken.for_user(user)
         
@@ -65,4 +72,11 @@ class RegisterAPIView(APIView):
             'message': 'Registration successful',
             'refresh_token': str(refresh),
             'access_token': str(refresh.access_token),
+            'user': {
+                'id': str(user.id),  # Convert UUID to string
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'username': user.username,
+                'email': user.email,
+            }
         }, status=status.HTTP_201_CREATED)

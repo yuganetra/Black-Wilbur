@@ -23,7 +23,9 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_size(self, instance):
         # Assuming `product_variation` is related to the `CartItem` model
-        return {
-            'id': instance.product_variation.id,  # Get the ID of the product variation
-            'size': instance.product_variation.size  # Get the size of the product variation
-        }
+        if instance.product_variation:
+            return {
+                'id': instance.product_variation.id,  # Get the ID of the product variation
+                'size': instance.product_variation.size  # Get the size of the product variation
+            }
+        return None  # Return None or an empty dict if there is no product variation

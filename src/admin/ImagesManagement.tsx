@@ -1,40 +1,83 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { fetchProducts } from '../services/api';
+import { uploadImage, getAllImages, deleteImage } from '../services/api'; // Import API functions
+import { ProductAdmin } from '../utiles/types';
 
 interface Image {
-  id: number;
-  productId: number;
-  url: string;
+  id: string;
+  product: string;
+  image_url: string;
 }
 
 const ImagesManagement: React.FC = () => {
   const [images, setImages] = useState<Image[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
-  const [imageUrl, setImageUrl] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [products, setProducts] = useState<ProductAdmin[]>([]);
 
-  // Sample product data
-  const products = [
-    { id: 1, name: 'Product 1' },
-    { id: 2, name: 'Product 2' },
-    { id: 3, name: 'Product 3' },
-  ];
+  // Fetch products and images on component mount
+  const fetchData = async () => {
+    try {
+      const fetchedProducts = await fetchProducts();
+      setProducts(fetchedProducts);
+      const fetchedImages = await getAllImages();
+      setImages(fetchedImages);
+      console.log(fetchedImages)
 
-  const handleAddImage = () => {
-    if (selectedProductId && imageUrl) {
-      const newImage: Image = {
-        id: Date.now(), // Unique ID generation
-        productId: selectedProductId,
-        url: imageUrl,
-      };
-      setImages([...images, newImage]);
-      setImageUrl('');
-      setSelectedProductId(null);
-      setIsModalOpen(false); // Close modal after adding image
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
   };
 
-  const handleDeleteImage = (id: number) => {
-    setImages(images.filter(image => image.id !== id));
+  useEffect(() => {
+    fetchData();
+    const intervalId = setInterval(fetchData, 6000); // refresh data every 6 seconds
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  // Upload image to server
+  const handleAddImage = async () => {
+    if (!selectedProductId || !selectedFile) {
+        console.error("Please select a product and an image.");
+        return;
+    }
+
+    try {
+      console.log("selectedProductId",selectedProductId , "images", images)
+        await uploadImage({ product: selectedProductId, image: selectedFile });
+        setSelectedFile(null);
+        setSelectedProductId(null);
+        setIsModalOpen(false);
+        fetchData();
+        alert("Image uploaded successfully!"); 
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Failed to upload image. Please try again."); // User feedback
+    }
+};
+
+  // Delete image by ID
+  const handleDeleteImage = async (id: string) => {
+    try {
+      await deleteImage(id);
+      setImages(images.filter(image => image.id !== id));
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  };
+
+  // Helper function to get product name by ID
+  const getProductName = (productId: string) => {
+    const product = products.find((product) => product.id === productId);
+    return product ? product.name : "Unknown Product";
   };
 
   return (
@@ -53,7 +96,7 @@ const ImagesManagement: React.FC = () => {
             <div className="mb-4">
               <select
                 value={selectedProductId || ''}
-                onChange={(e) => setSelectedProductId(Number(e.target.value))}
+                onChange={(e) => setSelectedProductId(e.target.value)}
                 className="border p-2 mr-2 bg-gray-700 text-white rounded"
               >
                 <option value="" disabled>Select Product</option>
@@ -63,10 +106,8 @@ const ImagesManagement: React.FC = () => {
               </select>
 
               <input
-                type="text"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Image URL"
+                type="file"
+                onChange={handleFileChange}
                 className="border p-2 bg-gray-700 text-white rounded"
               />
             </div>
@@ -87,15 +128,19 @@ const ImagesManagement: React.FC = () => {
           <thead>
             <tr className="bg-gray-800">
               <th className="py-2 px-4 border-b border-gray-700 text-left">Product ID</th>
-              <th className="py-2 px-4 border-b border-gray-700 text-left">Image URL</th>
+              <th className="py-2 px-4 border-b border-gray-700 text-left">Product Name</th>
+              <th className="py-2 px-4 border-b border-gray-700 text-left">Image</th>
               <th className="py-2 px-4 border-b border-gray-700 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {images.map(image => (
               <tr key={image.id} className="hover:bg-gray-800">
-                <td className="py-2 px-4 border-b border-gray-700 text-left">{image.productId}</td>
-                <td className="py-2 px-4 border-b border-gray-700 text-left">{image.url}</td>
+                <td className="py-2 px-4 border-b border-gray-700 text-left">{image.product}</td>
+                <td className="py-2 px-4 border-b border-gray-700 text-left">{getProductName(image.product)}</td>
+                <td className="py-2 px-4 border-b border-gray-700 text-left">
+                  <img src={image.image_url} alt="Product" className="w-16 h-16 object-cover" />
+                </td>
                 <td className="py-2 px-4 border-b border-gray-700 text-left">
                   <button onClick={() => handleDeleteImage(image.id)} className="text-red-500">
                     Delete

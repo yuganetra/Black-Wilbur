@@ -4,15 +4,15 @@ import carousel1 from "../asset/chpp-carousel.jpg";
 import videoSrc from "../asset/homepage-vide-updated.MOV";
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
-import { Product } from "../utiles/types";
+import { Product, ProductCollection } from "../utiles/types";
 import GetFeatured from "./GetFeatured";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const productRef = useRef<HTMLDivElement | null>(null);
   const [bestseller, setBestSeller] = useState<Product[]>([]);
-  const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
-  const [wishlist, setWishlist] = useState<number[]>([]); // Wishlist state
+  const [exploreProducts, setExploreProducts] = useState<ProductCollection[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]); // Wishlist state
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for managing popup visibility
 
   const handleNavigate = (path: string) => {
@@ -35,7 +35,7 @@ const Home: React.FC = () => {
     }
   };
 
-  const toggleWishlist = (productId: number) => {
+  const toggleWishlist = (productId: string) => {
     setWishlist((prevWishlist) => {
       const newWishlist = prevWishlist.includes(productId)
         ? prevWishlist.filter((id) => id !== productId) // Remove from wishlist
@@ -112,9 +112,9 @@ const Home: React.FC = () => {
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {bestseller.map((bestseller) => {
-                const productImages = bestseller.product_images;
+                const productImages = bestseller.image;
                 const imageSrc =
-                  productImages.length > 0 ? productImages[0].image : "default-image-url.jpg";
+                  productImages.length > 0 ? productImages : "default-image-url.jpg";
 
                 return (
                   <div
@@ -257,7 +257,7 @@ const Home: React.FC = () => {
                     onClick={() => handleNavigate(`/Product/${product.id}`)}
                     src={
                       product.product_images && product.product_images.length > 0
-                        ? product.product_images[0]?.image
+                        ? product.product_images[0]?.image_url
                         : ""
                     }
                     alt={product.name}

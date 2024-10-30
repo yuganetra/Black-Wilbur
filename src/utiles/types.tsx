@@ -1,36 +1,67 @@
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   description: string;
 }
 
-// Example of a response type for an array of products
 export type ProductResponse = Product[];
 
-export interface productImage{
-    id:number, 
-    image:string,   
-    product_id: number
 
+
+// Interface for ProductImage
+export interface ProductImage {
+  id: string;
+  product: string; // ID of the associated product
+  image_url: string; // URL of the product image
+  created_at: string; // ISO string of when the image was created
+}
+
+// Interface for Product
+export interface ProductCollection {
+  id: string;             // Unique identifier for the product
+  name: string;           // Name of the product
+  description: string;    // Description of the product
+  category: string;       // Category of the product
+  price: number;          // Price of the product
+  sizes: Size[];         // Array of sizes associated with the product
+  rating: number;         // Product rating
+  product_images: ProductImage[]; // Array of images associated with the product
 }
 
 export interface Product {
-  id: number;
+  sizes: any;
+  id: string;
   name: string;
   price: number;
-  product_images: productImage[];
   description: string;
-  sizes: ProductVariation[];
-  rating: number;
-  category: Category;
+  category: string; 
+  image: string; 
 }
+
+export interface ProductAdmin {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  category: string; 
+  image: File; 
+}
+
 
 export interface ProductVariation {
-  id: number;
-  size: string;
-  quantity: number;
+  id: string; // UUID
+  product: string; // ID of the associated product
+  size: string; // Size of the product variation
+  quantity: number; // Available quantity
 }
 
+// Interface for Size
+interface Size {
+  id: string;
+  product: string; // ID of the associated product
+  size: string;    // Size (e.g., S, M, L)
+  quantity: number; // Available quantity for this size
+}
 export interface AuthUser {
   first_name?: string;
   last_name?: string;
@@ -74,8 +105,8 @@ export interface CheckoutProduct {
 interface CheckoutProductForbackend{
   id: number;
   quantity: number;
-  product_id: number;
-  product_variation_id: number;
+  product_id: string;
+  product_variation_id: string;
 }
 
 export interface Order {
@@ -102,11 +133,6 @@ export interface OrderItem {
   product_variation_id: ProductVariation;
 }
 
-export interface Size {
-  id: number;
-  size: string;
-}
-
 export interface CartItem {
   id: number;
   quantity: number;
@@ -120,4 +146,22 @@ export interface GetOrder {
   created_at: string;     // Datetime when the order was created
   status: string;         // Status of the order (e.g., 'Pending', 'Completed')
   items: OrderItem[];     // Array of items in the order
+}
+
+
+export interface Image {
+  id: string;
+  product: string;
+  image_url: string;
+}
+
+export interface ImageUploadResponse {
+  id: string;
+  product: number;
+  url: string;
+}
+
+export interface ImageRequest {
+  product: string;
+  image: File;
 }

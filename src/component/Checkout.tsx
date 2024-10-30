@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
-import { Product ,CartItem} from "../utiles/types";
+import {CartItem} from "../utiles/types";
 import { createOrder, sendSms } from "../services/api";
 
 interface CheckoutProductForbackend{
   id: number;
   quantity: number;
-  product_id: number;
-  product_variation_id: number;
+  product_id: string;
+  product_variation_id: string;
 }
 
 interface Order {
@@ -457,10 +457,10 @@ const Checkout: React.FC = () => {
                     products.map((checkoutProduct) => {
                       // Ensure checkoutProduct and its product property are defined
                       const product = checkoutProduct.product || {};
-                      const productImages = product.product_images || [];
+                      const productImages = product.image;
                       const imageSrc =
                         productImages.length > 0
-                          ? productImages[0].image
+                          ? productImages
                           : "/placeholder.png";
 
                       return (

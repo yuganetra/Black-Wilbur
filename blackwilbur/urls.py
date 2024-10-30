@@ -25,5 +25,9 @@ urlpatterns = [
     path('send-sms/', views.SendSmsView.as_view(), name='send_sms'),
     path('ratings/', views.RatingAPIView.as_view(), name='rating-list'),
     path('products-manage', views.ProductManageAPIView.as_view()),
+    path('product-variations/', views.ProductVariationAPIView.as_view(), name='product-variations'),
+    path('images/', views.ImageManageAPIView.as_view(), name='image-list'),
+    path('images/<str:pk>/', views.ImageManageAPIView.as_view(), name='image-detail'),
+    path('images/product/<str:product_id>/', views.ImageManageAPIView.as_view(), name='image-by-product'),  # Fetch images by product ID
 
 ]

@@ -1,3 +1,4 @@
+// AdminPanel.tsx
 import React, { useState } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import ProductManagement from './ProductManagement';
@@ -6,33 +7,30 @@ import UserManagement from './UserManagement';
 import Dashboard from './Dashboard';
 import CategoriesManagement from './CategoriesManagement';
 import ImagesManagement from './ImagesManagement';
-import { HiChevronDown } from 'react-icons/hi'; // Import an icon for the dropdown
+import SizeQuantityManagement from './SizeQuantityComponent'; // Import the new component
+import { HiChevronDown } from 'react-icons/hi';
 
 const AdminPanel: React.FC = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
-  const [isProductDropdownOpen, setProductDropdownOpen] = useState(false); // State to manage dropdown visibility
-  const [activeButton, setActiveButton] = useState(""); // State to track the active button
-  const [isSidebarOpen, setSidebarOpen] = useState(true); // State to manage sidebar visibility
+  const navigate = useNavigate();
+  const [isProductDropdownOpen, setProductDropdownOpen] = useState(false);
+  const [activeButton, setActiveButton] = useState("");
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
 
-  // Handler functions for navigation
   const handleNavigate = (path: string, buttonName: string) => {
-    setActiveButton(buttonName); // Set the active button
+    setActiveButton(buttonName);
     navigate(path);
   };
 
-  // Toggle dropdown visibility
   const toggleProductDropdown = () => {
     setProductDropdownOpen(!isProductDropdownOpen);
   };
 
-  // Toggle sidebar visibility
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
   };
 
   return (
-    <div className="admin-panel flex h-auto m-auto  bg-black text-white">
-      {/* Sidebar */}
+    <div className="admin-panel flex h-auto m-auto bg-black text-white">
       <aside className={`sidebar bg-black text-white ${isSidebarOpen ? 'w-1/5' : 'w-0 overflow-hidden'} transition-all duration-300`}>
         <button 
           onClick={toggleSidebar} 
@@ -54,14 +52,14 @@ const AdminPanel: React.FC = () => {
             <li>
               <button
                 className={`w-full text-left p-3 rounded flex items-center justify-between ${activeButton === "Product Management" ? "bg-gray-700" : "hover:bg-gray-700"}`}
-                onClick={toggleProductDropdown} // Toggle dropdown
+                onClick={toggleProductDropdown}
               >
                 Product Management
                 <HiChevronDown className={`transition-transform ${isProductDropdownOpen ? 'transform rotate-180' : ''}`} />
               </button>
-              {isProductDropdownOpen && ( // Render dropdown if open
+              {isProductDropdownOpen && (
                 <ul className="pl-4 mt-2 space-y-2">
-                                    <li>
+                  <li>
                     <button
                       className={`w-full text-left hover:bg-gray-600 p-2 rounded ${activeButton === "Categories" ? "bg-gray-600" : ""}`}
                       onClick={() => handleNavigate("/admin/categories", "Categories")}
@@ -83,6 +81,14 @@ const AdminPanel: React.FC = () => {
                       onClick={() => handleNavigate("/admin/products", "Products")}
                     >
                       Products
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`w-full text-left hover:bg-gray-600 p-2 rounded ${activeButton === "SizeQuantityManagement" ? "bg-gray-600" : ""}`}
+                      onClick={() => handleNavigate("/admin/size-quantity", "SizeQuantityManagement")}
+                    >
+                      Size & Quantity
                     </button>
                   </li>
                 </ul>
@@ -108,13 +114,13 @@ const AdminPanel: React.FC = () => {
         </nav>
       </aside>
 
-      {/* Content Area */}
       <div className={`content flex-1 p-8 bg-gray-900 transition-all duration-300 ${isSidebarOpen ? 'ml-0' : 'ml-0 lg:ml-[-80%]'}`}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="products" element={<ProductManagement />} />
           <Route path="categories" element={<CategoriesManagement />} />
           <Route path="images" element={<ImagesManagement />} />
+          <Route path="size-quantity" element={<SizeQuantityManagement />} />
           <Route path="orders" element={<OrderManagement />} />
           <Route path="users" element={<UserManagement />} />
         </Routes>

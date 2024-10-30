@@ -11,9 +11,16 @@ import {
   Order,
   CartItem,
   GetOrder,
+  ProductAdmin,
+  ProductVariation,
+  Image,
+  ImageUploadResponse,
+  ImageRequest,
+  ProductCollection
 } from "../utiles/types";
 
-const API_BASE_URL = "https://backendapi.blackwilbur.com/";
+const API_BASE_URL = "http://127.0.0.1:5000/"
+//"https://backendapi.blackwilbur.com/";
 
 // Axios instance for API calls
 const axiosInstance = axios.create({
@@ -43,7 +50,7 @@ export const addCategory = async (
   return response.data;
 };
 
-export const updateCategory = async (currentCategoryId: number, categoryName: string, categoryDescription: string) => {
+export const updateCategory = async (currentCategoryId: string, categoryName: string, categoryDescription: string) => {
   const response = await axiosInstance.put(`${API_BASE_URL}categories`, {
     id: currentCategoryId,
     data: {
@@ -54,7 +61,7 @@ export const updateCategory = async (currentCategoryId: number, categoryName: st
   return response.data;
 };
 
-export const deleteCategory = async (currentCategoryId: number) => {
+export const deleteCategory = async (currentCategoryId: string) => {
   await axiosInstance.delete(`${API_BASE_URL}categories`, {
     data: {
       id: currentCategoryId,
@@ -69,8 +76,8 @@ export const fetchBestSeller = async (): Promise<Product[]> => {
   return response.data;
 };
 
-export const fetchProductById = async (productId: number): Promise<Product> => {
-  const response = await axiosInstance.get<Product>(`${API_BASE_URL}products/${productId}`);
+export const fetchProductById = async (productId: string): Promise<ProductCollection> => {
+  const response = await axiosInstance.get<ProductCollection>(`${API_BASE_URL}products/${productId}`);
   return response.data;
 };
 
@@ -84,8 +91,8 @@ export const tokenExpiresIn = (token: string): number => {
   return expiration - Date.now(); // Returns time until expiration in milliseconds
 };
 
-export const fetchCollection = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}collections`);
+export const fetchCollection = async (): Promise<ProductCollection[]> => {
+  const response = await axiosInstance.get<ProductCollection[]>(`${API_BASE_URL}collections`);
   return response.data;
 };
 
@@ -198,8 +205,8 @@ export const fetchCartItems = async (): Promise<CartItem[]> => {
 };
 
 export const addToCart = async (
-  productId: number,
-  productVariationId: number,
+  productId: string,
+  productVariationId: string,
   quantity: number
 ) => {
   const response = await axiosInstance.post(`${API_BASE_URL}cart`, {
@@ -241,8 +248,8 @@ export const getCartItemsCount = async (): Promise<number> => {
   }
 };
 
-export const fetchExplore = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}explore`);
+export const fetchExplore = async (): Promise<ProductCollection[]> => {
+  const response = await axiosInstance.get<ProductCollection[]>(`${API_BASE_URL}explore`);
   return response.data;
 };
 
@@ -301,7 +308,7 @@ export const createOrder = async (orderData: Order) => {
   }
 };
 
-export const fetchRatings = async (productId: number) => {
+export const fetchRatings = async (productId: string) => {
   try {
     const response = await axiosInstance.get(`${API_BASE_URL}ratings/?product_id=${productId}`);
     console.log(response.data);
@@ -312,7 +319,7 @@ export const fetchRatings = async (productId: number) => {
   }
 };
 
-export const addRating = async (productId: number, rating: number) => {
+export const addRating = async (productId: string, rating: number) => {
   const ratingData = {
     product_id: productId,
     rating: rating,
@@ -328,7 +335,7 @@ export const addRating = async (productId: number, rating: number) => {
 };
 
 
-export const fetchProducts = async (): Promise<Product[]> => {
+export const fetchProducts = async (): Promise<ProductAdmin[]> => {
   try {
     const response = await axios.get(`${API_BASE_URL}products-manage`);
     return response.data;
@@ -339,16 +346,20 @@ export const fetchProducts = async (): Promise<Product[]> => {
 };
 
 // Add Product
-export const addProduct = async (product: Product): Promise<Product> => {
+export const addProduct = async (formData: FormData): Promise<ProductAdmin> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}products-manage`, product);
+    // Set the appropriate headers for FormData
+    const response = await axios.post(`${API_BASE_URL}products-manage`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data", // Ensure the server knows we're sending form data
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Error adding product:", error);
     throw error;
   }
 };
-
 // Update Product
 export const updateProduct = async (productId: number, product: Product): Promise<Product> => {
   try {
@@ -360,12 +371,81 @@ export const updateProduct = async (productId: number, product: Product): Promis
   }
 };
 
-// Delete Product
-export const deleteProduct = async (productId: number): Promise<void> => {
+export const deleteProduct = async (productId: string) => {
   try {
-    await axios.delete(`${API_BASE_URL}products-manage${productId}`);
+      const response = await axios.delete(`${API_BASE_URL}products-manage`, {
+          data: { id: productId },  // Pass productId in the request body
+      });
+      return response.data;
   } catch (error) {
-    console.error("Error deleting product:", error);
-    throw error;
+      console.error('Error deleting product:', error);
+      throw error;
   }
+};
+
+
+// Fetch all product variations
+export const fetchProductVariations = async (): Promise<ProductVariation[]> => {
+  const response = await axios.get(`${API_BASE_URL}product-variations/`);
+  return response.data;
+};
+
+export const createProductVariation = async (variation: {
+  product: string;
+  size: string;
+  quantity: number;
+}): Promise<ProductVariation> => {
+  const response = await axios.post(`${API_BASE_URL}product-variations/`, variation);
+  return response.data; // Return the created product variation data
+};
+
+// Update an existing product variation
+export const updateProductVariation = async (variation: ProductVariation): Promise<ProductVariation> => {
+  const response = await axios.put((`${API_BASE_URL}product-variations/`), variation);
+  return response.data;
+};
+
+// Partially update an existing product variation
+export const partialUpdateProductVariation = async (variation: Partial<ProductVariation>): Promise<ProductVariation> => {
+  const response = await axios.patch((`${API_BASE_URL}product-variations/`), variation);
+  return response.data;
+};
+
+// Delete a product variation
+export const deleteProductVariation = async (id: string): Promise<void> => {
+  await axios.delete((`${API_BASE_URL}product-variations/`), { data: { id } });
+};
+
+
+// Function to fetch a single image by ID
+export const getImageById = async (id: string): Promise<Image> => {
+  const response = await axios.get<Image>(`${API_BASE_URL}images/${id}/`);
+  return response.data;
+};
+
+// Function to fetch all images
+export const getAllImages = async (): Promise<Image[]> => {
+  const response = await axios.get<Image[]>(`${API_BASE_URL}images/`);
+  return response.data;
+};
+
+// Function to upload an image
+export const uploadImage = async (imageRequest: ImageRequest): Promise<ImageUploadResponse> => {
+  const formData = new FormData();
+  formData.append('product', imageRequest.product.toString());
+  formData.append('image', imageRequest.image);
+
+  const response = await axios.post<ImageUploadResponse>(`${API_BASE_URL}images/`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+// Function to delete an image by ID
+export const deleteImage = async (id: string): Promise<void> => {
+  await axios.delete(`${API_BASE_URL}images/`, {
+    data: { id },  // Passing the ID in the request body
+  });
 };
