@@ -1,6 +1,8 @@
+import uuid  # Import UUID module
+from django.db.models import Max, Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, exceptions
 from blackwilbur import models, serializers
 from rest_framework.permissions import IsAuthenticated
 
@@ -42,8 +44,11 @@ class OrdersAPIView(APIView):
 
         print("Order data validated successfully.")  # Log successful validation
 
+        # Generate a new UUID for the order
+        order_id = str(uuid.uuid4())  # Generate a new UUID
+        print("Generated new order UUID:", order_id)  # Log the new UUID
+
         # Check if the order already exists
-        order_id = order_serializer.validated_data.get('order_id')
         print("Checking for existing order with order_id:", order_id)  # Log order ID check
 
         try:
@@ -56,12 +61,12 @@ class OrdersAPIView(APIView):
             # Create a new order, explicitly setting the user from the request
             new_order = models.Order.objects.create(
                 **{key: value for key, value in order_serializer.validated_data.items() if key != 'user'},  # Exclude 'user' from validated data
-                user=request.user  # Set user from request
+                user=request.user,  # Set user from request
+                order_id=order_id  # Set the generated UUID as the order ID
             )
             print("New order created with ID:", new_order.order_id)  # Log newly created order
 
         # Insert each product into the OrderItem table
-# Insert each product into the OrderItem table
         for product_data in products_data:
             product_id = product_data.get('product_id')
             quantity = product_data.get('quantity')

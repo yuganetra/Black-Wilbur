@@ -4,7 +4,7 @@ import { MdClose, MdFilterList } from "react-icons/md";
 import img from "../asset/collection-carousel.jpg";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchCollection } from "../services/api";
-import { Product } from "../utiles/types";
+import { ProductCollection } from "../utiles/types";
 
 const Collection: React.FC = () => {
   const { category = "all" } = useParams<{ category?: string }>();
@@ -21,10 +21,10 @@ const Collection: React.FC = () => {
   const [showSize, setShowSize] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
   const [showCategory, setShowCategory] = useState(false);
-  const [wishlist, setWishlist] = useState<number[]>([]); // Wishlist state
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]); // Wishlist state
+  const [allProducts, setAllProducts] = useState<ProductCollection[]>([]);
 
-  const toggleWishlist = (productId: number) => {
+  const toggleWishlist = (productId: string) => {
     setWishlist((prevWishlist) => {
       const newWishlist = prevWishlist.includes(productId)
         ? prevWishlist.filter((id) => id !== productId) // Remove from wishlist
@@ -79,7 +79,7 @@ const Collection: React.FC = () => {
 
   // Filter products based on selected filters
   const filteredProducts = allProducts.filter((product) => {
-    const trimmedProductCategory = product.category?.name.trim().toLowerCase();
+    const trimmedProductCategory = product.category.trim().toLowerCase();
     const trimmedSelectedCategory = category?.trim().toLowerCase();
 
     const matchesCategory =
@@ -87,7 +87,7 @@ const Collection: React.FC = () => {
       (trimmedProductCategory && trimmedProductCategory === trimmedSelectedCategory);
 
     const matchesSize = selectedSizes.length
-      ? product.sizes?.some((sizeObj) => selectedSizes.includes(sizeObj.size)) ?? false
+      ? product.sizes?.some((sizeObj: { size: string; }) => selectedSizes.includes(sizeObj.size)) ?? false
       : true;
 
     // Price filtering
@@ -205,7 +205,7 @@ const Collection: React.FC = () => {
                   onClick={() => handleNavigate(`/Product/${product.id}`)}
                   src={
                     product.product_images && product.product_images.length > 0
-                      ? product.product_images[0]?.image
+                      ? product.product_images[0]?.image_url
                       : ""
                   }
                   alt={product.name}

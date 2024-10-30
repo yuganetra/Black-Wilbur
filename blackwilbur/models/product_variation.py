@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from blackwilbur.models import Product
 
@@ -9,10 +10,10 @@ SIZE_CHOICES = [
     ('XXL', 'Double Extra Large'),
 ]
 
-
 class ProductVariation(models.Model):
-    product = models.ForeignKey(Product, related_name='sizes', on_delete=models.CASCADE)
-    size = models.CharField(max_length=5, choices=SIZE_CHOICES)  # Define size choices
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)
+    product = models.UUIDField()  # Assuming this stores the product UUID
+    size = models.CharField(max_length=5, choices=SIZE_CHOICES)
     quantity = models.PositiveIntegerField()
 
     def __str__(self):

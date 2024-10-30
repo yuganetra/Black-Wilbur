@@ -1,48 +1,87 @@
-import React, { useState } from 'react';
-import { RxCross2 } from "react-icons/rx";
-import { Product, ProductVariation, productImage, Category } from '../utiles/types';
+import React, { useState, useEffect } from "react";
+import { ProductAdmin, Category } from "../utiles/types"; // Adjust your imports accordingly
+import { fetchCategories, addProduct } from "../services/api";
 
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (product: Product) => void;
+  onAddProduct: (product: ProductAdmin) => void; // Optional, can be removed if not used
 }
 
-const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onAddProduct }) => {
-  const [productName, setProductName] = useState('');
-  const [productDescription, setProductDescription] = useState('');
-  const [productPrice, setProductPrice] = useState(0);
-  const [productImages, setProductImages] = useState<productImage[]>([]);
+const ProductModal: React.FC<ProductModalProps> = ({
+  isOpen,
+  onClose,
+  onAddProduct,
+}) => {
+  const [productName, setProductName] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [productPrice, setProductPrice] = useState("");
+  const [productImage, setProductImage] = useState<File | null>(null); // Changed to File
   const [productCategory, setProductCategory] = useState<Category | null>(null);
-  const [sizes, setSizes] = useState<ProductVariation[]>([]);
-  const [selectedSize, setSelectedSize] = useState<string>('S');
-  const [quantityInput, setQuantityInput] = useState(0);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const handleAddSize = () => {
-    if (quantityInput > 0) {
-      const newSize: ProductVariation = { id: sizes.length + 1, size: selectedSize, quantity: quantityInput };
-      setSizes([...sizes, newSize]);
-      setQuantityInput(0);
+  useEffect(() => {
+    const fetchCategoriesdata = async () => {
+      try {
+        const fetchedCategories = await fetchCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    if (isOpen) fetchCategoriesdata();
+  }, [isOpen]);
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedCategoryId = e.target.value;
+    const selectedCategory = categories.find(
+      (category) => category.id === selectedCategoryId
+    );
+
+    if (selectedCategory) {
+      setProductCategory(selectedCategory);
+    } else {
+      setProductCategory(null);
     }
   };
 
-  const handleRemoveSize = (sizeToRemove: string) => {
-    setSizes(sizes.filter(size => size.size !== sizeToRemove));
+  // Handle image upload
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setProductImage(files[0]); // Store only the first selected image
+    }
   };
 
   const handleAddProduct = () => {
-    const newProduct: Product = {
-      id: 0, // Handle ID generation as needed
-      name: productName,
-      price: productPrice,
-      description: productDescription,
-      product_images: productImages,
-      sizes,
-      rating: 0, // Initialize with default rating if needed
-      category: productCategory as Category,
-    };
-    onAddProduct(newProduct);
-    onClose();
+    if (!productCategory || !productImage) {
+      alert("Please select a category and upload an image.");
+      return;
+    }
+
+    const formData = new FormData();
+
+    // Append the product details
+    formData.append("name", productName);
+    formData.append("price", productPrice);
+    formData.append("description", productDescription);
+    formData.append("category", productCategory.id.toString());
+    formData.append("image", productImage); // Ensure this is the File object
+
+    console.log(formData); // For debugging purposes
+
+    // Call the API to add the product
+    addProduct(formData)
+      .then((newProduct) => {
+        console.log("Product added successfully:", newProduct);
+        onAddProduct(newProduct);
+        onClose();
+      })
+      .catch((error) => {
+        console.error("Error adding product:", error);
+        alert("Failed to add product. Please try again.");
+      });
   };
 
   return (
@@ -51,115 +90,95 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onAddProdu
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-black p-6 rounded shadow-md w-[90%] sm:w-[70%] md:w-[50%] lg:w-[40%] h-auto max-h-[90vh] overflow-auto mt-16">
             <h2 className="text-xl font-bold mb-4 text-white">Add Product</h2>
-            <label className="text-white" htmlFor="productName">Product Name</label>
+
+            {/* Product Name Input */}
             <input
-              id="productName"
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               placeholder="Enter Product Name"
               className="border border-white text-white bg-transparent p-2 w-full mb-2"
             />
-            
-            <label className="text-white" htmlFor="productDescription">Product Description</label>
+
+            {/* Product Description Input */}
             <input
-              id="productDescription"
               type="text"
               value={productDescription}
               onChange={(e) => setProductDescription(e.target.value)}
               placeholder="Enter Product Description"
               className="border border-white text-white bg-transparent p-2 w-full mb-2"
             />
-            
-            <label className="text-white" htmlFor="productPrice">Product Price</label>
+
+            {/* Product Price Input */}
             <input
-              id="productPrice"
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={productPrice}
-              onChange={(e) => setProductPrice(Number(e.target.value))}
+              onChange={(e) => setProductPrice(e.target.value)}
               placeholder="Enter Product Price"
               className="border border-white text-white bg-transparent p-2 w-full mb-2"
             />
-            
-            <label className="text-white" htmlFor="productCategory">Product Category</label>
-            <input
+
+            {/* Category Dropdown */}
+            <select
               id="productCategory"
-              type="text"
-              value={productCategory ? productCategory.name : ''}
-              onChange={(e) => setProductCategory({ id: 0, name: e.target.value, description: '' })}
-              placeholder="Enter Product Category"
+              value={productCategory?.id || ""}
+              onChange={handleCategoryChange}
               className="border border-white text-white bg-transparent p-2 w-full mb-2"
-            />
-            
-            <label className="text-white" htmlFor="productImage">Product Image</label>
-            <input
-              id="productImage"
-              type="file"
-              onChange={(e) => {
-                if (e.target.files) {
-                  const file = e.target.files[0];
-                  const newImage: productImage = {
-                    id: productImages.length + 1,
-                    image: URL.createObjectURL(file),
-                    product_id: 0, // This should be updated according to actual product ID
-                  };
-                  setProductImages([...productImages, newImage]);
-                }
-              }}
-              className="border border-white text-white bg-transparent p-2 w-full mb-2"
-            />
-            {productImages.map((img, idx) => (
-              <img key={idx} src={img.image} alt={`Product Preview ${idx}`} className="w-20 h-20 mb-2" />
-            ))}
-            
-            <div className="mb-4 flex flex-col sm:flex-row items-center">
-              <label className="text-white mr-2" htmlFor="sizeSelect">Select Size</label>
-              <select
-                id="sizeSelect"
-                value={selectedSize}
-                onChange={(e) => setSelectedSize(e.target.value)}
-                className="border border-white text-white bg-transparent p-2 mb-2 sm:mb-0 sm:mr-2"
-              >
-                <option className='text-black' value="S">S</option>
-                <option className='text-black' value="M">M</option>
-                <option className='text-black' value="L">L</option>
-                <option className='text-black' value="XL">XL</option>
-                <option className='text-black' value="XXL">XXL</option>
-              </select>
+            >
+              <option value="" className="text-black">
+                Select Category
+              </option>
+              {categories.map((category) => (
+                <option
+                  key={category.id}
+                  value={category.id}
+                  className="text-black"
+                >
+                  {category.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="text-white mb-2">
+              Selected Category: {productCategory?.name || "None"}
+            </div>
+
+            {/* Image Upload */}
+            <div className="text-white mb-2">
+              <label className="block mb-1">Upload Image:</label>
               <input
-                type="text"
-                value={quantityInput}
-                onChange={(e) => setQuantityInput(Number(e.target.value))}
-                placeholder="Quantity"
-                className="border border-white text-white bg-transparent p-2 mb-2 sm:mb-0 sm:mr-2"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="text-white"
               />
-              <button onClick={handleAddSize} className="bg-white text-black p-2 rounded">
-                Add Size
-              </button>
             </div>
 
-            <div>
-              <h2 className="text-lg font-bold text-white">Sizes</h2>
-              <ul className="text-white">
-                {sizes.map((size, index) => (
-                  <li key={index} className="flex justify-between items-center">
-                    {size.size} - {size.quantity}
-                    <button 
-                      onClick={() => handleRemoveSize(size.size)} 
-                      className="text-red-500 ml-2"
-                    >
-                      <RxCross2 />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Image Preview */}
+            {productImage && (
+              <div className="w-16 h-16 mb-4">
+                <img
+                  src={URL.createObjectURL(productImage)}
+                  alt="Product Preview"
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            )}
 
+            {/* Add Product Button */}
             <div className="mt-4">
-              <button onClick={handleAddProduct} className="bg-white text-black p-2 rounded mr-2">
+              <button
+                onClick={handleAddProduct}
+                className="bg-white text-black p-2 rounded mr-2"
+              >
                 Add Product
               </button>
-              <button onClick={onClose} className="bg-red-500 text-white p-2 rounded">
+              <button
+                onClick={onClose}
+                className="bg-red-500 text-white p-2 rounded"
+              >
                 Cancel
               </button>
             </div>

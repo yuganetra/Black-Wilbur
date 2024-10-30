@@ -11,15 +11,15 @@ import {
   fetchRatings,
   addRating,
 } from "../services/api";
-import { Product, ProductVariation } from "../utiles/types";
+import { ProductCollection, ProductVariation,ProductImage } from "../utiles/types";
 import Skeleton from "../utiles/Skeleton";
 
 const Productpage = () => {
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<ProductCollection | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(null);
-  const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
+  const [exploreProducts, setExploreProducts] = useState<ProductCollection[]>([]);
   const [userRating, setUserRating] = useState(0);
   const [ratings, setRatings] = useState<any[]>([]); // Store fetched ratings
   const navigate = useNavigate();
@@ -68,14 +68,6 @@ const Productpage = () => {
   const toggleSizeChart = (): void => {
     setIsSizeChartOpen(!isSizeChartOpen);
   };
-
-  // const handleRatingClick = (rating: number) => {
-  //   setUserRating(rating);
-  //   if (product) {
-  //     product.rating = rating;
-  //     alert(`Rating: ${rating} stars submitted.`);
-  //   }
-  // };
 
   const handleRatingClick = async (rating: number) => {
     setUserRating(rating);
@@ -150,7 +142,7 @@ const Productpage = () => {
     const fetchData = async () => {
       try {
         if (id) {
-          const fetchedProduct = await fetchProductById(Number(id));
+          const fetchedProduct = await fetchProductById((id));
           setProduct(fetchedProduct);
           setSelectedSize(fetchedProduct.sizes[0]);
           const fetchedExplore = await fetchExplore();
@@ -179,18 +171,19 @@ const Productpage = () => {
         {/* Image Section */}
         <div className="w-full md:h-[80vh] lg:h-[750px] lg:w-[650px] flex lg:flex-col flex-row bg-slate-50 overflow-x-hidden lg:overflow-y-visible overflow-y-hidden">
           <div className="w-full h-full flex lg:flex-col flex-row bg-slate-50 overflow-x-auto overflow-y-hidden lg:overflow-y-visible">
-            {product.product_images.map((imageObj, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 flex items-center justify-center bg-[#7A7A7A] w-full h-full"
-              >
-                <img
-                  className="lg:w-[650px] md:w-[400px] md:h-full md:overflow-y-hidden"
-                  src={imageObj.image}
-                  alt={`Product Image ${product.name}`}
-                />
-              </div>
-            ))}
+          {product.product_images.map((imageObj: ProductImage, index: number) => (
+  <div
+    key={index}
+    className="flex-shrink-0 flex items-center justify-center bg-[#7A7A7A] w-full h-full"
+  >
+    <img
+      className="lg:w-[650px] md:w-[400px] md:h-full md:overflow-y-hidden"
+      src={imageObj.image_url} // Change here
+      alt={`Product Image ${product.name}`}
+    />
+  </div>
+))}
+
           </div>
         </div>
 
@@ -298,7 +291,7 @@ const Productpage = () => {
                   onClick={() => handleNavigate(`/Product/${product.id}`)}
                   src={
                     product.product_images && product.product_images.length > 0
-                      ? product.product_images[0]?.image
+                      ? product.product_images[0]?.image_url
                       : ""
                   }
                   alt={product.name}

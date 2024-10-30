@@ -21,35 +21,35 @@ const GetFeatured: React.FC = () => {
           onClick={() => handleNavigate("/collection")}
           className="flex items-center transition hover:text-yellow-400 "
         >
-          1. ✨ Buy our products.
+          1. Buy our products.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          2. 🎥 Shoot a video with a black and gray background.
+          2. Shoot a video with a black and gray background.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          3. 📸 Send 2 photos (16:9 ratio).
+          3. Send 2 photos (16:9 ratio).
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          4. ⏱️ Video duration: 25 to 30 seconds.
+          4. Video duration: 25 to 30 seconds.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          5. 📧 Send everything to our email.
+          5. Send everything to our email.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          6. ✅ If selected, we’ll reach out via email.
+          6. If selected, we’ll reach out via email.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          7. 🤝 Not selected? We'll collaborate on Instagram!
+          7. Not selected? We'll collaborate on Instagram!
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          8. 🌐 Get featured on our website.
+          8. Get featured on our website.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          9. 🎁 Receive gifts and special offers!
+          9. Receive gifts and special offers!
         </li>
       </ol>
       <p className="mt-6 text-base md:text-lg text-center">
-        We can’t wait to see your creativity! 💖
+        We can’t wait to see your creativity! 
       </p>
     </div>
   );

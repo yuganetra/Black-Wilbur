@@ -8,7 +8,7 @@ const CategoriesManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [currentCategoryId, setCurrentCategoryId] = useState<number | null>(null);
+  const [currentCategoryId, setCurrentCategoryId] = useState<string | null>(null);
 
   const handleAddCategory = async () => {
     if (categoryName.trim() && categoryDescription.trim()) {
@@ -36,7 +36,7 @@ const CategoriesManagement: React.FC = () => {
     }
   };
 
-  const handleDeleteCategory = async (id: number) => {
+  const handleDeleteCategory = async (id: string) => {
     try {
       await deleteCategory(id);
       setCategories(categories.filter(category => category.id !== id));

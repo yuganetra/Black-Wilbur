@@ -1,26 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import ProductModal from './ProductModal'; // Import the modal
-import { fetchProducts } from '../services/api';
-import { Product } from '../utiles/types';
+import { fetchProducts, deleteProduct } from '../services/api'; // Import deleteProduct
+import { ProductAdmin } from '../utiles/types';
 
 const ProductManagement: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductAdmin[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
 
-  const handleAddProduct = (product: Product) => {
-    const newProduct = { ...product, id: Date.now() }; // Assign a unique ID
+  const handleAddProduct = (product: ProductAdmin) => {
+    const newProduct = { ...product, id: Date.now().toString() }; // Assign a unique ID as a string
     setProducts([...products, newProduct]);
   };
 
-  const handleDeleteProduct = (id: number) => {
-    setProducts(products.filter(product => product.id !== id));
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await deleteProduct(productId); // Call deleteProduct API function
+      setProducts(products.filter(product => product.id !== productId)); // Update state if deletion succeeds
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
   };
 
   const fetchData = async () => {
     try {
-      const fetchedCategories = await fetchProducts();
-      console.log(fetchedCategories);
-      setProducts(fetchedCategories);
+      const fetchedProducts = await fetchProducts();
+      console.log(fetchedProducts);
+      setProducts(fetchedProducts);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -63,24 +68,30 @@ const ProductManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {products.map(product => (
-              <tr key={product.id} className="hover:bg-gray-700">
-                <td className="border border-white p-2 text-left">{product.name}</td>
-                <td className="border border-white p-2 text-left">{product.description}</td>
-                <td className="border border-white p-2 text-left">{product.price}</td>
-                <td className="border border-white p-2 text-left">
-                  {product.category ? product.category.name : 'No Category'}
-                </td>
-                <td className="border border-white p-2 text-left">
-                  <button 
-                    onClick={() => handleDeleteProduct(product.id)} 
-                    className="text-red-500 hover:text-red-400"
-                  >
-                    Delete
-                  </button>
+            {products.length > 0 ? (
+              products.map(product => (
+                <tr key={product.id} className="hover:bg-gray-700">
+                  <td className="border border-white p-2 text-left">{product.name}</td>
+                  <td className="border border-white p-2 text-left">{product.description}</td>
+                  <td className="border border-white p-2 text-left">{product.price}</td>
+                  <td className="border border-white p-2 text-left">{product.category}</td>
+                  <td className="border border-white p-2 text-left">
+                    <button 
+                      onClick={() => handleDeleteProduct(product.id)} 
+                      className="text-red-500 hover:text-red-400"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="border border-white p-2 text-left ">
+                  No products available. <span className="text-blue-500 cursor-pointer" onClick={() => setIsModalOpen(true)}>Add Products</span>
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

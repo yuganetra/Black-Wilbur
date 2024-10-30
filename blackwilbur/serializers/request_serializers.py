@@ -1,5 +1,7 @@
+import uuid
 from rest_framework import serializers
 from blackwilbur.models.user import User
+from blackwilbur.models import ProductVariation ,Category   # Import for product variation validation
 from django.contrib.auth.password_validation import validate_password
 
 class RegisterSerializer(serializers.Serializer):
@@ -20,11 +22,13 @@ class RegisterSerializer(serializers.Serializer):
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             username=validated_data['username'],
-            email=validated_data['email']
+            email=validated_data['email'],
+            id=uuid.uuid4() 
         )
         user.set_password(validated_data['password'])
         user.save()
         return user
+
 
 class LoginSerializer(serializers.Serializer):
     identifier = serializers.CharField(required=True) 
@@ -33,18 +37,21 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         return attrs
 
+
 class SearchProductSerializer(serializers.Serializer):
     search_term = serializers.CharField()
 
+
 class AddToCartSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField(required=True)
-    product_variation_id = serializers.IntegerField(required=True)
-    quantity = serializers.IntegerField(default=1)  
+    product_id = serializers.UUIDField(required=True)  # Use UUIDField for product ID
+    product_variation_id = serializers.UUIDField(required=True)  # Use UUIDField for variation ID
+    quantity = serializers.IntegerField(default=1)
 
 
 class EditQuantitySerializer(serializers.Serializer):
-    cart_item_id = serializers.IntegerField(required=True)
+    cart_item_id = serializers.UUIDField(required=True)  # Use UUIDField for cart item ID
     quantity = serializers.IntegerField(required=True)
+
 
 class EditCategory(serializers.Serializer):
     name = serializers.CharField(required=True)
@@ -55,6 +62,20 @@ class EditCategory(serializers.Serializer):
         instance.description = validated_data.get('description', instance.description)
         instance.save()
         return instance
+
+class CreateCategorySerializer(serializers.Serializer):
+    id = serializers.UUIDField(required=False)  # Allow id to be optional during creation
+    name = serializers.CharField(required=True)
+    description = serializers.CharField(required=False)
+
+    def create(self, validated_data):
+        # Generate a UUID and assign it to the id field
+        validated_data['id'] = uuid.uuid4()
+        
+        # Create the category instance
+        category = Category(**validated_data)
+        category.save()
+        return category
 
 class SendSmsSerializer(serializers.Serializer):
     otp = serializers.CharField(required=True, max_length=8)  
