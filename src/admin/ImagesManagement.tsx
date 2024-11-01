@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchProducts } from '../services/api';
 import { uploadImage, getAllImages, deleteImage } from '../services/api'; // Import API functions
-import { ProductAdmin } from '../utiles/types';
-
-interface Image {
-  id: string;
-  product: string;
-  image_url: string;
-}
+import { ProductAdmin,Image } from '../utiles/types';
 
 const ImagesManagement: React.FC = () => {
   const [images, setImages] = useState<Image[]>([]);
@@ -136,8 +130,8 @@ const ImagesManagement: React.FC = () => {
           <tbody>
             {images.map(image => (
               <tr key={image.id} className="hover:bg-gray-800">
-                <td className="py-2 px-4 border-b border-gray-700 text-left">{image.product}</td>
-                <td className="py-2 px-4 border-b border-gray-700 text-left">{getProductName(image.product)}</td>
+                <td className="py-2 px-4 border-b border-gray-700 text-left">{image.product_id}</td>
+                <td className="py-2 px-4 border-b border-gray-700 text-left">{getProductName(image.product_id)}</td>
                 <td className="py-2 px-4 border-b border-gray-700 text-left">
                   <img src={image.image_url} alt="Product" className="w-16 h-16 object-cover" />
                 </td>

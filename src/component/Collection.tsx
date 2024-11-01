@@ -39,23 +39,29 @@ const Collection: React.FC = () => {
     const fetchProducts = async () => {
       try {
         const fetchProduct = await fetchCollection();
-        const formattedProducts = fetchProduct.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          category: item.category,
-          product_images: item.product_images.map((img: any) => ({
-            id: img.id,
-            image: img.image,
-            product_id: img.product_id,
-          })),
-          description: item.description || "",
-          sizes: item.sizes.map((size: any) => ({
-            id: size.id,
-            size: size.size,
-          })),
-          rating: item.rating || 0,
-        }));
+
+        // Log the fetched products to see the structure
+        console.log("Fetched products:", fetchProduct);
+
+        // Check if fetchProduct is an array before mapping
+        const formattedProducts = Array.isArray(fetchProduct)
+          ? fetchProduct.map((item: any) => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              category: item.category,
+              image: item.image,// Default to an empty array if product_images is undefined
+              description: item.description || "",
+              sizes:
+                item.sizes?.map((size: any) => ({
+                  id: size.id,
+                  size: size.size,
+                })) || [], // Default to an empty array if sizes is undefined
+              rating: item.rating || 0,
+            }))
+          : []; // Default to an empty array if fetchProduct is not an array
+
+        console.log("Formatted Products", formattedProducts);
         setAllProducts(formattedProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -84,10 +90,13 @@ const Collection: React.FC = () => {
 
     const matchesCategory =
       trimmedSelectedCategory === "collection" || // Allow all products if category is "collection"
-      (trimmedProductCategory && trimmedProductCategory === trimmedSelectedCategory);
+      (trimmedProductCategory &&
+        trimmedProductCategory === trimmedSelectedCategory);
 
     const matchesSize = selectedSizes.length
-      ? product.sizes?.some((sizeObj: { size: string; }) => selectedSizes.includes(sizeObj.size)) ?? false
+      ? product.sizes?.some((sizeObj: { size: string }) =>
+          selectedSizes.includes(sizeObj.size)
+        ) ?? false
       : true;
 
     // Price filtering
@@ -104,9 +113,15 @@ const Collection: React.FC = () => {
     }
     // Category filtering
     const matchesSelectedCategories =
-      selectedCategories.length === 0 || selectedCategories.includes(trimmedProductCategory);
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(trimmedProductCategory);
 
-    return matchesCategory && matchesSize && matchesPrice && matchesSelectedCategories; // Combine conditions
+    return (
+      matchesCategory &&
+      matchesSize &&
+      matchesPrice &&
+      matchesSelectedCategories
+    ); // Combine conditions
   });
 
   // Sort filtered products
@@ -124,7 +139,9 @@ const Collection: React.FC = () => {
   const currentProducts =
     category === "all"
       ? allProducts // Use sortedProducts directly if category is "collection"
-      : sortedProducts.slice(startIdx, startIdx + productsPerPage).filter(Boolean);
+      : sortedProducts
+          .slice(startIdx, startIdx + productsPerPage)
+          .filter(Boolean);
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
@@ -158,12 +175,12 @@ const Collection: React.FC = () => {
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
-      <div className="image-container w-full h-[60vh] sm:h-[90vh] -mt-28">
+      <div className="image-container w-full h-[100vh] sm:h-[90vh] ">
         <img
           className="w-full h-full object-cover"
           src={img}
           alt="carousel"
-          style={{ objectPosition: "center bottom" }}
+          style={{ objectPosition: "center top" }}
         />
       </div>
       <div className="content-container w-full bg-[#141414] pb-4">
@@ -195,42 +212,45 @@ const Collection: React.FC = () => {
         {/* Product grid */}
         <div className="product-container w-full mt-6 px-0">
           <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
-            {currentProducts.map((product) => (
-              <div
-                key={product.id}
-                className="relative bg-white overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
-              >
-                <img
-                  className="w-full h-[93%] object-contain cursor-pointer"
-                  onClick={() => handleNavigate(`/Product/${product.id}`)}
-                  src={
-                    product.product_images && product.product_images.length > 0
-                      ? product.product_images[0]?.image_url
-                      : ""
-                  }
-                  alt={product.name}
-                />
-                <div className="flex justify-between items-center p-1">
-                  {" "}
-                  {/* Flex container for name and price */}
-                  <div className="text-[#282828] text-[8px] sm:text-base md:text-base font-semibold">
-                    {product.name}
-                  </div>
-                  <div className="text-[#58595B] text-[8px] sm:text-sm md:text-base font-semibold">
-                    ₹ {product.price}
-                  </div>
-                </div>
+          {currentProducts.map((product) => {
+  console.log("Image URL for product:", product.name, product.image); // Log image URL for each product
+  
+  return (
+    <div
+      key={product.id}
+      className="relative bg-white overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
+    >
+      <img
+        className="w-full h-[93%] object-contain cursor-pointer"
+        onClick={() => handleNavigate(`/Product/${product.id}`)}
+        src={
+          product.image && product.image !== ""
+            ? product.image
+            : "https://via.placeholder.com/300" // Fallback URL
+        }
+        alt={product.name}
+      />
+      <div className="flex justify-between items-center p-1">
+        <div className="text-[#282828] text-[8px] sm:text-base md:text-base font-semibold">
+          {product.name}
+        </div>
+        <div className="text-[#58595B] text-[8px] sm:text-sm md:text-base font-semibold">
+          ₹ {product.price}
+        </div>
+      </div>
 
-                <button
-                  onClick={() => toggleWishlist(product.id)}
-                  className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
-                    wishlist.includes(product.id) ? "bg-red-500" : "bg-gray-500"
-                  } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
-                >
-                  {wishlist.includes(product.id) ? "♥" : "♡"}
-                </button>
-              </div>
-            ))}
+      <button
+        onClick={() => toggleWishlist(product.id)}
+        className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
+          wishlist.includes(product.id) ? "bg-red-500" : "bg-gray-500"
+        } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
+      >
+        {wishlist.includes(product.id) ? "♥" : "♡"}
+      </button>
+    </div>
+  );
+})}
+
           </div>
         </div>
 
@@ -287,7 +307,10 @@ const Collection: React.FC = () => {
             {showSize && (
               <div className="mt-2 flex flex-col">
                 {["small", "medium", "large", "X-large"].map((size) => (
-                  <label key={size} className="flex items-center cursor-pointer">
+                  <label
+                    key={size}
+                    className="flex items-center cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       className="mr-2"
@@ -321,7 +344,10 @@ const Collection: React.FC = () => {
             {showPrice && (
               <div className="mt-2 flex flex-col">
                 {["Low to High", "High to Low"].map((sortOption) => (
-                  <label key={sortOption} className="flex items-center cursor-pointer">
+                  <label
+                    key={sortOption}
+                    className="flex items-center cursor-pointer"
+                  >
                     <input
                       type="radio"
                       className="mr-2"

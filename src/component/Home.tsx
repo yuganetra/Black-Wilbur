@@ -11,7 +11,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const productRef = useRef<HTMLDivElement | null>(null);
   const [bestseller, setBestSeller] = useState<Product[]>([]);
-  const [exploreProducts, setExploreProducts] = useState<ProductCollection[]>([]);
+  const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]); // Wishlist state
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for managing popup visibility
 
@@ -70,7 +70,7 @@ const Home: React.FC = () => {
   return (
     <>
       {/* Carousel Section */}
-      <div className="relative h-[98vh] overflow-hidden -mt-20">
+      <div className="relative h-[88vh] overflow-hidden ">
         <img
           src={carousel1}
           alt="Carousel 1"
@@ -256,8 +256,8 @@ const Home: React.FC = () => {
                     className="w-full h-[93%] object-contain cursor-pointer"
                     onClick={() => handleNavigate(`/Product/${product.id}`)}
                     src={
-                      product.product_images && product.product_images.length > 0
-                        ? product.product_images[0]?.image_url
+                      product.image && product.image.length > 0
+                        ? product.image
                         : ""
                     }
                     alt={product.name}

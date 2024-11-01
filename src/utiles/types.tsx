@@ -24,12 +24,12 @@ export interface ProductCollection {
   category: string;       // Category of the product
   price: number;          // Price of the product
   sizes: Size[];         // Array of sizes associated with the product
-  rating: number;         // Product rating
-  product_images: ProductImage[]; // Array of images associated with the product
+  rating: number;
+  image: string;         // Product rating
 }
 
 export interface Product {
-  sizes: any;
+  sizes: Size[];
   id: string;
   name: string;
   price: number;
@@ -65,7 +65,7 @@ interface Size {
 export interface AuthUser {
   first_name?: string;
   last_name?: string;
-  username?: string;
+  phone_number?: string;
   email: string;
   password: string;
   password2?: string;
@@ -151,7 +151,7 @@ export interface GetOrder {
 
 export interface Image {
   id: string;
-  product: string;
+  product_id: string;
   image_url: string;
 }
 

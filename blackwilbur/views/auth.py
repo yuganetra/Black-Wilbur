@@ -16,20 +16,20 @@ class LoginAPIView(APIView):
             print("Serializer errors:", serializer.errors)
             return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        identifier = serializer.validated_data['identifier']  # Use 'identifier' for login
+        email = serializer.validated_data['email']  # Use 'identifier' for login
         password = serializer.validated_data['password']
-        print(f"Attempting to authenticate user: {identifier}")
+        print(f"Attempting to authenticate user: {email}")
 
         # Try to retrieve the user by UUID or username/email
         try:
             # Try to get user by UUID
-            user = User.objects.get(pk=identifier)  # Assuming 'identifier' can be a UUID
+            user = User.objects.get(email=email)
         except (User.DoesNotExist, ValueError):
             # If not found by UUID, try authenticating with username/email
-            user = authenticate(request, username=identifier, password=password)
+            user = authenticate(request, email=email, password=password)
 
         if user is None:
-            print("Authentication failed for user:", identifier)
+            print("Authentication failed for user:", email)
             return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
         refresh = RefreshToken.for_user(user)
@@ -44,7 +44,7 @@ class LoginAPIView(APIView):
                 'id': str(user.id),  # Convert UUID to string
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'username': user.username,
+                'phone_number': user.phone_number,
                 'email': user.email,
             }
         }, status=status.HTTP_200_OK)
@@ -76,7 +76,7 @@ class RegisterAPIView(APIView):
                 'id': str(user.id),  # Convert UUID to string
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'username': user.username,
+                'phone_number': user.phone_number,
                 'email': user.email,
             }
         }, status=status.HTTP_201_CREATED)

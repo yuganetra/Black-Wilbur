@@ -3,11 +3,11 @@ from blackwilbur import models
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Image  # Updated model name
-        fields = ['id', 'product', 'image_url', 'created_at']  # Updated fields
+        model = models.Image
+        fields = ['id', 'product_id', 'image_url', 'image_type', 'created_at']  # Updated field names
         read_only_fields = ['id', 'created_at']  # Make id and created_at read-only
 
-    def validate_url(self, value):
+    def validate_image_url(self, value):
         if not value:
-            raise serializers.ValidationError("URL field cannot be empty.")
+            raise serializers.ValidationError("Image URL field cannot be empty.")
         return value

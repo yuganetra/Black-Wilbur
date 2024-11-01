@@ -17,7 +17,6 @@ class ProductSerializer(ModelSerializer):
 class ProductDetailSerializer(ModelSerializer):
     sizes = SerializerMethodField()  # Use a method to get sizes
     rating = SerializerMethodField()
-    product_images = SerializerMethodField()
 
     class Meta:
         model = models.Product
@@ -25,13 +24,11 @@ class ProductDetailSerializer(ModelSerializer):
             "description",
             "sizes",
             "rating",
-            "product_images",
         ]
         read_only_fields = ProductSerializer.Meta.fields + [
             "description",
             "sizes",
             "rating",
-            "product_images",
         ]
 
     def get_rating(self, instance):
@@ -42,10 +39,6 @@ class ProductDetailSerializer(ModelSerializer):
             return 0
         return round(min(max(average_rating, 0), 5), 1)
 
-    def get_product_images(self, instance):
-        images = models.Image.objects.filter(product=instance.id)
-        return serializers.ImageSerializer(images, many=True).data
-
     def get_sizes(self, instance):
         # Fetch all variations related to the product UUID
         sizes = models.ProductVariation.objects.filter(product=instance.id)  # Assuming instance.id is the product UUID
@@ -55,23 +48,18 @@ class ProductDetailSerializer(ModelSerializer):
 class CollectionsSerializer(ModelSerializer):
     sizes = SerializerMethodField()  # Use a method to get sizes
     rating = SerializerMethodField()
-    product_images = SerializerMethodField()
     category = SerializerMethodField()
 
     class Meta:
         model = models.Product
         fields = ProductSerializer.Meta.fields + [
-            "description",
             "sizes",
             "rating",
-            "product_images",
             "category",
         ]
         read_only_fields = ProductSerializer.Meta.fields + [
-            "description",
             "sizes",
             "rating",
-            "product_images",
             "category",
         ]
 
@@ -87,10 +75,6 @@ class CollectionsSerializer(ModelSerializer):
         else:
             return 0
         return round(min(max(average_rating, 0), 5), 1)
-
-    def get_product_images(self, instance):
-        images = models.Image.objects.filter(product=instance.id)
-        return serializers.ImageSerializer(images, many=True).data
 
     def get_category(self, instance):
         if instance.category:

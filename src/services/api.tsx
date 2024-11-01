@@ -16,11 +16,10 @@ import {
   Image,
   ImageUploadResponse,
   ImageRequest,
-  ProductCollection
+  ProductCollection,
 } from "../utiles/types";
 
-const API_BASE_URL = "http://127.0.0.1:5000/"
-//"https://backendapi.blackwilbur.com/";
+const API_BASE_URL = "https://backendapi.blackwilbur.com/";
 
 // Axios instance for API calls
 const axiosInstance = axios.create({
@@ -76,8 +75,8 @@ export const fetchBestSeller = async (): Promise<Product[]> => {
   return response.data;
 };
 
-export const fetchProductById = async (productId: string): Promise<ProductCollection> => {
-  const response = await axiosInstance.get<ProductCollection>(`${API_BASE_URL}products/${productId}`);
+export const fetchProductById = async (productId: string): Promise<Product> => {
+  const response = await axiosInstance.get<Product>(`${API_BASE_URL}products/${productId}`);
   return response.data;
 };
 
@@ -155,7 +154,7 @@ export const registerUser = async (userData: AuthUser): Promise<any> => {
 export const loginUser = async (loginData: AuthUser): Promise<any> => {
   try {
     const response = await axios.post(`${API_BASE_URL}login`, {
-      identifier: loginData.email,
+      email: loginData.email,
       password: loginData.password,
     });
 
@@ -248,8 +247,8 @@ export const getCartItemsCount = async (): Promise<number> => {
   }
 };
 
-export const fetchExplore = async (): Promise<ProductCollection[]> => {
-  const response = await axiosInstance.get<ProductCollection[]>(`${API_BASE_URL}explore`);
+export const fetchExplore = async (): Promise<Product[]> => {
+  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}explore`);
   return response.data;
 };
 
@@ -390,6 +389,11 @@ export const fetchProductVariations = async (): Promise<ProductVariation[]> => {
   return response.data;
 };
 
+export const getProductVariationsByProductId = async (id: string): Promise<ProductVariation> => {
+  const response = await axios.get<ProductVariation>(`${API_BASE_URL}product-variations/${id}/`);
+  return response.data;
+}
+
 export const createProductVariation = async (variation: {
   product: string;
   size: string;
@@ -418,8 +422,8 @@ export const deleteProductVariation = async (id: string): Promise<void> => {
 
 
 // Function to fetch a single image by ID
-export const getImageById = async (id: string): Promise<Image> => {
-  const response = await axios.get<Image>(`${API_BASE_URL}images/${id}/`);
+export const getImageByProductId = async (id: string): Promise<Image[]> => {
+  const response = await axios.get<Image[]>(`${API_BASE_URL}images/product/${id}/`);
   return response.data;
 };
 

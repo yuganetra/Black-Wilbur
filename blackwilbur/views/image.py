@@ -8,12 +8,14 @@ from blackwilbur import models
 from blackwilbur import serializers
 
 CONTAINER_NAME = 'blackwilbur-image'
-AZURE_STORAGE_CONNECTION_STRING = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+AZURE_STORAGE_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=blackwilbur;AccountKey=Vv2HZ0MjxWAibKuMgX6E3TmntwvLNHZz+lQpswpEvoXtuHdXP/M9OOoMv43rADP1xiYvpd33XI4O+AStYbhjXw==;EndpointSuffix=core.windows.net'
 
 class ImageManageAPIView(APIView):
     blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
     def get(self, request, pk=None, product_id=None):
+        image_type = request.query_params.get('image_type')  # Get the image_type from query parameters
+
         if pk:
             print(f"Fetching image with ID: {pk}")
             try:
@@ -24,23 +26,34 @@ class ImageManageAPIView(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
         elif product_id:
             print(f"Fetching images for product ID: {product_id}")
-            images = models.Image.objects.filter(product_id=product_id)  # Query images by product ID
+            images = models.Image.objects.filter(product_id=product_id)
+            if image_type:
+                images = images.filter(image_type=image_type)
             serializer = serializers.ImageSerializer(images, many=True)
             if not images:
                 print("No images found for this product.")
                 return Response({"error": "No images found for this product."}, status=status.HTTP_404_NOT_FOUND)
+        elif image_type:
+            print(f"Fetching all images of type: {image_type}")
+            images = models.Image.objects.filter(image_type=image_type)
+            serializer = serializers.ImageSerializer(images, many=True)
+            if not images:
+                print("No images found for this type.")
+                return Response({"error": "No images found for this type."}, status=status.HTTP_404_NOT_FOUND)
         else:
             print("Fetching all images.")
             images = models.Image.objects.all()
             serializer = serializers.ImageSerializer(images, many=True)
-        
-        return Response(serializer.data)
 
+        return Response(serializer.data)
 
     def post(self, request):
         print("POST request received.")
         product_id = request.data.get('product')
+        image_type = request.data.get('image_type', 'product')  # default to 'product' if not provided
         print(f"Product ID from request: {product_id}")
+        print(f"Product ID from request: {product_id}")
+        print(f"Image Type from request: {image_type}")
 
         image_file = request.FILES.get('image')
         if not image_file:
@@ -50,11 +63,11 @@ class ImageManageAPIView(APIView):
         image_uuid = uuid.uuid4()
         print(f"Generated UUID for image: {image_uuid}")
 
-        # Use the product name to create the blob URL
+        # Create the blob URL with product name if available
         image_url = self.create_blob_url(product_id, image_uuid)
         print(f"Generated blob URL: {image_url}")
 
-        image_instance = models.Image(product_id=product_id, image_url=image_url)
+        image_instance = models.Image(product_id=product_id, image_url=image_url, image_type=image_type)
         image_instance.save()
         print("Image instance saved to database.")
 
@@ -67,7 +80,7 @@ class ImageManageAPIView(APIView):
 
     def delete(self, request):
         print("DELETE request received.")
-        image_id = request.data.get('id')  # Get the ID from the request body
+        image_id = request.data.get('id')
         if not image_id:
             return Response({"error": "Image ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -76,18 +89,17 @@ class ImageManageAPIView(APIView):
             image = models.Image.objects.get(id=image_id)
             
             # Construct the blob name to delete
-            product_name = self.format_product_name(self.get_product_name(image.product.id))
-            blob_name = image.image_url.split('/')[-1]  # Get the last part which is the blob name
-            full_blob_name = f"{product_name}/{blob_name}"  # Assuming product_name is formatted correctly
+            blob_name = self.construct_blob_name(image.product_id, image.id)
+            print(f"Deleting blob with name: {blob_name}")
 
-            # First, delete the image from the database
+            # Delete image from database
             image.delete()
             print("Image deleted from database.")
 
-            # Now delete the blob from Azure Storage
-            blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=full_blob_name)
+            # Delete blob from Azure Storage
+            blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
             blob_client.delete_blob()
-            print(f"Image deleted from blob storage with blob name: {full_blob_name}")
+            print(f"Image deleted from blob storage with blob name: {blob_name}")
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         except models.Image.DoesNotExist:
@@ -98,7 +110,6 @@ class ImageManageAPIView(APIView):
             return Response({"error": "An error occurred while deleting the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def create_blob_url(self, product_id, image_uuid):
-        # Fetch the product name based on the product ID
         product_name = self.get_product_name(product_id)
         sanitized_product_name = self.format_product_name(product_name)
         blob_url = f"https://{self.blob_service_client.account_name}.blob.core.windows.net/{CONTAINER_NAME}/{sanitized_product_name}/{image_uuid}.jpg"
@@ -106,13 +117,10 @@ class ImageManageAPIView(APIView):
         return blob_url
 
     def upload_image_to_blob(self, product_id, image_uuid, image_file):
-        # Fetch the product name based on the product ID
         product_name = self.get_product_name(product_id)
         sanitized_product_name = self.format_product_name(product_name)
-        blob_name = f"{sanitized_product_name}/{image_uuid}.jpg"  # Include product name in the blob path
+        blob_name = f"{sanitized_product_name}/{image_uuid}.jpg"
         blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
-
-        # Upload the image to the specified folder
         blob_client.upload_blob(image_file, overwrite=True)
         print(f"Image uploaded to blob storage with blob name: {blob_name}")
 
@@ -124,8 +132,10 @@ class ImageManageAPIView(APIView):
             return "Unknown Product"
 
     def format_product_name(self, product_name):
-        product_name = product_name.strip()  
-        formatted_name = product_name.lower().replace(" ", "-")
-        if formatted_name.endswith('-'):
-            formatted_name = formatted_name[:-1]
-        return formatted_name
+        formatted_name = product_name.strip().lower().replace(" ", "-")
+        return formatted_name.rstrip('-')
+    
+    def construct_blob_name(self, product_id, image_uuid):
+        product_name = self.get_product_name(product_id)
+        sanitized_product_name = self.format_product_name(product_name)
+        return f"{sanitized_product_name}/{image_uuid}.jpg"

@@ -7,12 +7,37 @@ import uuid
 
 class ProductVariationAPIView(APIView):
 
-    def get(self, request):
-        """Retrieve all product variations."""
-        variations = ProductVariation.objects.all()
-        serializer = ProductVariationSerializer(variations, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, pk=None, product_id=None):
+        """Retrieve a specific product variation by ID (pk) or variations by product ID."""
+        if pk:
+            # Fetching a specific product variation by its primary key (pk)
+            print(f"Fetching product variation with ID: {pk}")
+            try:
+                variation = ProductVariation.objects.get(id=pk)
+                serializer = ProductVariationSerializer(variation)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except ProductVariation.DoesNotExist:
+                print("ProductVariation not found.")
+                return Response({"error": "ProductVariation not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        elif product_id:
+            # Fetching all variations associated with a specific product ID
+            print(f"Fetching product variations for product ID: {product_id}")
+            variations = ProductVariation.objects.filter(product_id=product_id)
+            if not variations.exists():
+                print("No product variations found for this product.")
+                return Response({"error": "No product variations found for this product."}, status=status.HTTP_404_NOT_FOUND)
+            
+            serializer = ProductVariationSerializer(variations, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            # If no parameters are provided, fetch all product variations
+            print("Fetching all product variations.")
+            variations = ProductVariation.objects.all()
+            serializer = ProductVariationSerializer(variations, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
     def post(self, request):
         # Use the serializer to validate and create a new ProductVariation
         serializer = ProductVariationSerializer(data=request.data)
