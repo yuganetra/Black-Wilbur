@@ -40,8 +40,6 @@ export const addCategory = async (
   name: string,
   description: string
 ) => {
-  console.log("name = ",name);
-  console.log("description = ",description);
   const response = await axios.post(`${API_BASE_URL}categories`, {
     name,
     description,
@@ -310,7 +308,6 @@ export const createOrder = async (orderData: Order) => {
 export const fetchRatings = async (productId: string) => {
   try {
     const response = await axiosInstance.get(`${API_BASE_URL}ratings/?product_id=${productId}`);
-    console.log(response.data);
     return response.data; // Return the fetched ratings
   } catch (error) {
     console.error("Error getting ratings:");
@@ -326,7 +323,6 @@ export const addRating = async (productId: string, rating: number) => {
 
   try {
     const response = await axiosInstance.post(`${API_BASE_URL}ratings/`, ratingData);
-    console.log("Rating added:", response.data);
   } catch (error) {
     console.error("Error adding rating:");
     throw error;

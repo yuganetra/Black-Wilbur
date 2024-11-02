@@ -15,8 +15,6 @@ const Userprofile: React.FC = () => {
       if (token) {
         try {
           const fetchedOrders: GetOrder[] = await getOrders();
-          console.log(fetchedOrders); // Check the structure here
-
           if (Array.isArray(fetchedOrders)) {
             setOrders(fetchedOrders);
           } else {
@@ -46,7 +44,6 @@ const Userprofile: React.FC = () => {
 
   // Handle logout
   const handleLogout = () => {
-    console.log("User logged out");
     localStorage.removeItem("user");
     localStorage.removeItem("authToken");
     localStorage.removeItem("refreshToken");

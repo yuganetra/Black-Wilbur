@@ -112,17 +112,10 @@ const Productpage = () => {
       const user = localStorage.getItem("user");
 
       if (!user) {
-        console.log(
-          "User is not logged in. Adding product to localStorage cart."
-        );
-
         const cartString = localStorage.getItem("cart");
         let existingCart = cartString ? JSON.parse(cartString) : [];
 
         if (!Array.isArray(existingCart)) {
-          console.error(
-            "Existing cart is not an array. Initializing a new cart."
-          );
           existingCart = [];
         }
 
@@ -131,7 +124,6 @@ const Productpage = () => {
         localStorage.setItem("cart", JSON.stringify(existingCart));
 
         setIsCartOpen(true);
-        console.log("Product added to local storage cart:", productToAdd);
       } else {
         try {
           await addToCart(
@@ -140,7 +132,6 @@ const Productpage = () => {
             productToAdd.quantity
           );
           setIsCartOpen(true);
-          console.log("Product added to API cart:", productToAdd);
         } catch (error) {
           console.error("Error adding to cart:", error);
         }
@@ -158,7 +149,6 @@ const Productpage = () => {
           // Fetch images using product ID
           try {
             const fetchedImages = await getImageByProductId(id);
-            console.log("fetchedImages", fetchedImages);
             setImages(fetchedImages);
           } catch (error) {
             // Check if the error has a response property or if it's a typical Error
@@ -179,7 +169,6 @@ const Productpage = () => {
   
           const fetchedExplore = await fetchExplore();
           setExploreProducts(fetchedExplore);
-          console.log(fetchedExplore);
         }
       } catch (error) {
         console.error("Error fetching product:", error);

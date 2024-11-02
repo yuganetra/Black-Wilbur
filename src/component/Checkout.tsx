@@ -45,7 +45,6 @@ const Checkout: React.FC = () => {
     const fetchProducts = () => {
       setTimeout(() => {
         setProducts(initialProducts);
-        console.log("initialProducts", initialProducts);
         setLoading(false);
       }, 10000);
     };
@@ -57,7 +56,6 @@ const Checkout: React.FC = () => {
     if (otpSent) {
       // Start a timer for 2 minutes
       timer = setTimeout(() => {
-        console.log("Fetched products from params:", initialProducts); // Log the products
         setResendEnabled(true);
       }, 120000); // 120000 ms = 2 minutes
     }
@@ -77,7 +75,6 @@ const Checkout: React.FC = () => {
     try {
       const response = await sendSms(otp, numbers);
       if (response) {
-        console.log("SMS sent successfully:", response.message);
         setOtpSent(true);
         setGeneratedOtp(otp);
         setTimeout(() => {
@@ -120,7 +117,6 @@ const Checkout: React.FC = () => {
     //   return;
     // }
     const orderId = generateOrderId();
-    console.log("Generated Order ID:", orderId);
     const user = localStorage.getItem("user");
     let userId: number | undefined;
 
@@ -128,7 +124,6 @@ const Checkout: React.FC = () => {
       const parsedUser = JSON.parse(user);
       userId = parsedUser.id;
     }
-    console.log("products", products);
     // Transform products from frontend type to backend type
     const orderProducts: CheckoutProductForbackend[] = products.map((p) => ({
       id: p.id,
@@ -136,7 +131,6 @@ const Checkout: React.FC = () => {
       product_id: p.product.id,
       product_variation_id: p.size.id,
     }));
-    console.log(orderProducts, products);
     const orderData: Order = {
       order_id: orderId,
       status: "pending",
@@ -157,7 +151,6 @@ const Checkout: React.FC = () => {
       orderData.user = userId;
     }
     try {
-      console.log(orderData);
       const response = await createOrder(orderData);
       if (response) {
         alert("Order placed successfully!");

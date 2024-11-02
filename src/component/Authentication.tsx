@@ -89,7 +89,6 @@ const Authentication: React.FC = () => {
           password: formData.password,
           password2: formData.password2,
         };
-        console.log(userData);
         const response = await registerUser(userData);
         localStorage.setItem("user", JSON.stringify(response));
         setSuccessMessage("Account created successfully! Please log in.");

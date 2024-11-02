@@ -41,7 +41,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     } else {
       if (isUserLoggedIn()) {
         onClose();
-        console.log("cartProductsc", cartProducts);
         navigate("/checkout", { state: { products: cartProducts } });
       } else {
         onClose();
@@ -53,7 +52,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   const loadCartItems = async () => {
     try {
       if (!isUserLoggedIn()) {
-        console.log("User is not logged in. Fetching cart from localStorage.");
         const existingCartString = localStorage.getItem("cart");
 
         if (existingCartString && existingCartString !== "[]") {
@@ -71,7 +69,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                 }) => {
                   const productId = (item.product && item.product.id) || item.product_id;
                   if (!productId) {
-                    console.log("No valid product ID found");
                     return null;
                   }
 
@@ -91,9 +88,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
             // Filter out null values from the result
             const filteredCart = validCart.filter((item) => item !== null) as unknown as CartItem[];
             setCartProducts(filteredCart);
-            console.log("Cart loaded from localStorage:", filteredCart);
           } else {
-            console.log("No valid cart found in localStorage.");
             setCartProducts([]);
           }
         }
@@ -101,7 +96,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       }
 
       const apiCartItems = await fetchCartItems();
-      console.log("Cart Items Loaded:", apiCartItems);
       setCartProducts(apiCartItems);
     } catch (error) {
       console.error("Failed to load cart items", error);
@@ -136,7 +130,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       prev.map((item) => {
         if (item.id === cartItemId) {
           const newQuantity = Math.max(1, item.quantity + change);
-          console.log(newQuantity);
 
           updateCartItem(cartItemId, newQuantity).catch((error) => {
             console.error("Error updating cart item:", error);

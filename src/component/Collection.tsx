@@ -39,10 +39,6 @@ const Collection: React.FC = () => {
     const fetchProducts = async () => {
       try {
         const fetchProduct = await fetchCollection();
-
-        // Log the fetched products to see the structure
-        console.log("Fetched products:", fetchProduct);
-
         // Check if fetchProduct is an array before mapping
         const formattedProducts = Array.isArray(fetchProduct)
           ? fetchProduct.map((item: any) => ({
@@ -50,7 +46,7 @@ const Collection: React.FC = () => {
               name: item.name,
               price: item.price,
               category: item.category,
-              image: item.image,// Default to an empty array if product_images is undefined
+              image: item.image, // Default to an empty array if product_images is undefined
               description: item.description || "",
               sizes:
                 item.sizes?.map((size: any) => ({
@@ -61,7 +57,6 @@ const Collection: React.FC = () => {
             }))
           : []; // Default to an empty array if fetchProduct is not an array
 
-        console.log("Formatted Products", formattedProducts);
         setAllProducts(formattedProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -154,9 +149,6 @@ const Collection: React.FC = () => {
   };
 
   const handleApplyFilters = () => {
-    console.log("Selected Sizes:", selectedSizes);
-    console.log("Selected Price:", selectedPrice);
-    console.log("Selected Categories:", selectedCategories);
     toggleSidebar(); // Close the sidebar after applying filters
   };
 
@@ -212,45 +204,44 @@ const Collection: React.FC = () => {
         {/* Product grid */}
         <div className="product-container w-full mt-6 px-0">
           <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
-          {currentProducts.map((product) => {
-  console.log("Image URL for product:", product.name, product.image); // Log image URL for each product
-  
-  return (
-    <div
-      key={product.id}
-      className="relative bg-white overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
-    >
-      <img
-        className="w-full h-[93%] object-contain cursor-pointer"
-        onClick={() => handleNavigate(`/Product/${product.id}`)}
-        src={
-          product.image && product.image !== ""
-            ? product.image
-            : "https://via.placeholder.com/300" // Fallback URL
-        }
-        alt={product.name}
-      />
-      <div className="flex justify-between items-center p-1">
-        <div className="text-[#282828] text-[8px] sm:text-base md:text-base font-semibold">
-          {product.name}
-        </div>
-        <div className="text-[#58595B] text-[8px] sm:text-sm md:text-base font-semibold">
-          ₹ {product.price}
-        </div>
-      </div>
+            {currentProducts.map((product) => {
+              return (
+                <div
+                  key={product.id}
+                  className="relative bg-white overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
+                >
+                  <img
+                    className="w-full h-[93%] object-contain cursor-pointer"
+                    onClick={() => handleNavigate(`/Product/${product.id}`)}
+                    src={
+                      product.image && product.image !== ""
+                        ? product.image
+                        : "https://via.placeholder.com/300" // Fallback URL
+                    }
+                    alt={product.name}
+                  />
+                  <div className="flex justify-between items-center p-1">
+                    <div className="text-[#282828] text-[8px] sm:text-base md:text-base font-semibold">
+                      {product.name}
+                    </div>
+                    <div className="text-[#58595B] text-[8px] sm:text-sm md:text-base font-semibold">
+                      ₹ {product.price}
+                    </div>
+                  </div>
 
-      <button
-        onClick={() => toggleWishlist(product.id)}
-        className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
-          wishlist.includes(product.id) ? "bg-red-500" : "bg-gray-500"
-        } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
-      >
-        {wishlist.includes(product.id) ? "♥" : "♡"}
-      </button>
-    </div>
-  );
-})}
-
+                  <button
+                    onClick={() => toggleWishlist(product.id)}
+                    className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
+                      wishlist.includes(product.id)
+                        ? "bg-red-500"
+                        : "bg-gray-500"
+                    } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
+                  >
+                    {wishlist.includes(product.id) ? "♥" : "♡"}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 

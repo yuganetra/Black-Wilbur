@@ -5,30 +5,45 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Online clothing store"
-    />
+    <meta name="description" content="Shop premium black clothing for men at BlackWilbur. Discover our collection of round necks, hoodies, and knitted apparel." />
+    <meta name="keywords" content="black clothing, men's fashion, premium clothing, hoodies, round neck, knitted" />
+    
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>BlackWilbur</title>
+    
+    <title>BlackWilbur - Premium Black Clothing for Men</title>
+
+    <!-- Open Graph Meta Tags for Social Sharing -->
+    <meta property="og:title" content="BlackWilbur - Premium Black Clothing for Men" />
+    <meta property="og:description" content="Shop premium black clothing for men at BlackWilbur. Discover our collection of round necks, hoodies, and knitted apparel." />
+    <meta property="og:image" content="%PUBLIC_URL%/logo192.png" />
+    <meta property="og:url" content="https://www.blackwilbur.com" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="BlackWilbur - Premium Black Clothing for Men" />
+    <meta name="twitter:description" content="Shop premium black clothing for men at BlackWilbur. Discover our collection of round necks, hoodies, and knitted apparel." />
+    <meta name="twitter:image" content="%PUBLIC_URL%/logo192.png" />
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "BlackWilbur",
+        "url": "https://www.blackwilbur.com",
+        "description": "Shop premium black clothing for men at BlackWilbur. Discover our collection of round necks, hoodies, and knitted apparel.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://www.blackwilbur.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>

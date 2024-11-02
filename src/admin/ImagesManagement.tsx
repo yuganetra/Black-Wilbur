@@ -17,7 +17,6 @@ const ImagesManagement: React.FC = () => {
       setProducts(fetchedProducts);
       const fetchedImages = await getAllImages();
       setImages(fetchedImages);
-      console.log(fetchedImages)
 
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -26,7 +25,7 @@ const ImagesManagement: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    const intervalId = setInterval(fetchData, 6000); // refresh data every 6 seconds
+    const intervalId = setInterval(fetchData, 12000); // refresh data every 6 seconds
     return () => clearInterval(intervalId);
   }, []);
 
@@ -45,7 +44,6 @@ const ImagesManagement: React.FC = () => {
     }
 
     try {
-      console.log("selectedProductId",selectedProductId , "images", images)
         await uploadImage({ product: selectedProductId, image: selectedFile });
         setSelectedFile(null);
         setSelectedProductId(null);

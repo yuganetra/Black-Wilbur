@@ -50,7 +50,6 @@ const Home: React.FC = () => {
     const fetchData = async () => {
       try {
         const fetchedCategories = await fetchBestSeller();
-        // console.log("fetchedCategories ", fetchedCategories);
         setBestSeller(fetchedCategories);
         const fetchedExplore = await fetchExplore();
         setExploreProducts(fetchedExplore);

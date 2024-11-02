@@ -24,7 +24,6 @@ const ProductManagement: React.FC = () => {
   const fetchData = async () => {
     try {
       const fetchedProducts = await fetchProducts();
-      console.log(fetchedProducts);
       setProducts(fetchedProducts);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -35,7 +34,7 @@ const ProductManagement: React.FC = () => {
     fetchData();
     const intervalId = setInterval(() => {
       fetchData();
-    }, 6000);
+    }, 12000);
 
     return () => clearInterval(intervalId);
   }, []);

@@ -25,7 +25,7 @@ const SizeQuantityManagement: React.FC = () => {
     fetchData();
     const intervalId = setInterval(() => {
       fetchData();
-    }, 6000);
+    }, 12000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -41,7 +41,6 @@ const SizeQuantityManagement: React.FC = () => {
       };
   
       try {
-        console.log(newVariation);
         const createdVariation = await createProductVariation(newVariation);
         setSize((prevSizes) => [...prevSizes, createdVariation]); // Add the new variation to state
         setSelectedSize(''); // Reset selected size

@@ -3,7 +3,9 @@ import React from "react";
 const ReturnPolicy: React.FC = () => {
   return (
     <section className="flex flex-col bg-black text-white items-center">
-      <h2 className="text-3xl md:text-4xl sm:text-2xl font-semibold mb-4">Return Policy</h2>
+      <h2 className="text-3xl md:text-4xl sm:text-2xl font-semibold mb-4">
+        Return Policy
+      </h2>
       <div className="w-5/6 md:w-2/3 text-left">
         <div className="mb-4">
           <p className="mt-4 text-justify text-sm md:text-base">
@@ -13,27 +15,38 @@ const ReturnPolicy: React.FC = () => {
             the date on which you received them from www.blackwilbur.com.
           </p>
           <p className="mt-4 text-justify text-sm md:text-base">
-            ONCE YOUR EXCHANGE/RETURN QUERY HAS BEEN ACCEPTED BY OUR TEAM, A
+            • ONCE YOUR EXCHANGE/RETURN QUERY HAS BEEN ACCEPTED BY OUR TEAM, A
             NOTIFICATION WILL BE SENT TO YOUR REGISTERED EMAIL AND YOUR ORDER
-            WILL BE PICKED UP BY OUR LOGISTICS PARTNER WITHIN 24-48 HOURS.
-            PICK-UP WILL BE ATTEMPTED TWICE. IF THE COURIER PARTNER IS UNABLE TO
-            PICK UP THE SHIPMENT, YOU WILL HAVE TO SEND THE SHIPMENT BACK TO THE
-            WAREHOUSE ADDRESS. PLEASE NOTE THAT ONCE YOUR ORDER HAS BEEN
-            RECEIVED AT THE WAREHOUSE, IT WILL GO THROUGH A QUALITY CHECK AND
-            ONCE APPROVED, YOUR EXCHANGE/RETURN QUERY WILL BE PROCESSED FURTHER.
-            ESTIMATED DELIVERY OF ALL EXCHANGE QUERIES FALL BETWEEN 7-10 WORKING
-            DAYS.
+            WILL BE PICKED UP BY OUR LOGISTICS PARTNER WITHIN 24-48 HOURS.{" "}
+            <br />
+            •PICK-UP WILL BE ATTEMPTED TWICE. IF THE COURIER PARTNER IS UNABLE
+            TO PICK UP THE SHIPMENT, YOU WILL HAVE TO SEND THE SHIPMENT BACK TO
+            THE WAREHOUSE ADDRESS. <br />• PLEASE NOTE THAT ONCE YOUR ORDER HAS
+            BEEN RECEIVED AT THE WAREHOUSE, IT WILL GO THROUGH A QUALITY CHECK
+            AND ONCE APPROVED, YOUR EXCHANGE/RETURN QUERY WILL BE PROCESSED
+            FURTHER.
+            <br />• ESTIMATED DELIVERY OF ALL EXCHANGE QUERIES FALL BETWEEN 7-10
+            WORKING DAYS.
           </p>
           <p className="mt-4 text-justify text-sm md:text-base">
-            CANCELLATION OF ORDERS ARE ONLY PERMITTED ON COD ORDERS WHICH WILL
-            BE POSSIBLE IF AND TILL THE ORDER HAS NOT BEEN DISPATCHED FROM OUR
-            WAREHOUSE. ALL PREPAID ORDERS ARE FINAL. WE DO NOT OFFER ANY
-            CANCELLATIONS AND REFUNDS.
+            • IF AN EXCHANGE IN SIZE CANNOT BE FULFILLED DUE TO AVAILABILITY OF
+            STOCK, WE WILL MAKE SURE TO HAVE THIS EXCHANGED FOR ANOTHER PRODUCT
+            OR YOU WILL BE ISSUED A CREDIT NOTE WHICH CAN BE AVAILED ON YOUR
+            NEXT ONLINE PURCHASE.
+            <br /> • FOR ALL RETURN ORDERS, REFUNDS WILL BE ISSUED IN THE FORM
+            OF A CREDIT NOTE ONCE QC ON THE PRODUCT HAS BEEN APPROVED. THIS WILL
+            BE SHARED ON YOUR REGISTERED EMAIL ADDRESS. <br />• CANCELLATION OF
+            ORDERS ARE ONLY PERMITTED ON COD ORDERS WHICH WILL BE POSSIBLE IF
+            AND TILL THE ORDER HAS NOT BEEN DISPATCHED FROM OUR WAREHOUSE. ALL
+            PREPAID ORDERS ARE FINAL. WE DO NOT OFFER ANY CANCELLATIONS AND
+            REFUNDS.
           </p>
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4 text-base md:text-lg">EXCHANGE/RETURN OF PRODUCTS:</h3>
+          <h3 className="font-bold mt-4 text-base md:text-lg">
+            EXCHANGE/RETURN OF PRODUCTS:
+          </h3>
           <p className="text-justify text-sm md:text-base">
             YOU MAY INITIATE THE REQUEST OF AN EXCHANGE/RETURN OF A PRODUCT IF:
           </p>
@@ -46,47 +59,51 @@ const ReturnPolicy: React.FC = () => {
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4 text-base md:text-lg">CONDITIONS FOR EXCHANGE/RETURN:</h3>
+          <h3 className="font-bold mt-4 text-base md:text-lg">
+            CONDITIONS FOR EXCHANGE/RETURN:
+          </h3>
           <p className="text-justify text-sm md:text-base">
             YOU CAN EXCHANGE/RETURN THE PRODUCT(S) PURCHASED FROM US PROVIDED
             THE PRODUCT(S) SATISFY THE FOLLOWING MANDATORY CONDITIONS:
           </p>
           <ul className="list-disc ml-8 text-sm md:text-base">
             <li>
-              THE PRODUCT HAS NOT BEEN WORN, CLEANED, OR TAMPERED WITH BY YOU.
-            </li>
-            <li>
+              THE PRODUCT HAS NOT BEEN WORN, CLEANED OR TAMPERED WITH BY YOU.
               THE BRAND TAGS, ORIGINAL PACKAGING MATERIAL, ACCOMPANYING
-              ACCESSORIES ARE INTACT AND NOT ALTERED, DAMAGED, OR DISCARDED BY
-              YOU.
-            </li>
-            <li>THE PRODUCT IS NOT ALTERED, UNLESS PROVEN VENDOR DEFECT.</li>
-            <li>
-              RETURN IS BEING INITIATED AGAINST THE ORDER UNDER WHICH IT WAS
-              BOUGHT AND THE PRODUCT MATCHES OUR RECORDS.
+              ACCESSORIES ARE INTACT AND NOT ALTERED, DAMAGED OR DISCARDED BY
+              YOU.{" "}
             </li>
             <li>
-              THERE IS NO FOUL ODOUR, PERFUME, STAINS, DENTS, SCRATCHES, TEARS,
+              THE PRODUCT IS NOT ALTERED, UNLESS PROVEN VENDOR DEFECT. RETURN IS
+              BEING INITIATED AGAINST THE ORDER UNDER WHICH IT WAS BOUGHT AND
+              THE PRODUCT MATCHES OUR RECORDS.
+            </li>
+            <li>
+              THERE IS NO FOUL ODOUR, PERFUME, STAINS, DENTS, SCRATCHES, TEARS
               OR DAMAGE ON THE PRODUCT.
+            </li>
+            <li>
+              RETURN OF PURCHASED PRODUCTS ARE FACILITATED THROUGH OUR
+              REVERSE-LOGISTICS PARTNERS. ON RECEIPT OF REQUEST FOR RETURN OF
+              PRODUCT ON BLACKWILBUR.COM AND THE SAME BEING DULY ACKNOWLEDGED BY
+              US, OUR REVERSE-LOGISTICS PARTNERS MAY GET IN TOUCH WITH YOU IN
+              ORDER TO COLLECT THE PURCHASED PRODUCTS FROM YOU.
+            </li>
+            <li>
+              WE RESERVE THE RIGHT TO REJECT THE EXCHANGE/RETURN REQUEST FOR A
+              PRODUCT IF IT DOES NOT SATISFY THE AFOREMENTIONED CONDITIONS.
             </li>
           </ul>
           <p className="mt-4 text-justify text-sm md:text-base">
-            RETURN OF PURCHASED PRODUCTS ARE FACILITATED THROUGH OUR
-            REVERSE-LOGISTICS PARTNERS. ON RECEIPT OF REQUEST FOR RETURN OF
-            PRODUCT ON BLACKWILBUR.COM AND THE SAME BEING DULY ACKNOWLEDGED BY
-            US, OUR REVERSE-LOGISTICS PARTNERS MAY GET IN TOUCH WITH YOU IN
-            ORDER TO COLLECT THE PURCHASED PRODUCTS FROM YOU. WE RESERVE THE
-            RIGHT TO REJECT THE EXCHANGE/RETURN REQUEST FOR A PRODUCT IF IT DOES
-            NOT SATISFY THE AFOREMENTIONED CONDITIONS.
-          </p>
-          <p className="mt-4 text-justify text-sm md:text-base">
-            The time period for refunding the amount you paid for purchasing the
-            returned products depends on the payment type used.
+            THE TIME PERIOD FOR REFUNDING THE AMOUNT YOU PAID FOR PURCHASING THE
+            RETURNED PRODUCTS DEPENDS ON THE PAYMENT TYPE USED.
           </p>
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4 text-base md:text-lg">CUSTOMER SUPPORT:</h3>
+          <h3 className="font-bold mt-4 text-base md:text-lg">
+            CUSTOMER SUPPORT:
+          </h3>
           <p className="text-justify text-sm md:text-base">
             ANY QUERIES OR CONCERNS RELATING TO THE RETURN AND CANCELLATION MAY
             BE DIRECTED BY YOU TO OUR CUSTOMER SUPPORT TEAM WHO CAN BE CONTACTED

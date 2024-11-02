@@ -69,13 +69,15 @@ const ProductModal: React.FC<ProductModalProps> = ({
     formData.append("category", productCategory.id.toString());
     formData.append("image", productImage); // Ensure this is the File object
 
-    console.log(formData); // For debugging purposes
-
     // Call the API to add the product
     addProduct(formData)
       .then((newProduct) => {
-        console.log("Product added successfully:", newProduct);
         onAddProduct(newProduct);
+        setProductName("");
+        setProductDescription("");
+        setProductPrice("");
+        setProductImage(null);
+        setProductCategory(null);
         onClose();
       })
       .catch((error) => {
