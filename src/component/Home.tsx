@@ -112,26 +112,25 @@ const Home: React.FC = () => {
             >
               {bestseller.map((bestseller) => {
                 const productImages = bestseller.image;
-                const imageSrc =
-                  productImages.length > 0 ? productImages : "default-image-url.jpg";
+                const imageSrc = productImages.length > 0 ? productImages : "default-image-url.jpg";
 
                 return (
                   <div
                     key={bestseller.id}
-                    className="sm:min-h-[52vh] max-h-[72vh] min-w-[200px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-white overflow-hidden flex flex-col items-center rounded-md"
+                    className="sm:min-h-[52vh] max-h-[72vh] min-w-[200px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#0B0B0B] overflow-hidden flex flex-col items-center justify-between rounded-md"
                   >
                     <img
-                      className="w-full h-[94%] object-contain transition-transform duration-300 ease-in-out transform hover:scale-110"
+                      className="w-full h-[94%] object-contain transition-transform duration-300 ease-in-out transform hover:scale-105"
                       onClick={() => handleNavigate(`/Product/${bestseller.id}`)}
                       src={imageSrc}
                       alt={bestseller.name}
                     />
-                    <div className="flex justify-between pl-2  pr-2 w-full">
+                    <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-9 sm:h-5 bg-white">
                       {" "}
-                      <div className="right-4 text-[#282828] text-[10px] sm:text-base md:text-base font-semibold">
+                      <div className="text-[#282828] text-[10px] w-3/4 sm:text-base md:text-base font-semibold truncate responsive-text">
                         {bestseller.name.toUpperCase()}
                       </div>
-                      <div className="right-4 text-[#58595B] text-[10px] sm:text-base md:text-base font-semibold">
+                      <div className=" text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold responsive-text">
                         ₹ {bestseller.price}
                       </div>
                     </div>
@@ -249,25 +248,20 @@ const Home: React.FC = () => {
               {exploreProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="relative bg-white overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
+                  className="relative bg-[#0B0B0B] overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
                 >
                   <img
-                    className="w-full h-[93%] object-contain cursor-pointer"
+                    className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
                     onClick={() => handleNavigate(`/Product/${product.id}`)}
-                    src={
-                      product.image && product.image.length > 0
-                        ? product.image
-                        : ""
-                    }
+                    src={product.image && product.image.length > 0 ? product.image : ""}
                     alt={product.name}
                   />
-                  <div className="flex justify-between items-center p-1">
+                  <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-9 sm:h-5 h-4 bg-white">
                     {" "}
-                    {/* Flex container for name and price */}
-                    <div className="text-[#282828] text-[8px] sm:text-base md:text-base font-semibold">
-                      {product.name}
+                    <div className="text-[#282828] text-[10px] sm:w-3/4 md:w-3/4 w-1/2 sm:text-base md:text-base font-semibold truncate responsive-text">
+                      {product.name.toUpperCase()}
                     </div>
-                    <div className="text-[#58595B] text-[8px] sm:text-sm md:text-base font-semibold">
+                    <div className=" text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold responsive-text">
                       ₹ {product.price}
                     </div>
                   </div>

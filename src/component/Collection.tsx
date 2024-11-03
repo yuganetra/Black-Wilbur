@@ -39,6 +39,7 @@ const Collection: React.FC = () => {
     const fetchProducts = async () => {
       try {
         const fetchProduct = await fetchCollection();
+        // console.log(fetchProduct);
         // Check if fetchProduct is an array before mapping
         const formattedProducts = Array.isArray(fetchProduct)
           ? fetchProduct.map((item: any) => ({
@@ -85,13 +86,11 @@ const Collection: React.FC = () => {
 
     const matchesCategory =
       trimmedSelectedCategory === "collection" || // Allow all products if category is "collection"
-      (trimmedProductCategory &&
-        trimmedProductCategory === trimmedSelectedCategory);
+      (trimmedProductCategory && trimmedProductCategory === trimmedSelectedCategory);
 
     const matchesSize = selectedSizes.length
-      ? product.sizes?.some((sizeObj: { size: string }) =>
-          selectedSizes.includes(sizeObj.size)
-        ) ?? false
+      ? product.sizes?.some((sizeObj: { size: string }) => selectedSizes.includes(sizeObj.size)) ??
+        false
       : true;
 
     // Price filtering
@@ -108,15 +107,9 @@ const Collection: React.FC = () => {
     }
     // Category filtering
     const matchesSelectedCategories =
-      selectedCategories.length === 0 ||
-      selectedCategories.includes(trimmedProductCategory);
+      selectedCategories.length === 0 || selectedCategories.includes(trimmedProductCategory);
 
-    return (
-      matchesCategory &&
-      matchesSize &&
-      matchesPrice &&
-      matchesSelectedCategories
-    ); // Combine conditions
+    return matchesCategory && matchesSize && matchesPrice && matchesSelectedCategories; // Combine conditions
   });
 
   // Sort filtered products
@@ -134,9 +127,7 @@ const Collection: React.FC = () => {
   const currentProducts =
     category === "all"
       ? allProducts // Use sortedProducts directly if category is "collection"
-      : sortedProducts
-          .slice(startIdx, startIdx + productsPerPage)
-          .filter(Boolean);
+      : sortedProducts.slice(startIdx, startIdx + productsPerPage).filter(Boolean);
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
@@ -167,7 +158,7 @@ const Collection: React.FC = () => {
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
-      <div className="image-container w-full h-[100vh] sm:h-[90vh] ">
+      <div className="image-container w-full h-[75vh] sm:h-[90vh] ">
         <img
           className="w-full h-full object-cover"
           src={img}
@@ -208,10 +199,10 @@ const Collection: React.FC = () => {
               return (
                 <div
                   key={product.id}
-                  className="relative bg-white overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
+                  className="relative bg-[#0B0B0B] overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
                 >
                   <img
-                    className="w-full h-[93%] object-contain cursor-pointer"
+                    className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
                     onClick={() => handleNavigate(`/Product/${product.id}`)}
                     src={
                       product.image && product.image !== ""
@@ -220,11 +211,12 @@ const Collection: React.FC = () => {
                     }
                     alt={product.name}
                   />
-                  <div className="flex justify-between items-center p-1">
-                    <div className="text-[#282828] text-[8px] sm:text-base md:text-base font-semibold">
-                      {product.name}
+                  <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-8 sm:h-5 h-4 bg-white">
+                    {" "}
+                    <div className="text-[#282828] text-[10px] sm:w-3/4 md:w-3/4 w-1/2 sm:text-base md:text-base font-semibold truncate responsive-text">
+                      {product.name.toUpperCase()}
                     </div>
-                    <div className="text-[#58595B] text-[8px] sm:text-sm md:text-base font-semibold">
+                    <div className=" text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold responsive-text">
                       ₹ {product.price}
                     </div>
                   </div>
@@ -232,9 +224,7 @@ const Collection: React.FC = () => {
                   <button
                     onClick={() => toggleWishlist(product.id)}
                     className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
-                      wishlist.includes(product.id)
-                        ? "bg-red-500"
-                        : "bg-gray-500"
+                      wishlist.includes(product.id) ? "bg-red-500" : "bg-gray-500"
                     } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
                   >
                     {wishlist.includes(product.id) ? "♥" : "♡"}
@@ -298,10 +288,7 @@ const Collection: React.FC = () => {
             {showSize && (
               <div className="mt-2 flex flex-col">
                 {["small", "medium", "large", "X-large"].map((size) => (
-                  <label
-                    key={size}
-                    className="flex items-center cursor-pointer"
-                  >
+                  <label key={size} className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       className="mr-2"
@@ -335,10 +322,7 @@ const Collection: React.FC = () => {
             {showPrice && (
               <div className="mt-2 flex flex-col">
                 {["Low to High", "High to Low"].map((sortOption) => (
-                  <label
-                    key={sortOption}
-                    className="flex items-center cursor-pointer"
-                  >
+                  <label key={sortOption} className="flex items-center cursor-pointer">
                     <input
                       type="radio"
                       className="mr-2"
