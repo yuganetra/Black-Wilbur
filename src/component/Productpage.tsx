@@ -192,15 +192,15 @@ const Productpage = () => {
     <div className="bg-[#1B1B1B] text-white min-h-screen flex flex-col">
       <section className="w-full flex flex-col lg:flex-row gap-10">
         {/* Image Section */}
-        <div className="w-full md:h-[80vh] lg:h-[750px] lg:w-[650px] flex lg:flex-col flex-row bg-slate-50 overflow-x-hidden lg:overflow-y-visible overflow-y-hidden">
-          <div className="w-full h-full flex lg:flex-col flex-row bg-slate-50 overflow-x-auto overflow-y-hidden lg:overflow-y-visible">
+        <div className="md:h-[80vh] lg:h-[750px] lg:w-[50%] flex lg:flex-col flex-row overflow-x-hidden lg:overflow-y-visible overflow-y-hidden">
+          <div className="w-full h-full flex lg:flex-col flex-row overflow-x-auto overflow-y-hidden lg:overflow-y-visible gap-[1px]">
             {combinedImages.map((imageUrl, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 flex items-center justify-center bg-[#7A7A7A] w-full h-full"
+                className="flex-shrink-0 flex items-center justify-center bg-[#0B0B0B] w-full h-full "
               >
                 <img
-                  className="lg:w-[650px] md:w-[400px] md:h-full md:overflow-y-hidden"
+                  className="lg:w-[620px] md:w-[400px] md:h-full md:overflow-y-hidden"
                   src={imageUrl}
                   alt={`Product Image ${index + 1}`} // Update alt text to reflect the image number
                 />
@@ -267,8 +267,8 @@ const Productpage = () => {
           </div>
 
           <div className="w-full lg:w-3/4 mb-4 mt-4">
-            <h4 className="text-lg lg:text-xl mb-2">DESCRIPTION</h4>
-            <p className="text-sm mb-2">{product.description}</p>
+            <h4 className="text-lg lg:text-3xl mb-2">DESCRIPTION</h4>
+            <p className="text-sm lg:text-xl font-thin mb-2 lg:mb-6">{product.description}</p>
 
             {/* User Rating Section */}
             <h4 className="font-medium text-xl text-left text-white mb-2">Rate this product:</h4>
