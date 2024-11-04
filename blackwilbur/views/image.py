@@ -106,6 +106,10 @@ class ImageManageAPIView(APIView):
         except Exception as e:
             print(f"Error during deletion: {str(e)}")
             return Response({"error": "An error occurred while deleting the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def get_blob_service_client(self):
+        # Create a BlobServiceClient using the connection string
+        return BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
     def create_blob_url(self, product_id, image_uuid):
         product_name = self.get_product_name(product_id)

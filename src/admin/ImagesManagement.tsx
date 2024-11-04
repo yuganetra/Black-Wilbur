@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchProducts, uploadImage, getAllImages, deleteImage } from '../services/api';
 import { ProductAdmin, Image } from '../utiles/types';
+import ImagePopup from './helper/ImagePopup';
 
 const ImagesManagement: React.FC = () => {
   const [images, setImages] = useState<Image[]>([]);
@@ -8,17 +9,16 @@ const ImagesManagement: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [products, setProducts] = useState<ProductAdmin[]>([]);
-  const [currentPage, setCurrentPage] = useState(0);
-  const imagesPerPage = 10; // Number of images to show per page
+  const [selectedProductImages, setSelectedProductImages] = useState<Image[]>([]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch products and images on component mount
   const fetchData = async () => {
     setLoading(true);
     try {
       const [fetchedProducts, fetchedImages] = await Promise.all([
         fetchProducts(),
-        getAllImages(currentPage, imagesPerPage) // Fetch paginated images
+        getAllImages(),
       ]);
       setProducts(fetchedProducts);
       setImages(fetchedImages);
@@ -31,18 +31,14 @@ const ImagesManagement: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    const intervalId = setInterval(fetchData, 3600000); 
-    return () => clearInterval(intervalId);
-  }, [currentPage]); // Re-fetch data when currentPage changes
+  }, []);
 
-  // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
     }
   };
 
-  // Upload image to server
   const handleAddImage = async () => {
     if (!selectedProductId || !selectedFile) {
       console.error("Please select a product and an image.");
@@ -55,45 +51,35 @@ const ImagesManagement: React.FC = () => {
       setSelectedProductId(null);
       setIsModalOpen(false);
       fetchData();
-      alert("Image uploaded successfully!"); 
+      alert("Image uploaded successfully!");
     } catch (error) {
       console.error("Error uploading image:", error);
       alert("Failed to upload image. Please try again.");
     }
   };
 
-  // Delete image by ID
   const handleDeleteImage = async (id: string) => {
     try {
       await deleteImage(id);
       setImages(images.filter(image => image.id !== id));
+      setSelectedProductImages(selectedProductImages.filter(image => image.id !== id));
     } catch (error) {
       console.error("Error deleting image:", error);
     }
   };
 
-  // Helper function to get product name by ID
+  const openPopup = (productId: string) => {
+    const productImages = images.filter(image => image.product_id === productId);
+    setSelectedProductImages(productImages);
+    setIsPopupOpen(true);
+  };
+
+  const closePopup = () => setIsPopupOpen(false);
+
   const getProductName = (productId: string) => {
     const product = products.find(product => product.id === productId);
     return product ? product.name : "Unknown Product";
   };
-
-  // Calculate total pages based on fetched images
-  const totalPages = Math.ceil(images.length / imagesPerPage);
-
-  // Handle pagination
-  const handlePageChange = (direction: 'next' | 'prev') => {
-    if (direction === 'next' && currentPage < totalPages - 1) {
-      setCurrentPage(prevPage => prevPage + 1);
-    } else if (direction === 'prev' && currentPage > 0) {
-      setCurrentPage(prevPage => prevPage - 1);
-    }
-    // Fetch images for the new page
-    fetchData();
-  };
-
-  // Get current images for display
-  const currentImages = images.slice(currentPage * imagesPerPage, (currentPage + 1) * imagesPerPage);
 
   return (
     <div className="p-6 bg-black text-white min-h-screen">
@@ -103,7 +89,6 @@ const ImagesManagement: React.FC = () => {
         Add Image
       </button>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-gray-800 p-6 rounded shadow-lg">
@@ -138,59 +123,50 @@ const ImagesManagement: React.FC = () => {
         </div>
       )}
 
-      <div className="overflow-x-auto mt-4">
+      <div className="overflow-x-auto mt-4 max-h-[600px]">
         <table className="min-w-full bg-gray-900">
           <thead>
             <tr className="bg-gray-800">
+              <th className="py-2 px-4 border-b border-gray-700 text-left">#</th>
               <th className="py-2 px-4 border-b border-gray-700 text-left">Product ID</th>
               <th className="py-2 px-4 border-b border-gray-700 text-left">Product Name</th>
-              <th className="py-2 px-4 border-b border-gray-700 text-left">Image</th>
+              <th className="py-2 px-4 border-b border-gray-700 text-left">Image Count</th>
               <th className="py-2 px-4 border-b border-gray-700 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="py-2 text-center">Loading images...</td>
+                <td colSpan={5} className="py-2 text-center">Loading images...</td>
               </tr>
             ) : (
-              currentImages.map(image => (
-                <tr key={image.id} className="hover:bg-gray-800">
-                  <td className="py-2 px-4 border-b border-gray-700 text-left">{image.product_id}</td>
-                  <td className="py-2 px-4 border-b border-gray-700 text-left">{getProductName(image.product_id)}</td>
-                  <td className="py-2 px-4 border-b border-gray-700 text-left">
-                    <img src={image.image_url} alt="Product" className="w-16 h-16 object-cover" loading="lazy" />
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-700 text-left">
-                    <button onClick={() => handleDeleteImage(image.id)} className="text-red-500">
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
+              products.map((product, index) => {
+                const imageCount = images.filter(image => image.product_id === product.id).length;
+                return (
+                  <tr key={product.id} className="hover:bg-gray-800 cursor-pointer">
+                    <td className="py-2 px-4 border-b border-gray-700 text-left">{index + 1}</td>
+                    <td className="py-2 px-4 border-b border-gray-700 text-left">{product.id}</td>
+                    <td className="py-2 px-4 border-b border-gray-700 text-left">{product.name}</td>
+                    <td className="py-2 px-4 border-b border-gray-700 text-left">{imageCount}</td>
+                    <td className="py-2 px-4 border-b border-gray-700 text-left">
+                      <button onClick={() => openPopup(product.id)} className="text-blue-500 underline">
+                        View Images
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-between mt-4">
-        <button 
-          onClick={() => handlePageChange('prev')}
-          disabled={currentPage === 0}
-          className="bg-gray-600 text-white p-2 rounded"
-        >
-          Previous
-        </button>
-        <span className="text-white">{`Page ${currentPage + 1} of ${totalPages}`}</span>
-        <button 
-          onClick={() => handlePageChange('next')}
-          disabled={currentPage >= totalPages - 1}
-          className="bg-gray-600 text-white p-2 rounded"
-        >
-          Next
-        </button>
-      </div>
+      <ImagePopup
+        isOpen={isPopupOpen}
+        images={selectedProductImages}
+        onClose={closePopup}
+        onDelete={handleDeleteImage}
+      />
     </div>
   );
 };

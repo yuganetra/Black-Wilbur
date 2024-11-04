@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import img from "../asset/collection-carousel.jpg";
 import carousel1 from "../asset/chpp-carousel.jpg";
+import { useNavigate } from 'react-router-dom';
 
 const Carousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -9,6 +10,7 @@ const Carousel = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [startX, setStartX] = useState(0);
   const [endX, setEndX] = useState(0);
+  const navigate = useNavigate();
 
   const images = [
     { 
@@ -79,9 +81,10 @@ const Carousel = () => {
     }
   };
 
-    function handleNavigate(arg0: string): void {
-        throw new Error('Function not implemented.');
-    }
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
+
 
   return (
     <div className="relative h-[88vh] overflow-hidden bg-black"
