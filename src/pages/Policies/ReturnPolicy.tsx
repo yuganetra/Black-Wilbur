@@ -95,8 +95,9 @@ const ReturnPolicy: React.FC = () => {
             </li>
           </ul>
           <p className="mt-4 text-justify text-sm md:text-base">
-            THE TIME PERIOD FOR REFUNDING THE AMOUNT YOU PAID FOR PURCHASING THE
-            RETURNED PRODUCTS DEPENDS ON THE PAYMENT TYPE USED.
+            ONCE THE REFUND REQUEST IS APPROVED, WE WILL REFUND YOUR AMOUNT IN
+            2-3 DAYS. THE TIME PERIOD FOR REFUNDING THE AMOUNT YOU PAID FOR
+            PURCHASING THE RETURNED PRODUCTS DEPENDS ON THE PAYMENT TYPE USED.
           </p>
         </div>
         <div className="border-b border-black mb-4" />
@@ -107,7 +108,7 @@ const ReturnPolicy: React.FC = () => {
           <p className="text-justify text-sm md:text-base">
             ANY QUERIES OR CONCERNS RELATING TO THE RETURN AND CANCELLATION MAY
             BE DIRECTED BY YOU TO OUR CUSTOMER SUPPORT TEAM WHO CAN BE CONTACTED
-            AT: CALL US AT +91 ——————- OR WRITE TO US AT ———————-.COM.
+            AT: CALL US AT +91 ——————- OR WRITE TO US AT support@blackwilbur.com
           </p>
         </div>
         <div className="border-b border-black mb-4" />

@@ -25,7 +25,7 @@ const ImagesManagement: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    const intervalId = setInterval(fetchData, 12000); // refresh data every 6 seconds
+    const intervalId = setInterval(fetchData, 3600000); 
     return () => clearInterval(intervalId);
   }, []);
 

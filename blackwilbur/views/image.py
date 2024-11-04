@@ -9,12 +9,15 @@ from blackwilbur import serializers
 
 CONTAINER_NAME = 'blackwilbur-image'
 AZURE_STORAGE_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=blackwilbur;AccountKey=Vv2HZ0MjxWAibKuMgX6E3TmntwvLNHZz+lQpswpEvoXtuHdXP/M9OOoMv43rADP1xiYvpd33XI4O+AStYbhjXw==;EndpointSuffix=core.windows.net'
-
 class ImageManageAPIView(APIView):
-    blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+
+    def get_blob_service_client(self):
+        # Create a new blob service client
+        return BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
     def get(self, request, pk=None, product_id=None):
-        image_type = request.query_params.get('image_type')  # Get the image_type from query parameters
+        image_type = request.query_params.get('image_type')
+        blob_service_client = self.get_blob_service_client()
 
         if pk:
             print(f"Fetching image with ID: {pk}")
@@ -50,8 +53,7 @@ class ImageManageAPIView(APIView):
     def post(self, request):
         print("POST request received.")
         product_id = request.data.get('product')
-        image_type = request.data.get('image_type', 'product')  # default to 'product' if not provided
-        print(f"Product ID from request: {product_id}")
+        image_type = request.data.get('image_type', 'product')
         print(f"Product ID from request: {product_id}")
         print(f"Image Type from request: {image_type}")
 
@@ -97,7 +99,8 @@ class ImageManageAPIView(APIView):
             print("Image deleted from database.")
 
             # Delete blob from Azure Storage
-            blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
+            blob_service_client = self.get_blob_service_client()
+            blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
             blob_client.delete_blob()
             print(f"Image deleted from blob storage with blob name: {blob_name}")
 
@@ -112,7 +115,7 @@ class ImageManageAPIView(APIView):
     def create_blob_url(self, product_id, image_uuid):
         product_name = self.get_product_name(product_id)
         sanitized_product_name = self.format_product_name(product_name)
-        blob_url = f"https://{self.blob_service_client.account_name}.blob.core.windows.net/{CONTAINER_NAME}/{sanitized_product_name}/{image_uuid}.jpg"
+        blob_url = f"https://{self.get_blob_service_client().account_name}.blob.core.windows.net/{CONTAINER_NAME}/{sanitized_product_name}/{image_uuid}.jpg"
         print(f"Blob URL created: {blob_url}")
         return blob_url
 
@@ -120,7 +123,8 @@ class ImageManageAPIView(APIView):
         product_name = self.get_product_name(product_id)
         sanitized_product_name = self.format_product_name(product_name)
         blob_name = f"{sanitized_product_name}/{image_uuid}.jpg"
-        blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
+        blob_service_client = self.get_blob_service_client()
+        blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
         blob_client.upload_blob(image_file, overwrite=True)
         print(f"Image uploaded to blob storage with blob name: {blob_name}")
 
@@ -134,7 +138,7 @@ class ImageManageAPIView(APIView):
     def format_product_name(self, product_name):
         formatted_name = product_name.strip().lower().replace(" ", "-")
         return formatted_name.rstrip('-')
-    
+
     def construct_blob_name(self, product_id, image_uuid):
         product_name = self.get_product_name(product_id)
         sanitized_product_name = self.format_product_name(product_name)
