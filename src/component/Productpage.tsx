@@ -200,7 +200,7 @@ const Productpage = () => {
                 className="flex-shrink-0 flex items-center justify-center bg-[#0B0B0B] w-full h-full "
               >
                 <img
-                  className="lg:w-[620px] md:w-[400px] md:h-full md:overflow-y-hidden"
+                  className="lg:w-[600px] md:w-[400px] md:h-full md:overflow-y-hidden"
                   src={imageUrl}
                   alt={`Product Image ${index + 1}`} // Update alt text to reflect the image number
                 />
