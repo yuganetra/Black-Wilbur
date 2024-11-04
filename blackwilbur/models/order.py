@@ -15,7 +15,15 @@ class Order(models.Model):
     state = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
-    order_id = models.CharField(max_length=255, unique=True)  # Ensure order_id is unique
-    email = models.EmailField(max_length=255, blank=True, null=True)  # Allow null temporarily
+    order_id = models.CharField(max_length=255, unique=True)
+    email = models.EmailField(max_length=255, blank=True, null=True)
     payment_method = models.CharField(max_length=50)
     products = models.ManyToManyField(Product, through='OrderItem')
+
+    @property
+    def subtotal(self):
+        # Calculates the subtotal by summing the total price of each OrderItem in the order
+        return sum(item.total_price for item in self.orderitem_set.all())
+
+    def __str__(self):
+        return f"Order {self.order_id} - {self.status}"

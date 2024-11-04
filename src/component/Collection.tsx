@@ -47,16 +47,16 @@ const Collection: React.FC = () => {
               name: item.name,
               price: item.price,
               category: item.category,
-              image: item.image, // Default to an empty array if product_images is undefined
+              image: item.image,
               description: item.description || "",
               sizes:
                 item.sizes?.map((size: any) => ({
                   id: size.id,
                   size: size.size,
-                })) || [], // Default to an empty array if sizes is undefined
+                })) || [], 
               rating: item.rating || 0,
             }))
-          : []; // Default to an empty array if fetchProduct is not an array
+          : []; 
 
         setAllProducts(formattedProducts);
       } catch (error) {

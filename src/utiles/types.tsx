@@ -130,7 +130,8 @@ export interface OrderItem {
   order_id:string;
   product: Product;
   quantity: number;
-  product_variation_id: ProductVariation;
+  product_variation: ProductVariation;
+  subtotal?: string;
 }
 
 export interface CartItem {

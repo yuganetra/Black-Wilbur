@@ -12,9 +12,8 @@ import {
   fetchRatings,
   addRating,
   getImageByProductId,
-  getProductVariationsByProductId,
 } from "../services/api";
-import { Product, ProductVariation, Image, ProductCollection, ProductImage } from "../utiles/types";
+import { Product, ProductVariation, Image } from "../utiles/types";
 import Skeleton from "../utiles/Skeleton";
 
 const Productpage = () => {
@@ -247,7 +246,7 @@ const Productpage = () => {
               onClick={toggleSizeChart}
               className="px-4 py-2 bg-[#1B1B1B] border border-white text-white rounded-full"
             >
-              Size Chart
+              Size Chart , Do's & Don'ts
             </button>
           </div>
 

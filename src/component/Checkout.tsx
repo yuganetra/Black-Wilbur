@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import { CartItem } from "../utiles/types";
 import { createOrder, sendSms } from "../services/api";
+import { v4 as uuidv4 } from "uuid";
 
 interface CheckoutProductForbackend {
   id: number;
@@ -99,23 +100,15 @@ const Checkout: React.FC = () => {
   };
 
   const generateOrderId = (): string => {
-    // Create a random number for the order ID
-    const randomPart = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit random number
-
-    // Add a timestamp to ensure uniqueness
-    const timestampPart = Date.now().toString(); // Current timestamp in milliseconds
-
-    // Combine both parts to form the order ID
-    const orderId = `ORDER-${randomPart}-${timestampPart}`;
-
-    return orderId;
+    return uuidv4();
   };
 
   const onSubmit = async (data: Order) => {
-    // if (!otpVarified) {
-    //   alert("Please verify your phone number.");
-    //   return;
-    // }
+    if (!otpVarified) {
+      alert("Please verify your phone number.");
+      return;
+    }
+
     const orderId = generateOrderId();
     const user = localStorage.getItem("user");
     let userId: number | undefined;
@@ -124,13 +117,22 @@ const Checkout: React.FC = () => {
       const parsedUser = JSON.parse(user);
       userId = parsedUser.id;
     }
+
     // Transform products from frontend type to backend type
-    const orderProducts: CheckoutProductForbackend[] = products.map((p) => ({
-      id: p.id,
-      quantity: p.quantity,
-      product_id: p.product.id,
-      product_variation_id: p.size.id,
-    }));
+    const orderProducts: CheckoutProductForbackend[] = products.map((p) => {
+      console.log("Product Variation ID:", p.size.id); 
+
+      return {
+        id: p.id,
+        quantity: p.quantity,
+        product_id: p.product.id,
+        product_variation_id: p.size.id,
+      };
+    });
+
+    // Log orderProducts to verify structure and data
+    console.log("Order Products:", orderProducts);
+
     const orderData: Order = {
       order_id: orderId,
       status: "pending",
@@ -144,12 +146,9 @@ const Checkout: React.FC = () => {
       email: data.email,
       products: orderProducts,
       payment_method: data.payment_method,
-      user: 0,
+      user: userId || 0,
     };
 
-    if (userId !== undefined) {
-      orderData.user = userId;
-    }
     try {
       const response = await createOrder(orderData);
       if (response) {

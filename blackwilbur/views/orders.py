@@ -16,11 +16,31 @@ class OrdersAPIView(APIView):
 
         for order in orders:
             order_items = models.OrderItem.objects.filter(order=order)
+            items_data = []
+
+            # Calculate subtotal for each item
+            for item in order_items:
+                subtotal = item.quantity * item.product.price  # Calculate the subtotal
+                item_data = {
+                    "product": {
+                        "id": item.product.id,
+                        "name": item.product.name,
+                        "price": str(item.product.price),
+                    },
+                    "quantity": item.quantity,
+                    "product_variation": {
+                        "id": item.product_variation.id,
+                        "size": item.product_variation.size,
+                    },
+                    "subtotal": str(subtotal)  # Add subtotal to item data
+                }
+                items_data.append(item_data)
+
             order_data = {
-                "order_id": order.order_id,  # Include order_id
-                "created_at": order.created_at,  # Include order created datetime
-                "status": order.status,  # Include order status
-                "items": serializers.OrderItemSerializer(order_items, many=True).data
+                "order_id": order.order_id,
+                "created_at": order.created_at,
+                "status": order.status,
+                "items": items_data  # Include items with subtotal in the order data
             }
             orders_data.append(order_data)
 
@@ -29,51 +49,41 @@ class OrdersAPIView(APIView):
     def post(self, request):
         print("Received POST request with data:", request.data)  # Log incoming data
 
-        # Extract products data before validating the order
         products_data = request.data.pop('products', [])
-        print("Extracted products data:", products_data)  # Log extracted products
+        print("Extracted products data:", products_data)
 
-        # Validate the request data with the Order serializer (excluding user)
         order_serializer = serializers.OrderSerializer(data=request.data)
-        print("Order serializer initialized with data:", request.data)  # Log data being validated
+        print("Order serializer initialized with data:", request.data)
 
-        # Check if the order_serializer is valid
         if not order_serializer.is_valid():
-            print("Validation failed with errors:", order_serializer.errors)  # Log validation errors
+            print("Validation failed with errors:", order_serializer.errors)
             return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        print("Order data validated successfully.")  # Log successful validation
+        print("Order data validated successfully.")
 
-        # Generate a new UUID for the order
-        order_id = str(uuid.uuid4())  # Generate a new UUID
-        print("Generated new order UUID:", order_id)  # Log the new UUID
-
-        # Check if the order already exists
-        print("Checking for existing order with order_id:", order_id)  # Log order ID check
+        order_id = str(uuid.uuid4())
+        print("Generated new order UUID:", order_id)
 
         try:
             order = models.Order.objects.get(order_id=order_id, user=request.user)
-            print("Order already exists with order_id:", order_id)  # Log if order already exists
+            print("Order already exists with order_id:", order_id)
             return Response({"error": "Order already exists!"}, status=status.HTTP_400_BAD_REQUEST)
         except models.Order.DoesNotExist:
-            print("No existing order found. Creating new order...")  # Log if order does not exist
+            print("No existing order found. Creating new order...")
 
-            # Create a new order, explicitly setting the user from the request
             new_order = models.Order.objects.create(
-                **{key: value for key, value in order_serializer.validated_data.items() if key != 'user'},  # Exclude 'user' from validated data
-                user=request.user,  # Set user from request
-                order_id=order_id  # Set the generated UUID as the order ID
+                **{key: value for key, value in order_serializer.validated_data.items() if key != 'user'},
+                user=request.user,
+                order_id=order_id
             )
-            print("New order created with ID:", new_order.order_id)  # Log newly created order
+            print("New order created with ID:", new_order.order_id)
 
-        # Insert each product into the OrderItem table
         for product_data in products_data:
             product_id = product_data.get('product_id')
             quantity = product_data.get('quantity')
             product_variation_id = product_data.get('product_variation_id')
             
             if not product_variation_id:
-                # Log and return an error if the product variation is missing
                 print(f"Missing product_variation_id for product ID: {product_id}")
                 return Response({"error": f"Product variation for product ID {product_id} is missing."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -81,12 +91,11 @@ class OrdersAPIView(APIView):
                 product = models.Product.objects.get(id=product_id)
                 print(f"Product found: {product.name}")
 
-                # Create the OrderItem with the correct product_variation_id
                 models.OrderItem.objects.create(
                     order=new_order,
                     product=product,
                     quantity=quantity,
-                    product_variation_id=product_variation_id  # Ensure this field is passed
+                    product_variation_id=product_variation_id
                 )
                 print(f"OrderItem created for product: {product.name}, quantity: {quantity}")
 
@@ -94,6 +103,5 @@ class OrdersAPIView(APIView):
                 print(f"Product with ID {product_id} not found.")
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Return the newly created order's details
-        print("Order creation complete. Returning response with order_id:", new_order.order_id)  # Log order creation completion
+        print("Order creation complete. Returning response with order_id:", new_order.order_id)
         return Response({"order_id": new_order.order_id}, status=status.HTTP_201_CREATED)

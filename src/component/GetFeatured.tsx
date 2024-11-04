@@ -24,16 +24,16 @@ const GetFeatured: React.FC = () => {
           1. Buy our products.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          2. Shoot a video with a black and gray background.
+          2. Shoot a video with a dark background .
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          3. Send 2 photos (16:9 ratio).
+          3. Send 2 photos with black and grey background. (16:9).
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
           4. Video duration: 25 to 30 seconds.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          5. Send everything to our email.
+          5. Send everything to our email (Official@blackwilbur.com).
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
           6. If selected, we’ll reach out via email.

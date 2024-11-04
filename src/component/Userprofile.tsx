@@ -15,15 +15,16 @@ const Userprofile: React.FC = () => {
       if (token) {
         try {
           const fetchedOrders: GetOrder[] = await getOrders();
+          console.log(fetchedOrders);
           if (Array.isArray(fetchedOrders)) {
             setOrders(fetchedOrders);
           } else {
             console.error("Fetched orders is not an array:", fetchedOrders);
-            setOrders([]); // Fallback to an empty array if not valid
+            setOrders([]); 
           }
         } catch (error) {
           console.error("Error fetching orders:", error);
-          setOrders([]); // Optional: Reset orders on error
+          setOrders([]); 
         }
       }
     };
@@ -83,7 +84,7 @@ const Userprofile: React.FC = () => {
                     {accountDetails.address.country}
                   </p>
                 ) : (
-                  <p>Address information is not available.</p> // Fallback message if address is undefined
+                  <p>Address information is not available.</p> 
                 )}
               </>
             ) : (
@@ -94,41 +95,45 @@ const Userprofile: React.FC = () => {
           {/* right side - Orders */}
           <div>
             <h2 className="text-xl md:text-2xl font-semibold mb-4">Orders</h2>
-            {orders.length > 0 ? (
-              <ul>
-                {orders.map((order) => (
-                  <li key={order.order_id} className="mb-4 border p-4 rounded">
-                    <div className="font-bold">Order ID: {order.order_id}</div>
-                    <div>Status: {order.status}</div>
-                    <div>
-                      Created At:{" "}
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Items:</h3>
-                      <ul>
-                        {Array.isArray(order.items) &&
-                        order.items.length > 0 ? (
-                          order.items.map((item, index) => (
+            {orders.map((order) => {
+              console.log("Order:", order); 
+
+              return (
+                <li key={order.order_id} className="mb-4 border p-4 rounded">
+                  <div className="font-bold">Order ID: {order.order_id}</div>
+                  <div>Status: {order.status}</div>
+                  <div>
+                    Created At:{" "}
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Items:</h3>
+                    <ul>
+                      {Array.isArray(order.items) && order.items.length > 0 ? (
+                        order.items.map((item, index) => {
+
+                          return (
                             <li
-                              key={`${item.product.id}-${item.product_variation_id.id}-${index}`}
+                              key={`${item.product?.id || "unknown"}-${
+                                item.product_variation?.id || "unknown"
+                              }-${index}`}
                             >
-                              Product Name: {item.product.name}, Quantity:{" "}
-                              {item.quantity}, Size:{" "}
-                              {item.product_variation_id.size}
+                              Product Name: {item.product?.name || "N/A"},
+                              Quantity: {item.quantity}, Size:{" "}
+                              {item.product_variation?.size || "N/A"},
+                              SubTotal:{" "}
+                              {item.subtotal || "N/A"}
                             </li>
-                          ))
-                        ) : (
-                          <li>No items in this order.</li>
-                        )}
-                      </ul>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>You haven't placed any orders yet.</p>
-            )}
+                          );
+                        })
+                      ) : (
+                        <li>No items in this order.</li>
+                      )}
+                    </ul>
+                  </div>
+                </li>
+              );
+            })}
           </div>
         </div>
       </div>
