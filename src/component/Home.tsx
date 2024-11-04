@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import carousel1 from "../asset/chpp-carousel.jpg";
 import videoSrc from "../asset/homepage-vide-updated.MOV";
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
 import { Product, ProductCollection } from "../utiles/types";
 import GetFeatured from "./GetFeatured";
+import Carousel from "./Carousel";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -68,29 +68,7 @@ const Home: React.FC = () => {
 
   return (
     <>
-      {/* Carousel Section */}
-      <div className="relative h-[88vh] overflow-hidden ">
-        <img
-          src={carousel1}
-          alt="Carousel 1"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "center top" }}
-        />
-        <div className="absolute bottom-4 left-4 right-4 sm:bottom-10 sm:left-10 sm:right-10 text-white flex flex-col justify-between items-center md:items-start md:flex-row md:justify-between px-4 sm:px-10">
-          <h1 className="font-montserrat text-xl sm:text-2xl md:text-3xl lg:text-7xl font-semibold uppercase leading-tight text-center md:text-left mb-4 md:mb-0">
-            Unleash the
-            <br /> Power of Black
-          </h1>
-
-          <button
-            onClick={() => handleNavigate("/collection")}
-            className="px-4 py-2 sm:px-6 sm:py-3 bg-black text-white rounded-full hover:bg-white hover:text-black transition lg:mt-20"
-          >
-            Shop Now
-          </button>
-        </div>
-      </div>
-
+        <Carousel/>
       {/* Best Sellers Section */}
       <section className="py-16 bg-[#1B1B1B] w-full relative overflow-x-hidden">
         <div className="container mx-auto px-4 sm:px-8">

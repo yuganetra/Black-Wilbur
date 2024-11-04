@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { fetchProducts } from '../services/api';
-import { uploadImage, getAllImages, deleteImage } from '../services/api'; // Import API functions
-import { ProductAdmin,Image } from '../utiles/types';
+import { fetchProducts, uploadImage, getAllImages, deleteImage } from '../services/api';
+import { ProductAdmin, Image } from '../utiles/types';
 
 const ImagesManagement: React.FC = () => {
   const [images, setImages] = useState<Image[]>([]);
@@ -9,17 +8,24 @@ const ImagesManagement: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [products, setProducts] = useState<ProductAdmin[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const imagesPerPage = 10; // Number of images to show per page
+  const [loading, setLoading] = useState(true);
 
   // Fetch products and images on component mount
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const fetchedProducts = await fetchProducts();
+      const [fetchedProducts, fetchedImages] = await Promise.all([
+        fetchProducts(),
+        getAllImages(currentPage, imagesPerPage) // Fetch paginated images
+      ]);
       setProducts(fetchedProducts);
-      const fetchedImages = await getAllImages();
       setImages(fetchedImages);
-
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,7 +33,7 @@ const ImagesManagement: React.FC = () => {
     fetchData();
     const intervalId = setInterval(fetchData, 3600000); 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [currentPage]); // Re-fetch data when currentPage changes
 
   // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,22 +45,22 @@ const ImagesManagement: React.FC = () => {
   // Upload image to server
   const handleAddImage = async () => {
     if (!selectedProductId || !selectedFile) {
-        console.error("Please select a product and an image.");
-        return;
+      console.error("Please select a product and an image.");
+      return;
     }
 
     try {
-        await uploadImage({ product: selectedProductId, image: selectedFile });
-        setSelectedFile(null);
-        setSelectedProductId(null);
-        setIsModalOpen(false);
-        fetchData();
-        alert("Image uploaded successfully!"); 
+      await uploadImage({ product: selectedProductId, image: selectedFile });
+      setSelectedFile(null);
+      setSelectedProductId(null);
+      setIsModalOpen(false);
+      fetchData();
+      alert("Image uploaded successfully!"); 
     } catch (error) {
-        console.error("Error uploading image:", error);
-        alert("Failed to upload image. Please try again."); // User feedback
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image. Please try again.");
     }
-};
+  };
 
   // Delete image by ID
   const handleDeleteImage = async (id: string) => {
@@ -68,9 +74,26 @@ const ImagesManagement: React.FC = () => {
 
   // Helper function to get product name by ID
   const getProductName = (productId: string) => {
-    const product = products.find((product) => product.id === productId);
+    const product = products.find(product => product.id === productId);
     return product ? product.name : "Unknown Product";
   };
+
+  // Calculate total pages based on fetched images
+  const totalPages = Math.ceil(images.length / imagesPerPage);
+
+  // Handle pagination
+  const handlePageChange = (direction: 'next' | 'prev') => {
+    if (direction === 'next' && currentPage < totalPages - 1) {
+      setCurrentPage(prevPage => prevPage + 1);
+    } else if (direction === 'prev' && currentPage > 0) {
+      setCurrentPage(prevPage => prevPage - 1);
+    }
+    // Fetch images for the new page
+    fetchData();
+  };
+
+  // Get current images for display
+  const currentImages = images.slice(currentPage * imagesPerPage, (currentPage + 1) * imagesPerPage);
 
   return (
     <div className="p-6 bg-black text-white min-h-screen">
@@ -126,22 +149,47 @@ const ImagesManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {images.map(image => (
-              <tr key={image.id} className="hover:bg-gray-800">
-                <td className="py-2 px-4 border-b border-gray-700 text-left">{image.product_id}</td>
-                <td className="py-2 px-4 border-b border-gray-700 text-left">{getProductName(image.product_id)}</td>
-                <td className="py-2 px-4 border-b border-gray-700 text-left">
-                  <img src={image.image_url} alt="Product" className="w-16 h-16 object-cover" />
-                </td>
-                <td className="py-2 px-4 border-b border-gray-700 text-left">
-                  <button onClick={() => handleDeleteImage(image.id)} className="text-red-500">
-                    Delete
-                  </button>
-                </td>
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="py-2 text-center">Loading images...</td>
               </tr>
-            ))}
+            ) : (
+              currentImages.map(image => (
+                <tr key={image.id} className="hover:bg-gray-800">
+                  <td className="py-2 px-4 border-b border-gray-700 text-left">{image.product_id}</td>
+                  <td className="py-2 px-4 border-b border-gray-700 text-left">{getProductName(image.product_id)}</td>
+                  <td className="py-2 px-4 border-b border-gray-700 text-left">
+                    <img src={image.image_url} alt="Product" className="w-16 h-16 object-cover" loading="lazy" />
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-700 text-left">
+                    <button onClick={() => handleDeleteImage(image.id)} className="text-red-500">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between mt-4">
+        <button 
+          onClick={() => handlePageChange('prev')}
+          disabled={currentPage === 0}
+          className="bg-gray-600 text-white p-2 rounded"
+        >
+          Previous
+        </button>
+        <span className="text-white">{`Page ${currentPage + 1} of ${totalPages}`}</span>
+        <button 
+          onClick={() => handlePageChange('next')}
+          disabled={currentPage >= totalPages - 1}
+          className="bg-gray-600 text-white p-2 rounded"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

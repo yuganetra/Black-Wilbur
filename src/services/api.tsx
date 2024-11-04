@@ -424,7 +424,7 @@ export const getImageByProductId = async (id: string): Promise<Image[]> => {
 };
 
 // Function to fetch all images
-export const getAllImages = async (): Promise<Image[]> => {
+export const getAllImages = async (currentPage: number, imagesPerPage: number): Promise<Image[]> => {
   const response = await axios.get<Image[]>(`${API_BASE_URL}images/`);
   return response.data;
 };

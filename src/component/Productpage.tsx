@@ -21,10 +21,14 @@ const Productpage = () => {
   const [images, setImages] = useState<Image[]>([]); // New state for images
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(null);
+  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(
+    null
+  );
+  const [wishlist, setWishlist] = useState<string[]>([]); // Wishlist state
   const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
   const [userRating, setUserRating] = useState(0);
   const [ratings, setRatings] = useState<any[]>([]); // Store fetched ratings
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -32,37 +36,50 @@ const Productpage = () => {
     navigate(path);
   };
 
-  const handleBuyNow = async () => {
-    if (product && selectedSize) {
-      const cartItem = {
-        id: product.id,
-        quantity: 1,
-        product: {
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          availability: true,
-          product_images: product.image,
-        },
-        size: selectedSize.size,
-        product_variation_id: selectedSize.id,
-      };
-
-      if (isUserLoggedIn()) {
-        navigate("/checkout", {
-          state: { products: [cartItem] },
-        });
-      } else {
-        navigate("/auth/login", {
-          state: {
-            from: "/checkout",
-            products: [cartItem],
-          },
-        });
-      }
-    }
+  const showErrorMessage = (message: React.SetStateAction<string>) => {
+    setErrorMessage(message);
+    // Remove the error message after 3 seconds
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 3000);
   };
+
+const handleBuyNow = async () => {
+  if (!selectedSize) {
+    showErrorMessage("Please select a size before proceeding to checkout.");
+    return;
+  }
+  
+  if (product) {
+    const cartItem = {
+      id: product.id,
+      quantity: 1,
+      product: {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        availability: true,
+        product_images: product.image,
+      },
+      size: selectedSize.size,
+      product_variation_id: selectedSize.id,
+    };
+
+    if (isUserLoggedIn()) {
+      navigate("/checkout", {
+        state: { products: [cartItem] },
+      });
+    } else {
+      navigate("/auth/login", {
+        state: {
+          from: "/checkout",
+          products: [cartItem],
+        },
+      });
+    }
+  }
+};
 
   const toggleCartSidebar = (): void => {
     setIsCartOpen(!isCartOpen);
@@ -99,27 +116,30 @@ const Productpage = () => {
   };
 
   const handleAddToCart = async () => {
-    if (product && selectedSize) {
+    if (!selectedSize) {
+      showErrorMessage("Please select a size before adding to the cart.");
+      return;
+    }
+  
+    if (product) {
       const productToAdd = {
         product_id: product.id,
         product_variation_id: selectedSize.id,
         quantity: 1,
       };
-
+  
       const user = localStorage.getItem("user");
-
+  
       if (!user) {
         const cartString = localStorage.getItem("cart");
         let existingCart = cartString ? JSON.parse(cartString) : [];
-
+  
         if (!Array.isArray(existingCart)) {
           existingCart = [];
         }
-
+  
         existingCart.push(productToAdd);
-
         localStorage.setItem("cart", JSON.stringify(existingCart));
-
         setIsCartOpen(true);
       } else {
         try {
@@ -134,6 +154,17 @@ const Productpage = () => {
         }
       }
     }
+  };
+
+  const toggleWishlist = (productId: string) => {
+    setWishlist((prevWishlist) => {
+      const newWishlist = prevWishlist.includes(productId)
+        ? prevWishlist.filter((id) => id !== productId) // Remove from wishlist
+        : [...prevWishlist, productId]; // Add to wishlist
+
+      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to local storage
+      return newWishlist;
+    });
   };
 
   useEffect(() => {
@@ -151,7 +182,9 @@ const Productpage = () => {
             // Check if the error has a response property or if it's a typical Error
             if (error instanceof Error) {
               // Handle 404 or other errors gracefully
-              console.warn(`Error fetching images for product ID ${id}: ${error.message}`);
+              console.warn(
+                `Error fetching images for product ID ${id}: ${error.message}`
+              );
 
               setImages([]); // Set images to an empty array if no images are found
             } else {
@@ -190,19 +223,25 @@ const Productpage = () => {
 
   return (
     <div className="bg-[#1B1B1B] text-white min-h-screen flex flex-col">
+      {/* Display error message */}
+      {errorMessage && (
+        <div className="bg-red-500 text-white mb-4 rounded">
+          {errorMessage}
+        </div>
+      )}
       <section className="w-full flex flex-col lg:flex-row gap-10">
         {/* Image Section */}
-        <div className="md:h-[80vh] lg:h-[750px] lg:w-[50%] flex lg:flex-col flex-row overflow-x-hidden lg:overflow-y-visible overflow-y-hidden">
+        <div className="md:h-[65vh] lg:h-[620px] lg:w-[43%] flex lg:flex-col flex-row overflow-x-hidden lg:overflow-y-visible overflow-y-hidden">
           <div className="w-full h-full flex lg:flex-col flex-row overflow-x-auto overflow-y-hidden lg:overflow-y-visible gap-[1px]">
             {combinedImages.map((imageUrl, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 flex items-center justify-center bg-[#0B0B0B] w-full h-full "
+                className="flex-shrink-0 flex items-center justify-center bg-[#0B0B0B] w-full h-full"
               >
                 <img
-                  className="lg:w-[600px] md:w-[400px] md:h-full md:overflow-y-hidden object-contain"
+                  className="lg:w-[600px] md:w-[400px] md:h-full object-contain"
                   src={imageUrl}
-                  alt={`Product Image ${index + 1}`} // Update alt text to reflect the image number
+                  alt={`Product Image ${index + 1}`}
                 />
               </div>
             ))}
@@ -210,29 +249,42 @@ const Productpage = () => {
         </div>
 
         {/* Product Details Section */}
-        <div className="w-full lg:w-1/2 flex flex-col text-left p-4">
-          <h1 className="text-2xl lg:text-4xl font-bold mb-2">{product.name}</h1>
-          <p className="text-lg lg:text-xl mb-4">Price: ₹{product.price}</p>
+        <div className="w-full lg:w-[57%] flex flex-col text-left p-6 lg:p-8">
+          <h1 className="text-2xl lg:text-4xl font-bold mb-4 text-gray-100">
+            {product.name}
+          </h1>
+          <p className="text-lg lg:text-xl font-semibold mb-6 text-gray-300">
+            Price: ₹{product.price}
+          </p>
 
-          <div className="flex items-center mb-4">
-            <span className="text-lg mr-2">Average Rating: {averageRating} / 5</span>
+          {/* Average Rating */}
+          <div className="flex items-center mb-6">
+            <span className="text-lg text-gray-300 mr-3">
+              Average Rating: {averageRating} / 5
+            </span>
             {[...Array(5)].map((_, index) => (
               <IoIosStar
                 key={index}
-                className={`w-6 h-6 ${index < averageRating ? "text-yellow-500" : "text-white"}`}
+                className={`w-6 h-6 ${
+                  index < averageRating ? "text-yellow-500" : "text-gray-400"
+                }`}
               />
             ))}
           </div>
 
           {/* Size Selection */}
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-white mb-2">Select Size:</h4>
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-200 mb-3">
+              Select Size:
+            </h4>
             <div className="flex gap-2">
               {product.sizes.map((sizeObj) => (
                 <div
                   key={sizeObj.id}
-                  className={`flex items-center justify-center w-12 h-12 rounded-full border-2 border-black cursor-pointer ${
-                    selectedSize?.id === sizeObj.id ? "bg-black text-white" : "bg-white text-black"
+                  className={`flex items-center justify-center w-12 h-12 rounded-full cursor-pointer transition-transform transform hover:scale-110 border ${
+                    selectedSize?.id === sizeObj.id
+                      ? "bg-black text-white border-transparent"
+                      : "bg-white text-black border-black"
                   }`}
                   onClick={() => setSelectedSize(sizeObj)}
                 >
@@ -241,43 +293,56 @@ const Productpage = () => {
               ))}
             </div>
           </div>
+
+          {/* Size Chart Button */}
           <div className="flex gap-4 mb-8">
             <button
               onClick={toggleSizeChart}
-              className="px-4 py-2 bg-[#1B1B1B] border border-white text-white rounded-full"
+              className="px-5 py-2 bg-gray-700 text-gray-100 rounded-full transition-colors duration-300 hover:bg-gray-600"
             >
-              Size Chart , Do's & Don'ts
+              Size Chart, Do's & Don'ts
             </button>
           </div>
 
+          {/* Add to Cart and Buy Now Buttons */}
           <div className="flex gap-4 mb-8">
             <button
               onClick={handleAddToCart}
-              className="px-4 py-2 bg-[#1B1B1B] border border-white text-white rounded-full"
+              className="px-5 py-2 bg-[#282828] text-white border border-transparent rounded-full transition duration-300 hover:bg-white hover:text-black"
             >
               ADD TO CART
             </button>
-            {/* Buy Now Button */}
             <button
               onClick={handleBuyNow}
-              className="px-4 py-2 bg-[#1B1B1B] border border-white text-white rounded-full"
+              className="px-5 py-2 bg-[#282828] text-white border border-transparent rounded-full transition duration-300 hover:bg-white hover:text-black"
             >
               BUY NOW
             </button>
           </div>
 
-          <div className="w-full lg:w-3/4 mb-4 mt-4">
-            <h4 className="text-lg lg:text-3xl mb-2">DESCRIPTION</h4>
-            <p className="text-sm lg:text-xl font-thin mb-2 lg:mb-6">{product.description}</p>
+          {/* Description */}
+          <div className="mb-6">
+            <h4 className="text-lg lg:text-3xl font-semibold text-gray-200 mb-3">
+              DESCRIPTION
+            </h4>
+            <p className="text-sm lg:text-base text-gray-300 leading-relaxed">
+              {product.description}
+            </p>
+          </div>
 
-            {/* User Rating Section */}
-            <h4 className="font-medium text-xl text-left text-white mb-2">Rate this product:</h4>
-            <div className="flex items-center mb-4">
+          {/* User Rating Section */}
+          <div className="mt-8">
+            <h4 className="font-semibold text-lg text-gray-200 mb-3">
+              Rate this product:
+            </h4>
+            <div className="flex items-center">
               {[1, 2, 3, 4, 5].map((ratingValue) => (
                 <IoIosStar
                   key={ratingValue}
                   className={`w-6 h-6 cursor-pointer ${
-                    ratingValue <= userRating ? "text-yellow-500" : "text-white"
+                    ratingValue <= userRating
+                      ? "text-yellow-500"
+                      : "text-gray-400"
                   }`}
                   onClick={() => handleRatingClick(ratingValue)}
                 />
@@ -286,7 +351,6 @@ const Productpage = () => {
           </div>
         </div>
       </section>
-
       {/* Add to Cart Sidebar */}
       <div className="text-black">
         <CartComponent isOpen={isCartOpen} onClose={toggleCartSidebar} />
@@ -310,7 +374,11 @@ const Productpage = () => {
                 <img
                   className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
                   onClick={() => handleNavigate(`/Product/${product.id}`)}
-                  src={product.image && product.image.length > 0 ? product.image : ""}
+                  src={
+                    product.image && product.image.length > 0
+                      ? product.image
+                      : ""
+                  }
                   alt={product.name}
                 />
                 <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-8 sm:h-5 h-4 bg-white">
@@ -321,11 +389,23 @@ const Productpage = () => {
                   <div className=" text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold responsive-text">
                     ₹ {product.price}
                   </div>
+                  <button
+                    onClick={() => toggleWishlist(product.id)}
+                    className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
+                      wishlist.includes(product.id)
+                        ? "bg-red-500"
+                        : "bg-gray-500"
+                    } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
+                  >
+                    {wishlist.includes(product.id) ? "♥" : "♡"}
+                  </button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center text-gray-500">No products available</div>
+            <div className="text-center text-gray-500">
+              No products available
+            </div>
           )}
         </div>
       </section>

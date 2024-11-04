@@ -1,4 +1,3 @@
-import os
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,44 +10,40 @@ CONTAINER_NAME = 'blackwilbur-image'
 AZURE_STORAGE_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=blackwilbur;AccountKey=Vv2HZ0MjxWAibKuMgX6E3TmntwvLNHZz+lQpswpEvoXtuHdXP/M9OOoMv43rADP1xiYvpd33XI4O+AStYbhjXw==;EndpointSuffix=core.windows.net'
 class ImageManageAPIView(APIView):
 
-    def get_blob_service_client(self):
-        # Create a new blob service client
-        return BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
-
     def get(self, request, pk=None, product_id=None):
+        # Get image_type from query parameters and validate
         image_type = request.query_params.get('image_type')
-        blob_service_client = self.get_blob_service_client()
+        if image_type and not isinstance(image_type, str):
+            return Response({"error": "Invalid image_type provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if pk:
-            print(f"Fetching image with ID: {pk}")
-            try:
+        try:
+            # Check for pk and fetch single image
+            if pk:
                 image = models.Image.objects.get(id=pk)
                 serializer = serializers.ImageSerializer(image)
-            except models.Image.DoesNotExist:
-                print("Image not found.")
-                return Response(status=status.HTTP_404_NOT_FOUND)
-        elif product_id:
-            print(f"Fetching images for product ID: {product_id}")
-            images = models.Image.objects.filter(product_id=product_id)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+            # Fetch images based on product_id and/or image_type
+            images = models.Image.objects.all()  # Default to all images
+
+            if product_id:
+                images = images.filter(product_id=product_id)
+
             if image_type:
                 images = images.filter(image_type=image_type)
-            serializer = serializers.ImageSerializer(images, many=True)
-            if not images:
-                print("No images found for this product.")
-                return Response({"error": "No images found for this product."}, status=status.HTTP_404_NOT_FOUND)
-        elif image_type:
-            print(f"Fetching all images of type: {image_type}")
-            images = models.Image.objects.filter(image_type=image_type)
-            serializer = serializers.ImageSerializer(images, many=True)
-            if not images:
-                print("No images found for this type.")
-                return Response({"error": "No images found for this type."}, status=status.HTTP_404_NOT_FOUND)
-        else:
-            print("Fetching all images.")
-            images = models.Image.objects.all()
-            serializer = serializers.ImageSerializer(images, many=True)
 
-        return Response(serializer.data)
+            # If no images found, return empty list with 200 status
+            if not images.exists():
+                return Response([], status=status.HTTP_200_OK)
+
+            # Serialize and return images
+            serializer = serializers.ImageSerializer(images, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except models.Image.DoesNotExist:
+            return Response({"error": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": "An error occurred while fetching images."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
         print("POST request received.")

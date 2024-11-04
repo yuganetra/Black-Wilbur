@@ -110,7 +110,7 @@ const PrivacyPolicy: React.FC = () => {
           <h3 className="font-bold">9. CONTACT US</h3>
           <p>
             IF YOU HAVE ANY QUESTIONS ABOUT THIS PRIVACY POLICY, PLEASE CONTACT
-            US AT ——————————.COM.
+            US AT support@blackwilbur.com.
           </p>
           <p>
             Black Wilbur emphasises its dedication to creating a community that

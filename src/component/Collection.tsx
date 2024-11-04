@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { AiOutlineLeft, AiOutlinePlus, AiOutlineRight } from "react-icons/ai";
 import { MdClose, MdFilterList } from "react-icons/md";
-import img from "../asset/collection-carousel.jpg";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchCollection } from "../services/api";
 import { ProductCollection } from "../utiles/types";
+import Carousel from "./Carousel";
 
 const Collection: React.FC = () => {
   const { category = "all" } = useParams<{ category?: string }>();
@@ -158,14 +158,8 @@ const Collection: React.FC = () => {
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
-      <div className="image-container w-full sm:h-[90vh] md:h-[100vh] lg:h-[100vh] overflow-hidden">
-        <img
-          className="w-full h-full object-contain transform scale-x-105 md:scale-x-150"
-          src={img}
-          alt="carousel"
-          style={{ objectPosition: "center top" }}
-        />
-      </div>
+      <Carousel/>
+
       <div className="content-container w-full bg-[#141414] pb-4">
         <div className="header-container w-full flex justify-between items-center p-6 border-b border-[#6C6C6C]">
           <div className="collections md:text-4xl sm:text-2xl lg:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-2 text-start">
