@@ -53,10 +53,10 @@ const Collection: React.FC = () => {
                 item.sizes?.map((size: any) => ({
                   id: size.id,
                   size: size.size,
-                })) || [], 
+                })) || [],
               rating: item.rating || 0,
             }))
-          : []; 
+          : [];
 
         setAllProducts(formattedProducts);
       } catch (error) {
@@ -158,9 +158,9 @@ const Collection: React.FC = () => {
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
-      <div className="image-container w-full h-[75vh] sm:h-[90vh] ">
+      <div className="image-container w-full sm:h-[90vh] md:h-[100vh] lg:h-[100vh] overflow-hidden">
         <img
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain transform scale-x-105 md:scale-x-150"
           src={img}
           alt="carousel"
           style={{ objectPosition: "center top" }}
