@@ -13,12 +13,12 @@ import {
   addRating,
   getImageByProductId,
 } from "../services/api";
-import { Product, ProductVariation, Image } from "../utiles/types";
+import { Product, ProductVariation, ProductsImage } from "../utiles/types";
 import Skeleton from "../utiles/Skeleton";
 
 const Productpage = () => {
   const [product, setProduct] = useState<Product | null>(null);
-  const [images, setImages] = useState<Image[]>([]); // New state for images
+  const [images, setImages] = useState<ProductsImage[]>([]); // New state for images
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(

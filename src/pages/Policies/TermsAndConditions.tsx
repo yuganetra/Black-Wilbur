@@ -2,38 +2,38 @@ import React from "react";
 
 const TermsAndConditions: React.FC = () => {
   return (
-    <section className="flex flex-col items-center  bg-black text-white">
-      <h2 className="text-3xl font-semibold mb-4">Terms and Conditions</h2>
+    <section className="flex flex-col items-center bg-black text-white">
+      <h2 className="text-3xl font-semibold mb-4">TERMS AND CONDITIONS</h2>
       <div className="w-2/3 text-left">
-        {" "}
         {/* Set width to 2/3 and align text left */}
         <div className="mb-4">
           <h3 className="font-bold">1. INTRODUCTION</h3>
           <p>
-            WELCOME TO WWW.BLACKWILBUR.COM. By accessing our website, you agree
-            to abide by our terms and conditions. We recommend reading them
-            thoroughly to ensure a smooth experience. THROUGHOUT THE SITE, THE
-            TERMS "WE", "US", AND "OUR" REFER TO BLACK WILBUR.
+            WELCOME TO WWW.BLACKWILBUR.COM, A BRAND OPERATED BY SHIVAAY FASHION.
+            BY ACCESSING OUR WEBSITE, YOU AGREE TO ABIDE BY OUR TERMS AND
+            CONDITIONS. WE RECOMMEND READING THEM THOROUGHLY TO ENSURE A SMOOTH
+            EXPERIENCE. THROUGHOUT THE SITE, THE TERMS "WE", "US", AND "OUR"
+            REFER TO BLACK WILBUR, A BRAND OF SHIVAAY FASHION.
           </p>
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">2. USE OF THE WEBSITE</h3>
           <p>
-            To use this website, you must be at least 18 years old. By accessing
-            it, you confirm your age and agree to use the site only for lawful
-            purposes. Please refrain from any activities that could infringe on
-            the rights of others or restrict their use of the site. Unauthorised
-            or illegal use of our products is strictly prohibited.
+            TO USE THIS WEBSITE, YOU MUST BE AT LEAST 18 YEARS OLD. BY ACCESSING
+            IT, YOU CONFIRM YOUR AGE AND AGREE TO USE THE SITE ONLY FOR LAWFUL
+            PURPOSES. PLEASE REFRAIN FROM ANY ACTIVITIES THAT COULD INFRINGE ON
+            THE RIGHTS OF OTHERS OR RESTRICT THEIR USE OF THE SITE. UNAUTHORISED
+            OR ILLEGAL USE OF OUR PRODUCTS IS STRICTLY PROHIBITED.
           </p>
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">3. INTELLECTUAL PROPERTY</h3>
           <p>
-            All content on this website, including text, graphics, logos,
-            images, and software, is the property of Black Wilbur and is
-            protected by intellectual property laws. YOU MAY NOT REPRODUCE,
+            ALL CONTENT ON THIS WEBSITE, INCLUDING TEXT, GRAPHICS, LOGOS,
+            IMAGES, AND SOFTWARE, IS THE PROPERTY OF BLACK WILBUR AND IS
+            PROTECTED BY INTELLECTUAL PROPERTY LAWS. YOU MAY NOT REPRODUCE,
             DISTRIBUTE, OR CREATE DERIVATIVE WORKS FROM ANY CONTENT ON THIS
             WEBSITE WITHOUT OUR EXPRESS WRITTEN PERMISSION.
           </p>
@@ -42,34 +42,31 @@ const TermsAndConditions: React.FC = () => {
         <div className="mb-4">
           <h3 className="font-bold">4. PRODUCT INFORMATION</h3>
           <p>
-            We work hard to display our products as accurately as possible on
-            our website. However, we cannot guarantee that colours or details
-            will be perfectly accurate due to variations in display devices.
+            WE WORK HARD TO DISPLAY OUR PRODUCTS AS ACCURATELY AS POSSIBLE ON
+            OUR WEBSITE. HOWEVER, WE CANNOT GUARANTEE THAT COLOURS OR DETAILS
+            WILL BE PERFECTLY ACCURATE DUE TO VARIATIONS IN DISPLAY DEVICES.
           </p>
           <p>
-            <strong>Reserve the Right to Limit Quantities:</strong> The company
-            may choose to restrict how many units of a product or service any
-            individual or entity can purchase. This can be for various reasons,
-            such as avoiding stock shortages, preventing bulk purchasing for
-            resale, or managing limited edition releases.
+            <strong>RESERVE THE RIGHT TO LIMIT QUANTITIES:</strong> THE COMPANY
+            MAY CHOOSE TO RESTRICT HOW MANY UNITS OF A PRODUCT OR SERVICE ANY
+            INDIVIDUAL OR ENTITY CAN PURCHASE. THIS CAN BE FOR VARIOUS REASONS,
+            SUCH AS AVOIDING STOCK SHORTAGES, PREVENTING BULK PURCHASING FOR
+            RESALE, OR MANAGING LIMITED EDITION RELEASES.
           </p>
           <p>
-            <strong>
-              All Descriptions of Products or Product Pricing are Subject to
-              Change:
-            </strong>{" "}
-            The company can update or modify product descriptions or prices at
-            any time without prior notice. This ensures flexibility in
-            responding to market conditions, supplier pricing, or other factors
-            affecting the availability or cost of products.
+            <strong>ALL DESCRIPTIONS OF PRODUCTS OR PRODUCT PRICING ARE SUBJECT TO
+            CHANGE:</strong> THE COMPANY CAN UPDATE OR MODIFY PRODUCT DESCRIPTIONS OR
+            PRICES AT ANY TIME WITHOUT PRIOR NOTICE. THIS ENSURES FLEXIBILITY IN
+            RESPONDING TO MARKET CONDITIONS, SUPPLIER PRICING, OR OTHER FACTORS
+            AFFECTING THE AVAILABILITY OR COST OF PRODUCTS.
           </p>
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
           <h3 className="font-bold">5. ORDERS AND PAYMENTS</h3>
           <p>
-            • You Agree to Provide Current, Complete, and Accurate Purchase and
-            Account Information:
+            • YOU AGREE TO PROVIDE CURRENT, COMPLETE, AND ACCURATE PURCHASE AND
+            ACCOUNT INFORMATION.
           </p>
           <p>
             • WE RESERVE THE RIGHT TO REFUSE ANY ORDER YOU PLACE WITH US. IN THE
@@ -87,7 +84,7 @@ const TermsAndConditions: React.FC = () => {
           <p>
             • WE SHIP OUR PRODUCTS IN 2-3 DAYS. SHIPPING COSTS AND DELIVERY TIME
             MAY VARY DEPENDING ON YOUR LOCATION AND THE SHIPPING METHOD CHOSEN.
-          </p>{" "}
+          </p>
           <p>
             • WE ARE NOT RESPONSIBLE FOR DELAYS OR DAMAGES THAT OCCUR DURING THE
             SHIPPING PROCESS.
@@ -140,7 +137,7 @@ const TermsAndConditions: React.FC = () => {
           <h3 className="font-bold">11. CONTACT INFORMATION</h3>
           <p>
             IF YOU HAVE ANY QUESTIONS ABOUT THESE TERMS, PLEASE CONTACT US AT
-            support@blackwilbur.com.
+            SUPPORT@BLACKWILBUR.COM.
           </p>
         </div>
         <div className="border-b border-black mb-4" />
@@ -172,30 +169,9 @@ const TermsAndConditions: React.FC = () => {
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold">1. ELIGIBILITY TO USE OUR SITE</h3>
-          <p>
-            USE OF THE SITE IS AVAILABLE ONLY TO PERSONS WHO CAN LEGALLY ENTER
-            INTO CONTRACTS UNDER APPLICABLE LAWS. PERSONS WHO ARE "INCOMPETENT
-            TO CONTRACT", WITHIN THE MEANING OF THE INDIAN CONTRACT ACT, 1872
-            INCLUDING UN-DISCHARGED INSOLVENTS ETC. ARE NOT ELIGIBLE TO USE THE
-            SITE. “BLACK WILBUR” RESERVES THE RIGHT TO TERMINATE YOUR ACCESS TO
-            THE SITE IF IT DISCOVERS THAT YOU ARE UNDER THE AGE OF 18 YEARS OR
-            SUFFERS FROM ANY OTHER DISABILITY, AS RECOGNISED UNDER INDIAN
-            CONTRACT ACT, 1872.
-          </p>
+          <h3 className="font-bold">TERMS AND CONDITIONS FOR USING THE WEBSITE...</h3>
+          <p>ALL CONTENT IN THIS SECTION IS PROVIDED TO INFORM AND GUIDE USERS.</p>
         </div>
-        <div className="border-b border-black mb-4" />
-        <div className="mb-4">
-          <h3 className="font-bold">3. ELECTRONIC COMMUNICATIONS</h3>
-          <p>
-            WHEN YOU USE THE SITE OR SEND EMAILS OR OTHER DATA, INFORMATION OR
-            COMMUNICATE TO US, YOU AGREE AND UNDERSTAND THAT YOU ARE
-            COMMUNICATING WITH US THROUGH ELECTRONIC RECORDS AND YOU CONSENT TO
-            RECEIVE COMMUNICATIONS VIA ELECTRONIC RECORDS FROM “BLACK WILBUR” ON
-            YOUR REGISTERED EMAIL ADDRESS.
-          </p>
-        </div>
-        <div className="border-b border-black mb-4" />
       </div>
     </section>
   );

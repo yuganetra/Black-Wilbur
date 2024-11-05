@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { fetchProducts, uploadImage, getAllImages, deleteImage } from '../services/api';
-import { ProductAdmin, Image } from '../utiles/types';
+import { ProductAdmin, ProductsImage } from '../utiles/types';
 import ImagePopup from './helper/ImagePopup';
 
 const ImagesManagement: React.FC = () => {
-  const [images, setImages] = useState<Image[]>([]);
+  const [images, setImages] = useState<ProductsImage[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [products, setProducts] = useState<ProductAdmin[]>([]);
-  const [selectedProductImages, setSelectedProductImages] = useState<Image[]>([]);
+  const [selectedProductImages, setSelectedProductImages] = useState<ProductsImage[]>([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 

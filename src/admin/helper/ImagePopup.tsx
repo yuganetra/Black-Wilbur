@@ -1,11 +1,11 @@
 // ImagePopup.tsx
 import React from 'react';
-import { Image } from '../../utiles/types';
+import { ProductsImage } from '../../utiles/types';
 import LazyImage from './LazyImage';
 
 interface ImagePopupProps {
   isOpen: boolean;
-  images: Image[];
+  images: ProductsImage[];
   onClose: () => void;
   onDelete: (id: string) => void;
 }

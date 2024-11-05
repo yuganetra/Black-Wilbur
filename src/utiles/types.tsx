@@ -150,7 +150,7 @@ export interface GetOrder {
 }
 
 
-export interface Image {
+export interface ProductsImage {
   id: string;
   product_id: string;
   image_url: string;

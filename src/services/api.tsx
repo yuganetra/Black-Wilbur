@@ -13,7 +13,7 @@ import {
   GetOrder,
   ProductAdmin,
   ProductVariation,
-  Image,
+  ProductsImage,
   ImageUploadResponse,
   ImageRequest,
   ProductCollection,
@@ -381,12 +381,12 @@ export const deleteProduct = async (productId: string) => {
 
 // Fetch all product variations
 export const fetchProductVariations = async (): Promise<ProductVariation[]> => {
-  const response = await axios.get(`${API_BASE_URL}product-variations/`);
+  const response = await axios.get(`${API_BASE_URL}product-variation/`);
   return response.data;
 };
 
 export const getProductVariationsByProductId = async (id: string): Promise<ProductVariation> => {
-  const response = await axios.get<ProductVariation>(`${API_BASE_URL}product-variations/${id}/`);
+  const response = await axios.get<ProductVariation>(`${API_BASE_URL}product-variation/${id}/`);
   return response.data;
 }
 
@@ -395,37 +395,37 @@ export const createProductVariation = async (variation: {
   size: string;
   quantity: number;
 }): Promise<ProductVariation> => {
-  const response = await axios.post(`${API_BASE_URL}product-variations/`, variation);
+  const response = await axios.post(`${API_BASE_URL}product-variation/`, variation);
   return response.data; // Return the created product variation data
 };
 
 // Update an existing product variation
 export const updateProductVariation = async (variation: ProductVariation): Promise<ProductVariation> => {
-  const response = await axios.put((`${API_BASE_URL}product-variations/`), variation);
+  const response = await axios.put((`${API_BASE_URL}product-variation/`), variation);
   return response.data;
 };
 
 // Partially update an existing product variation
 export const partialUpdateProductVariation = async (variation: Partial<ProductVariation>): Promise<ProductVariation> => {
-  const response = await axios.patch((`${API_BASE_URL}product-variations/`), variation);
+  const response = await axios.patch((`${API_BASE_URL}product-variation/`), variation);
   return response.data;
 };
 
 // Delete a product variation
 export const deleteProductVariation = async (id: string): Promise<void> => {
-  await axios.delete((`${API_BASE_URL}product-variations/`), { data: { id } });
+  await axios.delete((`${API_BASE_URL}product-variation/`), { data: { id } });
 };
 
 
-// Function to fetch a single image by ID
-export const getImageByProductId = async (id: string): Promise<Image[]> => {
-  const response = await axios.get<Image[]>(`${API_BASE_URL}images/product/${id}/`);
+// Function to fetch a single ProductsImage by ID
+export const getImageByProductId = async (id: string): Promise<ProductsImage[]> => {
+  const response = await axios.get<ProductsImage[]>(`${API_BASE_URL}images/product/${id}/`);
   return response.data;
 };
 
 // Function to fetch all images
-export const getAllImages = async (): Promise<Image[]> => {
-  const response = await axios.get<Image[]>(`${API_BASE_URL}images/`);
+export const getAllImages = async (): Promise<ProductsImage[]> => {
+  const response = await axios.get<ProductsImage[]>(`${API_BASE_URL}images/`);
   return response.data;
 };
 
