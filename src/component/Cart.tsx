@@ -9,6 +9,8 @@ import {
   updateCartItem,
 } from "../services/api";
 import { Product, CartItem } from "../utiles/types";
+import { motion } from "framer-motion";
+import Confetti from "react-confetti";
 
 interface CartComponentProps {
   isOpen: boolean;
@@ -17,6 +19,11 @@ interface CartComponentProps {
 
 const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   const [cartProducts, setCartProducts] = useState<CartItem[]>([]);
+  const [couponCode, setCouponCode] = useState<string>(""); // State for the coupon code
+  const [couponDiscount, setCouponDiscount] = useState<number>(0); // State for the coupon discount
+  const [showConfetti, setShowConfetti] = useState<boolean>(false); // State for showing confetti
+  const [isRemovingCoupon, setIsRemovingCoupon] = useState<boolean>(false); // State to track coupon removal fade
+  const [quantityDiscount, setQuantityDiscount] = useState<number>(0); // State for the quantity discount
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,6 +41,36 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (showConfetti) {
+      const confettiTimer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 3000); // Duration in milliseconds
+
+      return () => clearTimeout(confettiTimer); // Cleanup timeout on unmount
+    }
+  }, [showConfetti]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const calculateQuantityDiscount = () => {
+    const totalQuantity = cartProducts.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
+
+    if (totalQuantity >= 3) {
+      setQuantityDiscount(30); // 30% off for 3 or more products
+    } else if (totalQuantity === 2) {
+      setQuantityDiscount(15); // 15% off for 2 products
+    } else {
+      setQuantityDiscount(0); // No discount for less than 2 products
+    }
+  };
+
+  useEffect(() => {
+    calculateQuantityDiscount();
+  }, [calculateQuantityDiscount, cartProducts]);
+
   const handleCheckoutNavigate = async () => {
     const cartCount = getCartItemsCount();
     if ((await cartCount) === 0) {
@@ -44,7 +81,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
         navigate("/checkout", { state: { products: cartProducts } });
       } else {
         onClose();
-        navigate("/auth/login", { state: { from: "/checkout", products: cartProducts } }); // Pass cart and previous page
+        navigate("/auth/login", {
+          state: { from: "/checkout", products: cartProducts },
+        }); // Pass cart and previous page
       }
     }
   };
@@ -67,7 +106,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                   quantity: number;
                   product_variation_id: string;
                 }) => {
-                  const productId = (item.product && item.product.id) || item.product_id;
+                  const productId =
+                    (item.product && item.product.id) || item.product_id;
                   if (!productId) {
                     return null;
                   }
@@ -86,7 +126,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
               )
             );
             // Filter out null values from the result
-            const filteredCart = validCart.filter((item) => item !== null) as unknown as CartItem[];
+            const filteredCart = validCart.filter(
+              (item) => item !== null
+            ) as unknown as CartItem[];
             setCartProducts(filteredCart);
           } else {
             setCartProducts([]);
@@ -110,7 +152,11 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  const handleRemove = (cartItemId: number, productId: string, size: string) => {
+  const handleRemove = (
+    cartItemId: number,
+    productId: string,
+    size: string
+  ) => {
     setCartProducts((prev) => {
       const updatedCart = prev.filter(
         (item) => !(item.product.id === productId && item.size.size === size)
@@ -135,7 +181,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
             console.error("Error updating cart item:", error);
             setCartProducts((prev) =>
               prev.map((item) =>
-                item.id === cartItemId ? { ...item, quantity: item.quantity } : item
+                item.id === cartItemId
+                  ? { ...item, quantity: item.quantity }
+                  : item
               )
             );
           });
@@ -155,10 +203,41 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     0
   );
 
-  const totalQuantity = cartProducts.reduce((total, item) => total + item.quantity, 0);
+  const totalQuantity = cartProducts.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
+  // Handle coupon code application
+  const handleCouponApply = () => {
+    if (couponCode === "DISCOUNT10") {
+      setCouponDiscount(10); // Apply 10% discount for the coupon
+      setShowConfetti(true); // Show confetti effect
+    } else {
+      alert("Invalid coupon code.");
+    }
+  };
+  const handleRemoveCoupon = () => {
+    setIsRemovingCoupon(true); // Start fade-out effect
+    setTimeout(() => {
+      setCouponCode(""); // Clear the coupon code
+      setCouponDiscount(0); // Reset the coupon discount
+      setShowConfetti(false); // Remove confetti effect
+      setIsRemovingCoupon(false); // End fade-out effect
+    }, 500); // Match the fade-out duration
+  };
+
+  const finalAmount =
+    totalAmount - (totalAmount * quantityDiscount) / 100 - (totalAmount * couponDiscount) / 100;
+
   return (
     <>
-      {isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-[60]" onClick={onClose} />}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-[60]"
+          onClick={onClose}
+        />
+      )}
       <div
         className={`fixed top-0 right-0 w-80 bg-white shadow-lg transition-transform transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
@@ -167,7 +246,10 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
         {/* Cart Header */}
         <div className="p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Your Cart</h2>
-          <button onClick={onClose} className="text-gray-600 hover:text-black text-2xl">
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:text-black text-2xl"
+          >
             &times;
           </button>
         </div>
@@ -196,10 +278,15 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                     <div className="text-left">
                       <h3 className="font-medium">{item.product.name}</h3>
                       <p className="text-gray-600">
-                        Price: ${(item.product.price * item.quantity).toFixed(2)}
+                        Price: $
+                        {(item.product.price * item.quantity).toFixed(2)}
                       </p>
-                      <p className="text-sm text-gray-500">Size: {item.size.size}</p>
-                      <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                      <p className="text-sm text-gray-500">
+                        Size: {item.size.size}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Quantity: {item.quantity}
+                      </p>
                       <div className="flex items-center mt-2 gap-2">
                         <button
                           onClick={() => handleUpdateQuantity(item.id, -1)}
@@ -215,7 +302,13 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                           +
                         </button>
                         <button
-                          onClick={() => handleRemove(item.id, item.product.id, item.size.size)}
+                          onClick={() =>
+                            handleRemove(
+                              item.id,
+                              item.product.id,
+                              item.size.size
+                            )
+                          }
                           className="text-red-500 hover:underline ml-4"
                         >
                           Remove
@@ -229,21 +322,68 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
           </div>
         )}
 
-        <div className="p-4 bg-gray-100 border-t mt-auto text-left">
+<div className="p-4 border-t">
           <div className="flex justify-between">
-            <h3 className="font-medium">Total Quantity:</h3>
-            <h3 className="font-medium">{totalQuantity}</h3>
+            <span>Total Quantity</span>
+            <span>{totalQuantity}</span>
           </div>
-          <div className="flex justify-between mt-1">
-            <h3 className="font-medium">Total Amount:</h3>
-            <h3 className="font-medium">₹{totalAmount.toFixed(2)}</h3>
+          <div className="flex justify-between">
+            <span>Total Amount</span>
+            <span>${totalAmount}</span>
           </div>
+          <div className="flex justify-between">
+            <span>Quantity Discount ({quantityDiscount}%)</span>
+            <span>-${(totalAmount * quantityDiscount) / 100}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Coupon Discount ({couponDiscount}%)</span>
+            <span>-${(totalAmount * couponDiscount) / 100}</span>
+          </div>
+          <div className="flex justify-between font-bold">
+            <span>Final Amount</span>
+            <span>${finalAmount}</span>
+          </div>
+
+          {/* Coupon Section */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isRemovingCoupon ? 0 : 1 }}
+            transition={{ duration: 0.5 }} // Fade-out transition
+            className="mt-4"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="Enter coupon code"
+                className="p-2 border rounded w-full pr-10"
+              />
+              {couponCode && (
+                <button
+                  onClick={handleRemoveCoupon}
+                  className="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+            <button
+              onClick={handleCouponApply}
+              className="w-full mt-4 bg-black text-white py-2 rounded hover:bg-gray-600 transition-colors"
+            >
+              Apply Coupon
+            </button>
+          </motion.div>
           <button
             className="w-full mt-4 bg-black text-white py-2 rounded hover:bg-gray-600 transition-colors"
             onClick={handleCheckoutNavigate}
           >
             Checkout
           </button>
+          {showConfetti && (
+            <Confetti width={window.innerWidth} height={window.innerHeight} />
+          )}
         </div>
       </div>
     </>

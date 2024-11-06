@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useLocation } from "react-router-dom";
-import { CartItem } from "../utiles/types";
+import { useLocation, useNavigate } from "react-router-dom";
+import { CartItemCheckout } from "../utiles/types";
 import { createOrder, sendSms } from "../services/api";
 import { v4 as uuidv4 } from "uuid";
 
@@ -31,8 +31,8 @@ interface Order {
 const Checkout: React.FC = () => {
   const location = useLocation();
   const { products: initialProducts = [] } =
-    (location.state as { products: CartItem[] }) || {};
-  const [products, setProducts] = useState<CartItem[]>(initialProducts);
+    (location.state as { products: CartItemCheckout[] }) || {};
+  const [products, setProducts] = useState<CartItemCheckout[]>(initialProducts);
 
   const [loading, setLoading] = useState(true);
   const [otpSent, setOtpSent] = useState(false);
@@ -40,17 +40,20 @@ const Checkout: React.FC = () => {
   const [generatedOtp, setGeneratedOtp] = useState("");
   const [resendEnabled, setResendEnabled] = useState(false);
   const [otpVarified, setotpVarified] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simulating data fetch with a timeout
     const fetchProducts = () => {
       setTimeout(() => {
         setProducts(initialProducts);
+        console.log("products", products);
+        console.log("initialProducts", initialProducts);
         setLoading(false);
-      }, 10000);
+      }, 1000);
     };
     fetchProducts();
-  }, [initialProducts]);
+  }, [initialProducts, products]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -104,10 +107,10 @@ const Checkout: React.FC = () => {
   };
 
   const onSubmit = async (data: Order) => {
-    if (!otpVarified) {
-      alert("Please verify your phone number.");
-      return;
-    }
+    // if (!otpVarified) {
+    //   alert("Please verify your phone number.");
+    //   return;
+    // }
 
     const orderId = generateOrderId();
     const user = localStorage.getItem("user");
@@ -120,13 +123,13 @@ const Checkout: React.FC = () => {
 
     // Transform products from frontend type to backend type
     const orderProducts: CheckoutProductForbackend[] = products.map((p) => {
-      console.log("Product Variation ID:", p.size.id); 
+      console.log("Product Variation ID:", p.size.id);
 
       return {
         id: p.id,
         quantity: p.quantity,
         product_id: p.product.id,
-        product_variation_id: p.size.id,
+        product_variation_id: p.size.id || p.product_variation_id 
       };
     });
 
@@ -150,11 +153,16 @@ const Checkout: React.FC = () => {
     };
 
     try {
+      console.log("orderData",orderData)
       const response = await createOrder(orderData);
       if (response) {
-        alert("Order placed successfully!");
+        const { order_id } = response;
+        navigate("/orderConfirmation", {
+          state: { orderId, paymentMethod: data.payment_method },
+        });
       } else {
         alert("Failed to place order.");
+        navigate("/orderFailure");
       }
     } catch (error) {
       console.error("Error creating order:", error);
@@ -195,7 +203,9 @@ const Checkout: React.FC = () => {
                   {Array.isArray(products) && products.length > 0 ? (
                     products.map((checkoutProduct) => {
                       const product = checkoutProduct.product || {};
-                      const productImages = checkoutProduct.product.image;
+                      const productImages =
+                        checkoutProduct.product.image ||
+                        checkoutProduct.product.product_images;
                       return (
                         <div
                           key={checkoutProduct.id}
@@ -214,9 +224,10 @@ const Checkout: React.FC = () => {
                                 {product.name || "Unnamed Product"}
                               </h4>
                               <h4 className="text-lg font-semibold">
-                                {checkoutProduct.size
-                                  ? checkoutProduct.size.size
-                                  : "Size not specified"}
+                                {typeof checkoutProduct.size === "string"
+                                  ? checkoutProduct.size
+                                  : checkoutProduct.size?.size ??
+                                    "Default Size"}
                               </h4>
                             </div>
                           </div>

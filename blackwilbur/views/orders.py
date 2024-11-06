@@ -3,7 +3,7 @@ from django.db.models import Max, Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, exceptions
-from blackwilbur import models, serializers
+from blackwilbur import models, serializers,services
 from rest_framework.permissions import IsAuthenticated
 
 class OrdersAPIView(APIView):
@@ -78,11 +78,12 @@ class OrdersAPIView(APIView):
             )
             print("New order created with ID:", new_order.order_id)
 
+        total_amount = 0
         for product_data in products_data:
             product_id = product_data.get('product_id')
             quantity = product_data.get('quantity')
             product_variation_id = product_data.get('product_variation_id')
-            
+
             if not product_variation_id:
                 print(f"Missing product_variation_id for product ID: {product_id}")
                 return Response({"error": f"Product variation for product ID {product_id} is missing."}, status=status.HTTP_400_BAD_REQUEST)
@@ -90,6 +91,8 @@ class OrdersAPIView(APIView):
             try:
                 product = models.Product.objects.get(id=product_id)
                 print(f"Product found: {product.name}")
+                # Calculate the total price for this product and quantity
+                total_amount += product.price * quantity
 
                 models.OrderItem.objects.create(
                     order=new_order,
@@ -103,5 +106,32 @@ class OrdersAPIView(APIView):
                 print(f"Product with ID {product_id} not found.")
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        print("Order creation complete. Returning response with order_id:", new_order.order_id)
-        return Response({"order_id": new_order.order_id}, status=status.HTTP_201_CREATED)
+        total_amount = float(total_amount)  # Convert to float
+        new_order.total_amount = total_amount
+        new_order.save()
+
+        user_email = request.data.get('email')  # Get email directly from order data
+        print(request.user.id)
+        print(new_order.total_amount)
+
+        # After saving the order, initiate the payment
+        payment_service = services.PaymentService()
+
+        try:
+            payment_url = payment_service.initiate_payment(amount=total_amount, user_id=user_email)
+            print("payment_url", payment_url)
+
+            # Return both order_id and payment_url
+            return Response({
+                "order_id": new_order.order_id,
+                "payment_url": payment_url if payment_url else "Payment URL not generated"
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            print(f"Error initiating payment: {str(e)}")
+
+            # If payment fails, return order_id with the error message
+            return Response({
+                "error": str(e),
+                "order_id": new_order.order_id
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

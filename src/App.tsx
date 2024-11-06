@@ -14,6 +14,8 @@ import Collection from "./component/Collection";
 import Userprofile from "./component/Userprofile";
 import Authentication from "./component/Authentication";
 import AdminPanel from "./admin/adminPanel";
+import OrderConfirmation from "./component/OrderConfirmation";
+import OrderFailure from "./component/OrderFailure";
 
 function App() {
   return (
@@ -44,6 +46,8 @@ function App() {
                   <Route path="/user-profile" element={<Userprofile />} />
                   <Route path="/auth/login" element={<Authentication />} />
                   <Route path="/auth/signup" element={<Authentication />} />
+                  <Route path="orderConfirmation" element={<OrderConfirmation orderId={""} paymentMethod={"UPI"} />} />
+                  <Route path="orderFailure" element={<OrderFailure/>} />
                 </Routes>
                 <Footer />
               </>

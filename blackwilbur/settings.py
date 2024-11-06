@@ -116,3 +116,10 @@ STATIC_URL = '/static/'  # URL prefix for static files
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Change 'staticfiles' to your desired directory
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# PhonePe API credentials and configuration
+PHONEPE_MERCHANT_ID = 'PGTESTPAYUAT'  # Replace with your actual Merchant ID
+PHONEPE_SALT_KEY = '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399'  # Replace with your actual Test API Key
+PHONEPE_API_KEY_INDEX = 1  # Test API Key Index
+PHONEPE_HOST_URL = 'https://api-preprod.phonepe.com/apis/hermes'  # PhonePe API endpoint (preprod in this case)

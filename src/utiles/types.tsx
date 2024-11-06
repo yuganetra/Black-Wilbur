@@ -38,6 +38,16 @@ export interface Product {
   image: string; 
 }
 
+export interface CheckProduct {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  product_images: string; 
+  image: string;
+}
+
+
 export interface ProductAdmin {
   id: string;
   name: string;
@@ -137,10 +147,19 @@ export interface OrderItem {
 export interface CartItem {
   id: number;
   quantity: number;
-  product: Product;
-  size: Size; // Change this to Size object
-  product_variation_id: number;
+  product: CheckProduct;
+  size: Size; 
+  product_variation_id: string;
 }
+
+export interface CartItemCheckout {
+  id: number;
+  quantity: number;
+  product: CheckProduct;
+  size: Size; 
+  product_variation_id: string;
+}
+
 
 export interface GetOrder {
   order_id: string;       // Unique identifier for the order

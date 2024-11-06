@@ -6,6 +6,7 @@ import { fetchBestSeller, fetchExplore } from "../services/api";
 import { Product, ProductCollection } from "../utiles/types";
 import GetFeatured from "./GetFeatured";
 import Carousel from "./Carousel";
+import OffersBanner from "./OffersBanner";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -134,9 +135,11 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-
+      
       {/* Large Screen Section (Visible only for screens over 1000px) */}
       <section className="py-16 bg-[#1B1B1B] relative hidden md:block">
+      <div className="mb-16"><OffersBanner/></div>
+
         <div className="container mx-auto md:px-6 text-center">
           <div className="relative w-full h-[90vh] overflow-hidden">
             <video
@@ -176,6 +179,8 @@ const Home: React.FC = () => {
 
       {/* Small Screen Section (Visible only for screens under 1000px) */}
       <section className="py-16 bg-[#1B1B1B] relative block md:hidden">
+      <OffersBanner/>
+
         <div className="container mx-auto px-4 md:px-6 text-center">
           <div className="relative w-full h-[90vh] overflow-hidden">
             <video

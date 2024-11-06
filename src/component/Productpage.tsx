@@ -67,6 +67,7 @@ const handleBuyNow = async () => {
     };
 
     if (isUserLoggedIn()) {
+      console.log(cartItem)
       navigate("/checkout", {
         state: { products: [cartItem] },
       });

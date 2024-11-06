@@ -178,7 +178,7 @@ export const refreshAuthToken = async (): Promise<string | null> => {
   }
 
   try {
-    const response = await axios.post(`${API_BASE_URL}/api/token/refresh/`, {
+    const response = await axios.post(`${API_BASE_URL}api/token/refresh/`, {
       refresh: refreshToken,
     });
 
@@ -293,17 +293,49 @@ export const getOrders = async (): Promise<GetOrder[]> => {
 // Function to create a new order
 export const createOrder = async (orderData: Order) => {
   try {
-    const response = await axiosInstance.post(`${API_BASE_URL}orders`, orderData, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    return response.data;
+    // Prepare the products data separately as per backend requirements
+    const { products, ...restOrderData } = orderData;
+
+    // Create the order
+    const response = await axiosInstance.post(
+      `${API_BASE_URL}orders`,
+      { ...restOrderData, products },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Handle the response, which should contain the order ID and payment URL
+    const { order_id, payment_url } = response.data;
+
+    // Validate the payment URL before redirecting
+    if (payment_url && isValidUrl(payment_url)) {
+      window.location.href = payment_url;  // Redirect to the payment URL
+      return; // Exit the function after redirecting
+    }
+
+    // If no valid payment URL is returned, just return the order ID
+    return { order_id };
+
   } catch (error) {
-    console.error("Error creating order:");
+    console.error("Error creating order:", error);
     throw error;
   }
 };
+
+// Helper function to validate the URL
+const isValidUrl = (url: string) => {
+  try {
+    // Use the URL constructor to check if the URL is valid
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;  // If the URL constructor throws an error, it's invalid
+  }
+};
+
 
 export const fetchRatings = async (productId: string) => {
   try {
