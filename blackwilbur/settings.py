@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['black-wilbur-4qud.onrender.com','blackwilbur.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['backendapi.blackwilbur.com','34.93.161.97','black-wilbur-4qud.onrender.com','blackwilbur.com', 'localhost', '127.0.0.1']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
