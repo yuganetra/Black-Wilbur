@@ -63,6 +63,10 @@ const Authentication: React.FC = () => {
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
+    if (!otpVarified) {
+      alert("Please verify your phone number.");
+      return;
+    }
     e.preventDefault();
     setApiError("");
     setSuccessMessage("");

@@ -150,6 +150,8 @@ export interface CartItem {
   product: CheckProduct;
   size: Size; 
   product_variation_id: string;
+  couponDiscount: number,
+  quantityDiscount: number
 }
 
 export interface CartItemCheckout {

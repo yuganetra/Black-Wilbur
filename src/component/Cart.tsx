@@ -77,12 +77,20 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       alert("Please add products to the cart before proceeding to checkout.");
     } else {
       if (isUserLoggedIn()) {
+        console.log(cartProducts);
         onClose();
-        navigate("/checkout", { state: { products: cartProducts } });
+        navigate("/checkout", {
+          state: { products: cartProducts, couponDiscount, quantityDiscount },
+        });
       } else {
         onClose();
         navigate("/auth/login", {
-          state: { from: "/checkout", products: cartProducts },
+          state: {
+            from: "/checkout",
+            products: cartProducts,
+            couponDiscount,
+            quantityDiscount,
+          },
         }); // Pass cart and previous page
       }
     }
@@ -228,7 +236,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   };
 
   const finalAmount =
-    totalAmount - (totalAmount * quantityDiscount) / 100 - (totalAmount * couponDiscount) / 100;
+    totalAmount -
+    (totalAmount * quantityDiscount) / 100 -
+    (totalAmount * couponDiscount) / 100;
 
   return (
     <>
@@ -322,7 +332,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
           </div>
         )}
 
-<div className="p-4 border-t">
+        <div className="p-4 border-t">
           <div className="flex justify-between">
             <span>Total Quantity</span>
             <span>{totalQuantity}</span>

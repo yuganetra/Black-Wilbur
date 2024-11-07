@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { CartItemCheckout } from "../utiles/types";
 import { createOrder, sendSms } from "../services/api";
 import { v4 as uuidv4 } from "uuid";
-
 interface CheckoutProductForbackend {
   id: number;
   quantity: number;
@@ -30,8 +29,15 @@ interface Order {
 
 const Checkout: React.FC = () => {
   const location = useLocation();
-  const { products: initialProducts = [] } =
-    (location.state as { products: CartItemCheckout[] }) || {};
+  const {
+    products: initialProducts = [],
+    couponDiscount = 0,
+    quantityDiscount = 0,
+  } = (location.state as {
+    products: CartItemCheckout[];
+    couponDiscount: number;
+    quantityDiscount: number;
+  }) || {};
   const [products, setProducts] = useState<CartItemCheckout[]>(initialProducts);
 
   const [loading, setLoading] = useState(true);
@@ -106,11 +112,16 @@ const Checkout: React.FC = () => {
     return uuidv4();
   };
 
+  const totalQuantity = products.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
   const onSubmit = async (data: Order) => {
-    // if (!otpVarified) {
-    //   alert("Please verify your phone number.");
-    //   return;
-    // }
+    if (!otpVarified) {
+      alert("Please verify your phone number.");
+      return;
+    }
 
     const orderId = generateOrderId();
     const user = localStorage.getItem("user");
@@ -129,7 +140,7 @@ const Checkout: React.FC = () => {
         id: p.id,
         quantity: p.quantity,
         product_id: p.product.id,
-        product_variation_id: p.size.id || p.product_variation_id 
+        product_variation_id: p.size.id || p.product_variation_id,
       };
     });
 
@@ -153,10 +164,9 @@ const Checkout: React.FC = () => {
     };
 
     try {
-      console.log("orderData",orderData)
+      console.log("orderData", orderData);
       const response = await createOrder(orderData);
       if (response) {
-        const { order_id } = response;
         navigate("/orderConfirmation", {
           state: { orderId, paymentMethod: data.payment_method },
         });
@@ -169,14 +179,15 @@ const Checkout: React.FC = () => {
     }
   };
 
-  const subtotal = products.reduce((total, product) => {
-    // Check if product and product.product are defined
-    if (product && product.product) {
-      const price = Number(product.product.price);
-      return total + (isNaN(price) ? 0 : price);
-    }
-    return total; // Return total if product or product.product is undefined
-  }, 0);
+  const totalAmount = products.reduce(
+    (total, item) => total + item.product.price * item.quantity,
+    0
+  );
+
+  const finalAmount =
+    totalAmount -
+    (totalAmount * quantityDiscount) / 100 -
+    (totalAmount * couponDiscount) / 100;
 
   return (
     <div className="bg-black text-white min-h-screen flex flex-col font-montserrat">
@@ -241,21 +252,27 @@ const Checkout: React.FC = () => {
                     <p>No products available.</p>
                   )}
 
-                  <div className="flex justify-between border-t border-gray-300 pt-4">
-                    <h4 className="text-lg font-semibold">Subtotal</h4>
-                    <p className="text-lg font-semibold">
-                      ${subtotal.toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="flex justify-between border-t border-gray-300 pt-4">
-                    <h4 className="text-lg font-semibold">Shipping</h4>
-                    <p className="text-lg font-semibold">Free</p>
-                  </div>
-                  <div className="flex justify-between border-t border-gray-300 pt-4">
-                    <h4 className="text-lg font-semibold">Total</h4>
-                    <p className="text-lg font-semibold">
-                      ${subtotal.toFixed(2)}
-                    </p>
+                  <div className="p-4 border-t">
+                    <div className="flex justify-between">
+                      <span>Total Quantity</span>
+                      <span>{totalQuantity}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total Amount</span>
+                      <span>${totalAmount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Quantity Discount ({quantityDiscount}%)</span>
+                      <span>-${(totalAmount * quantityDiscount) / 100}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Coupon Discount ({couponDiscount}%)</span>
+                      <span>-${(totalAmount * couponDiscount) / 100}</span>
+                    </div>
+                    <div className="flex justify-between font-bold">
+                      <span>Final Amount</span>
+                      <span>${finalAmount}</span>
+                    </div>
                   </div>
                 </>
               )}
