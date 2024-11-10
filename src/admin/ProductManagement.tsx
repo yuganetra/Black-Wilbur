@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ProductModal from './ProductModal'; // Import the modal
+import ProductModal from './helper/ProductModal'; // Import the modal
 import { fetchProducts, deleteProduct } from '../services/api'; // Import deleteProduct
 import { ProductAdmin } from '../utiles/types';
 

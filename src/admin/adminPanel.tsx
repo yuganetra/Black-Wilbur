@@ -9,6 +9,7 @@ import CategoriesManagement from './CategoriesManagement';
 import ImagesManagement from './ImagesManagement';
 import SizeQuantityManagement from './SizeQuantityComponent'; // Import the new component
 import { HiChevronDown } from 'react-icons/hi';
+import DiscountManagement from './DiscountManagement';
 
 const AdminPanel: React.FC = () => {
   const navigate = useNavigate();
@@ -110,6 +111,14 @@ const AdminPanel: React.FC = () => {
                 User Management
               </button>
             </li>
+            <li>
+              <button
+                className={`w-full text-left p-3 rounded ${activeButton === "Discount Management" ? "bg-gray-700" : "hover:bg-gray-700"}`}
+                onClick={() => handleNavigate("/admin/discount", "Discount Management")}
+              >
+                Discount Management
+              </button>
+            </li>
           </ul>
         </nav>
       </aside>
@@ -123,6 +132,7 @@ const AdminPanel: React.FC = () => {
           <Route path="size-quantity" element={<SizeQuantityManagement />} />
           <Route path="orders" element={<OrderManagement />} />
           <Route path="users" element={<UserManagement />} />
+          <Route path="discount" element={<DiscountManagement />} />
         </Routes>
       </div>
     </div>

@@ -43,7 +43,7 @@ const Footer = () => {
             <h4 className="font-semibold text-lg">CONTACT</h4>
             <ul className="space-y-2 text-[#7d7d7d]">
               <li className="hover:text-white">official@blackwilbur.com</li>
-              <li className="hover:text-white">+91 9575555383</li>
+              {/* <li className="hover:text-white">+91 9575555383</li> */}
               <li onClick={() => togglePopup()} className="hover:text-white">Featured on BlackWilbur.com</li>
             </ul>
           </div>

@@ -133,6 +133,11 @@ export interface Order {
   country: string;                 // Country of the user
   user: number;    
   products: CheckoutProductForbackend[]; // Include product data in the form values
+  payment_status: string; // Payment status (e.g., "paid", "pending")
+  subtotal: number; // Subtotal of the order before discounts and taxes
+  discount_amount: number; // Total discount applied to the order
+  tax_amount: number; // Total tax applied to the order
+  total_amount: number; // Final total amount for the order
 }
 
 
@@ -142,6 +147,10 @@ export interface OrderItem {
   quantity: number;
   product_variation: ProductVariation;
   subtotal?: string;
+  price: string; // Price per unit
+  discount_amount: string; // Discount on the product
+  tax_amount: string; // Tax on the product
+  total_price: string; // Total price for this item
 }
 
 export interface CartItem {
@@ -186,4 +195,17 @@ export interface ImageUploadResponse {
 export interface ImageRequest {
   product: string;
   image: File;
+}
+
+export type DiscountType = 'COUPON' | 'QUANTITY';
+
+export interface Discount {
+  id: string;
+  coupon?: string;  // Optional for 'QUANTITY' type discounts
+  percent_discount: number;
+  min_order_price: number;
+  discount_type: DiscountType;
+  quantity_threshold?: number;  // Optional for 'COUPON' type discounts
+  created_at: string;
+  updated_at: string;
 }

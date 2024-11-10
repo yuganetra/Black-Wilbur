@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { ProductAdmin, Category } from "../utiles/types"; // Adjust your imports accordingly
-import { fetchCategories, addProduct } from "../services/api";
+import { ProductAdmin, Category } from "../../utiles/types"; // Adjust your imports accordingly
+import { fetchCategories, addProduct } from "../../services/api";
 
 interface ProductModalProps {
   isOpen: boolean;

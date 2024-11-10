@@ -1,10 +1,13 @@
 import uuid  # Import UUID module
-from django.db.models import Max, Count
+from decimal import Decimal
+from django.db.models import Sum, F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, exceptions
-from blackwilbur import models, serializers,services
+from blackwilbur import models, serializers, services
 from rest_framework.permissions import IsAuthenticated
+from django.http import HttpResponse
+from decimal import Decimal
 
 class OrdersAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -18,9 +21,8 @@ class OrdersAPIView(APIView):
             order_items = models.OrderItem.objects.filter(order=order)
             items_data = []
 
-            # Calculate subtotal for each item
+            # Calculate item-specific fields (subtotal, discount, tax, total)
             for item in order_items:
-                subtotal = item.quantity * item.product.price  # Calculate the subtotal
                 item_data = {
                     "product": {
                         "id": item.product.id,
@@ -32,7 +34,10 @@ class OrdersAPIView(APIView):
                         "id": item.product_variation.id,
                         "size": item.product_variation.size,
                     },
-                    "subtotal": str(subtotal)  # Add subtotal to item data
+                    "price": str(item.price),
+                    "discount_amount": str(item.discount_amount),
+                    "tax_amount": str(item.tax_amount),
+                    "total_price": str(item.total_price),
                 }
                 items_data.append(item_data)
 
@@ -40,14 +45,22 @@ class OrdersAPIView(APIView):
                 "order_id": order.order_id,
                 "created_at": order.created_at,
                 "status": order.status,
-                "items": items_data  # Include items with subtotal in the order data
+                "payment_status": order.payment_status,
+                "subtotal": str(order.subtotal),
+                "discount_amount": str(order.discount_amount),
+                "tax_amount": str(order.tax_amount),
+                "total_amount": str(order.total_amount),
+                "items": items_data  # Include items with calculated fields in the order data
             }
             orders_data.append(order_data)
 
         return Response(orders_data, status=status.HTTP_200_OK)
 
+class OrdersAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        print("Received POST request with data:", request.data)  # Log incoming data
+        print("Received POST request with data:", request.data)
 
         products_data = request.data.pop('products', [])
         print("Extracted products data:", products_data)
@@ -58,8 +71,6 @@ class OrdersAPIView(APIView):
         if not order_serializer.is_valid():
             print("Validation failed with errors:", order_serializer.errors)
             return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        print("Order data validated successfully.")
 
         order_id = str(uuid.uuid4())
         print("Generated new order UUID:", order_id)
@@ -79,6 +90,20 @@ class OrdersAPIView(APIView):
             print("New order created with ID:", new_order.order_id)
 
         total_amount = 0
+        discount_amount = 0  # Initialize discount amount to 0
+
+        # The frontend sends total_amount (without discount) and subtotal (with discount)
+        frontend_total_amount = request.data.get('total_amount', 0)
+        frontend_subtotal = request.data.get('subtotal', 0)
+
+        # Step 1: Calculate discount based on total_amount and subtotal
+        discount_amount = frontend_total_amount - frontend_subtotal  # Difference between total amount and subtotal
+        print('frontend_total_amount',frontend_total_amount)
+        if discount_amount < 0:
+            return Response({"error": "Subtotal cannot be greater than total amount!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        print(f"Calculated discount amount: {discount_amount}")
+
         for product_data in products_data:
             product_id = product_data.get('product_id')
             quantity = product_data.get('quantity')
@@ -91,14 +116,22 @@ class OrdersAPIView(APIView):
             try:
                 product = models.Product.objects.get(id=product_id)
                 print(f"Product found: {product.name}")
-                # Calculate the total price for this product and quantity
-                total_amount += product.price * quantity
+
+                item_price = product.price  # Price in rupees
+                # item_tax = item_price * Decimal('0.1')  # Assuming a 10% tax rate
+
+                item_total_price = (item_price - Decimal(discount_amount)) * quantity
+                total_amount += item_total_price
 
                 models.OrderItem.objects.create(
                     order=new_order,
                     product=product,
                     quantity=quantity,
-                    product_variation_id=product_variation_id
+                    product_variation_id=product_variation_id,
+                    price=item_price,
+                    discount_amount=discount_amount,
+                    tax_amount=0,
+                    total_price=frontend_total_amount
                 )
                 print(f"OrderItem created for product: {product.name}, quantity: {quantity}")
 
@@ -106,32 +139,47 @@ class OrdersAPIView(APIView):
                 print(f"Product with ID {product_id} not found.")
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        total_amount = float(total_amount)  # Convert to float
-        new_order.total_amount = total_amount
+        # Step 2: Finalize the total amount after discount
+        # The frontend sends total_amount (without discount) and subtotal (with discount)
+        frontend_total_amount = request.data.get('total_amount', 0)
+        frontend_subtotal = request.data.get('subtotal', 0)
+
+        # Step 1: Calculate discount based on total_amount and subtotal
+        discount_amount = frontend_total_amount - frontend_subtotal
+        final_amount =   frontend_total_amount -discount_amount
+
+        # Step 3: Store the final amount and the discount amount
+        new_order.total_amount = final_amount
+        new_order.discount_amount = discount_amount
         new_order.save()
 
-        user_email = request.data.get('email')  # Get email directly from order data
-        print(request.user.id)
-        print(new_order.total_amount)
+        user_email = request.data.get('email')
+        print(f"Order ID: {new_order.order_id}, Total Amount: {final_amount}, Discount: {discount_amount}")
 
         # After saving the order, initiate the payment
         payment_service = services.PaymentService()
 
-        try:
-            payment_url = payment_service.initiate_payment(amount=total_amount, user_id=user_email)
-            print("payment_url", payment_url)
+        # Convert rupees to paise (payment gateway expects paise)
+        amount_in_paise = int(final_amount * 100)  # Convert rupees to paise (multiply by 100)
 
-            # Return both order_id and payment_url
+        user_id = str(request.user.id)
+        mobile_number = request.data.get('phone_number', '9999999999')
+
+        payment_response = payment_service.pay(amount=amount_in_paise, user_id=user_id, mobile_number=mobile_number)
+
+        if isinstance(payment_response, HttpResponse) and payment_response.status_code != 200:
+            return HttpResponse(payment_response.content, status=payment_response.status_code)
+
+        if isinstance(payment_response, HttpResponse):
+            url = payment_response.content.decode("utf-8").replace("Payment URL: ", "")
+            # Update payment status to 'paid'
+            new_order.payment_status = 'paid'
+            # new_order.transaction_id = payment_response.content.get("transaction_id")
+            new_order.save()
+
             return Response({
-                "order_id": new_order.order_id,
-                "payment_url": payment_url if payment_url else "Payment URL not generated"
-            }, status=status.HTTP_201_CREATED)
+                'order_id': order_id,
+                'payment_url': url
+            }, status=status.HTTP_200_OK)
 
-        except Exception as e:
-            print(f"Error initiating payment: {str(e)}")
-
-            # If payment fails, return order_id with the error message
-            return Response({
-                "error": str(e),
-                "order_id": new_order.order_id
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": "Payment initiation failed."}, status=status.HTTP_400_BAD_REQUEST)

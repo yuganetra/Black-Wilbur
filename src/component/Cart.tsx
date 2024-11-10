@@ -4,11 +4,12 @@ import {
   fetchCartItems,
   fetchProductById,
   getCartItemsCount,
+  getDiscounts,
   isUserLoggedIn,
   removeFromCart,
   updateCartItem,
 } from "../services/api";
-import { Product, CartItem } from "../utiles/types";
+import { Product, CartItem, Discount } from "../utiles/types";
 import { motion } from "framer-motion";
 import Confetti from "react-confetti";
 
@@ -24,6 +25,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   const [showConfetti, setShowConfetti] = useState<boolean>(false); // State for showing confetti
   const [isRemovingCoupon, setIsRemovingCoupon] = useState<boolean>(false); // State to track coupon removal fade
   const [quantityDiscount, setQuantityDiscount] = useState<number>(0); // State for the quantity discount
+  const [discounts, setDiscounts] = useState<Discount[]>([]); // State to store discounts
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,25 +53,80 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     }
   }, [showConfetti]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const calculateQuantityDiscount = () => {
-    const totalQuantity = cartProducts.reduce(
-      (total, item) => total + item.quantity,
-      0
-    );
-
-    if (totalQuantity >= 3) {
-      setQuantityDiscount(30); // 30% off for 3 or more products
-    } else if (totalQuantity === 2) {
-      setQuantityDiscount(15); // 15% off for 2 products
-    } else {
-      setQuantityDiscount(0); // No discount for less than 2 products
-    }
-  };
-
+  // Fetch all discounts when the component mounts
   useEffect(() => {
-    calculateQuantityDiscount();
-  }, [calculateQuantityDiscount, cartProducts]);
+    const fetchDiscounts = async () => {
+      try {
+        const discountData = await getDiscounts({});
+        setDiscounts(discountData);
+      } catch (error) {
+        console.error('Failed to fetch discounts', error);
+      }
+    };
+    fetchDiscounts();
+  }, []);
+
+
+    // Calculate and apply quantity-based discount
+    useEffect(() => {
+      const totalQuantity = cartProducts.reduce(
+        (total, item) => total + item.quantity,
+        0
+      );
+      // Find the discount for quantity based on the total quantity
+      const quantityDiscountData = discounts.find(
+        (discount) =>
+          discount.discount_type === "QUANTITY" &&
+          totalQuantity >= (discount.quantity_threshold || 0)
+      );
+  
+      if (quantityDiscountData) {
+        const discountPercentage = quantityDiscountData.percent_discount;
+        if (!isNaN(discountPercentage)) {
+          setQuantityDiscount(discountPercentage);
+        } else {
+          setQuantityDiscount(0);
+        }
+      } else {
+        setQuantityDiscount(0);
+      }
+    }, [cartProducts, discounts]);
+  
+    // Handle coupon code application
+    const handleCouponApply = () => {
+      const matchingCoupon = discounts.find(
+        (discount) =>
+          discount.discount_type === "COUPON" && discount.coupon === couponCode
+      );
+  
+      if (matchingCoupon) {
+        setCouponDiscount(matchingCoupon.percent_discount);
+        setShowConfetti(true);
+      } else {
+        alert("Invalid coupon code.");
+      }
+    };
+  
+
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // const calculateQuantityDiscount = () => {
+  //   const totalQuantity = cartProducts.reduce(
+  //     (total, item) => total + item.quantity,
+  //     0
+  //   );
+
+  //   if (totalQuantity >= 3) {
+  //     setQuantityDiscount(30); // 30% off for 3 or more products
+  //   } else if (totalQuantity === 2) {
+  //     setQuantityDiscount(15); // 15% off for 2 products
+  //   } else {
+  //     setQuantityDiscount(0); // No discount for less than 2 products
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   calculateQuantityDiscount();
+  // }, [calculateQuantityDiscount, cartProducts]);
 
   const handleCheckoutNavigate = async () => {
     const cartCount = getCartItemsCount();
@@ -216,15 +273,15 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     0
   );
 
-  // Handle coupon code application
-  const handleCouponApply = () => {
-    if (couponCode === "DISCOUNT10") {
-      setCouponDiscount(10); // Apply 10% discount for the coupon
-      setShowConfetti(true); // Show confetti effect
-    } else {
-      alert("Invalid coupon code.");
-    }
-  };
+  // // Handle coupon code application
+  // const handleCouponApply = () => {
+  //   if (couponCode === "DISCOUNT10") {
+  //     setCouponDiscount(10); // Apply 10% discount for the coupon
+  //     setShowConfetti(true); // Show confetti effect
+  //   } else {
+  //     alert("Invalid coupon code.");
+  //   }
+  // };
   const handleRemoveCoupon = () => {
     setIsRemovingCoupon(true); // Start fade-out effect
     setTimeout(() => {
@@ -339,19 +396,19 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
           </div>
           <div className="flex justify-between">
             <span>Total Amount</span>
-            <span>${totalAmount}</span>
+            <span>₹{totalAmount}</span>
           </div>
           <div className="flex justify-between">
             <span>Quantity Discount ({quantityDiscount}%)</span>
-            <span>-${(totalAmount * quantityDiscount) / 100}</span>
+            <span>-₹{(totalAmount * quantityDiscount) / 100}</span>
           </div>
           <div className="flex justify-between">
             <span>Coupon Discount ({couponDiscount}%)</span>
-            <span>-${(totalAmount * couponDiscount) / 100}</span>
+            <span>-₹{(totalAmount * couponDiscount) / 100}</span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Final Amount</span>
-            <span>${finalAmount}</span>
+            <span>₹{finalAmount}</span>
           </div>
 
           {/* Coupon Section */}

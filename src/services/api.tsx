@@ -16,10 +16,11 @@ import {
   ProductsImage,
   ImageUploadResponse,
   ImageRequest,
+  Discount,
   ProductCollection,
 } from "../utiles/types";
 
-const API_BASE_URL = "https://backendapi.blackwilbur.com/";
+const API_BASE_URL = "https://api.blackwilbur.com/";
 
 // Axios instance for API calls
 const axiosInstance = axios.create({
@@ -306,7 +307,7 @@ export const createOrder = async (orderData: Order) => {
         },
       }
     );
-
+    console.log("response.data",response.data)
     // Handle the response, which should contain the order ID and payment URL
     const { order_id, payment_url } = response.data;
 
@@ -480,4 +481,52 @@ export const deleteImage = async (id: string): Promise<void> => {
   await axios.delete(`${API_BASE_URL}images/`, {
     data: { id },  // Passing the ID in the request body
   });
+};
+
+
+
+// Get discounts (all, by coupon code, or by ID)
+export const getDiscounts = async (params: { coupon_code?: string; id?: string }) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}api/discounts/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching discounts:", error);
+    throw error;
+  }
+};
+
+// Create a new discount
+export const createDiscount = async (discount: Omit<Discount, 'id' | 'created_at' | 'updated_at'>) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}api/discounts/`, discount);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating discount:", error);
+    throw error;
+  }
+};
+
+// Update an existing discount
+export const updateDiscount = async (id: string, discount: Partial<Discount>) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}api/discounts/${id}`, discount);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating discount:", error);
+    throw error;
+  }
+};
+
+// Delete a discount
+export const deleteDiscount = async (id: string) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}api/discounts/`, {
+      data: { id }, // Passing the ID in the body
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting discount:", error);
+    throw error;
+  }
 };

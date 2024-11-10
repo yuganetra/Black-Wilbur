@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from django.urls import path
-
+from blackwilbur import services
 from blackwilbur import views
 
 urlpatterns = [
@@ -30,5 +30,8 @@ urlpatterns = [
     path('product-variation/product/<str:product_id>/', views.ProductVariationAPIView.as_view(), name='product-variations-by-product'),    path('images/', views.ImageManageAPIView.as_view(), name='image-list'),
     path('images/<str:pk>/', views.ImageManageAPIView.as_view(), name='image-detail'),
     path('images/product/<str:product_id>/', views.ImageManageAPIView.as_view(), name='image-by-product'),  # Fetch images by product ID
+    path('api/discounts/', views.DiscountAPIView.as_view(), name='discount-list'),  # To get all discounts or create new
+    path('api/discounts/<uuid:pk>/', views.DiscountAPIView.as_view(), name='discount-detail'),  # To retrieve, update or delete a specific discount by ID
+    path('check-payment-status/', services.PaymentService.check_payment_status, name='check_payment_status'),
 
 ]

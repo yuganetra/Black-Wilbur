@@ -7,3 +7,4 @@ from .sendsmsview import SendSmsView
 from .rating import RatingAPIView
 from .product_variation import ProductVariationAPIView
 from .image import ImageManageAPIView
+from .discount import DiscountAPIView

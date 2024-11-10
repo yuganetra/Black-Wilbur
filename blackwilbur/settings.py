@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['backendapi.blackwilbur.com','34.93.161.97','black-wilbur-4qud.onrender.com','blackwilbur.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['api.blackwilbur.com','145.223.22.231','blackwilbur.com', 'localhost', '127.0.0.1']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -86,6 +86,7 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
+
 WSGI_APPLICATION = 'blackwilbur.wsgi.application'
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -119,7 +120,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # PhonePe API credentials and configuration
-PHONEPE_MERCHANT_ID = 'PGTESTPAYUAT'  # Replace with your actual Merchant ID
-PHONEPE_SALT_KEY = '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399'  # Replace with your actual Test API Key
+PHONEPE_MERCHANT_ID = 'M224GLLI0GBI1'  # Replace with your actual Merchant ID
+PHONEPE_SALT_KEY = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'  # Replace with your actual Test API Key
 PHONEPE_API_KEY_INDEX = 1  # Test API Key Index
-PHONEPE_HOST_URL = 'https://api-preprod.phonepe.com/apis/hermes'  # PhonePe API endpoint (preprod in this case)
+PHONEPE_HOST_URL = 'https://api.phonepe.com/apis/hermes'  # PhonePe API endpoint (preprod in this case)

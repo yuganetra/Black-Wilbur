@@ -25,7 +25,13 @@ interface Order {
   country: string;
   user: number;
   products: CheckoutProductForbackend[];
+  payment_status: string; // Payment status (e.g., "paid", "pending")
+  subtotal: number; // Subtotal of the order before discounts and taxes
+  discount_amount: number; // Total discount applied to the order
+  tax_amount: number; // Total tax applied to the order
+  total_amount: number; // Final total amount for the order
 }
+
 
 const Checkout: React.FC = () => {
   const location = useLocation();
@@ -118,10 +124,10 @@ const Checkout: React.FC = () => {
   );
 
   const onSubmit = async (data: Order) => {
-    if (!otpVarified) {
-      alert("Please verify your phone number.");
-      return;
-    }
+    // if (!otpVarified) {
+    //   alert("Please verify your phone number.");
+    //   return;
+    // }
 
     const orderId = generateOrderId();
     const user = localStorage.getItem("user");
@@ -161,15 +167,21 @@ const Checkout: React.FC = () => {
       products: orderProducts,
       payment_method: data.payment_method,
       user: userId || 0,
+      payment_status: "pending",
+      subtotal: finalAmount,
+      discount_amount: couponDiscount || quantityDiscount,
+      tax_amount: 0,
+      total_amount: totalAmount
     };
 
     try {
       console.log("orderData", orderData);
       const response = await createOrder(orderData);
       if (response) {
-        navigate("/orderConfirmation", {
-          state: { orderId, paymentMethod: data.payment_method },
-        });
+        console.log(response)
+        // navigate("/orderConfirmation", {
+        //   state: { orderId, paymentMethod: data.payment_method },
+        // });
       } else {
         alert("Failed to place order.");
         navigate("/orderFailure");
@@ -259,19 +271,19 @@ const Checkout: React.FC = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Total Amount</span>
-                      <span>${totalAmount}</span>
+                      <span>₹{totalAmount}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Quantity Discount ({quantityDiscount}%)</span>
-                      <span>-${(totalAmount * quantityDiscount) / 100}</span>
+                      <span>-₹{(totalAmount * quantityDiscount) / 100}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Coupon Discount ({couponDiscount}%)</span>
-                      <span>-${(totalAmount * couponDiscount) / 100}</span>
+                      <span>-₹{(totalAmount * couponDiscount) / 100}</span>
                     </div>
                     <div className="flex justify-between font-bold">
                       <span>Final Amount</span>
-                      <span>${finalAmount}</span>
+                      <span>₹{finalAmount}</span>
                     </div>
                   </div>
                 </>
