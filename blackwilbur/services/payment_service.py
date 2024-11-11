@@ -46,7 +46,7 @@ class PaymentService:
         logger.debug(f"Initiating payment for user_id={user_id}, amount={amount}, mobile_number={mobile_number}")
 
         MAINPAYLOAD = {
-            "merchantId": 'PGTESTPAYUAT86',  # Replace with actual Merchant ID
+            "merchantId": 'M224GLLI0GBI1',#'PGTESTPAYUAT86', # # Replace with actual Merchant ID
             "merchantTransactionId": shortuuid.uuid(),
             "merchantUserId": user_id,
             "amount": amount,  # Change from 1 to actual amount
@@ -114,6 +114,7 @@ class PaymentService:
         if transaction_id:
             # request_url = f'https://api.phonepe.com/apis/hermes/pg/v1/pay/status/PGTESTPAYUAT/{transaction_id}'
             request_url = f'https://api.phonepe.com/apis/hermes/pg/v1/pay/status/PGTESTPAYUAT/{transaction_id}'
+           # request_url = f'https://api.phonepe.com/apis/hermes/pg/v1/pay/status/PGTESTPAYUAT/{transaction_id}'
             sha256_Pay_load_String = f'/pg/v1/status/PGTESTPAYUAT/{transaction_id}{SALTKEY}'
             sha256_val = self.calculate_sha256_string(sha256_Pay_load_String)
             checksum = sha256_val + '###' + INDEX

@@ -89,20 +89,20 @@ class OrdersAPIView(APIView):
             )
             print("New order created with ID:", new_order.order_id)
 
+        # Check payment method
+        if new_order.payment_method != 'UPI':
+            return Response({"error": "Payment method must be UPI to proceed with payment."}, status=status.HTTP_400_BAD_REQUEST)
+
         total_amount = 0
         discount_amount = 0  # Initialize discount amount to 0
 
-        # The frontend sends total_amount (without discount) and subtotal (with discount)
         frontend_total_amount = request.data.get('total_amount', 0)
         frontend_subtotal = request.data.get('subtotal', 0)
 
-        # Step 1: Calculate discount based on total_amount and subtotal
         discount_amount = frontend_total_amount - frontend_subtotal  # Difference between total amount and subtotal
-        print('frontend_total_amount',frontend_total_amount)
+        print(f"Calculated discount amount: {discount_amount}")
         if discount_amount < 0:
             return Response({"error": "Subtotal cannot be greater than total amount!"}, status=status.HTTP_400_BAD_REQUEST)
-
-        print(f"Calculated discount amount: {discount_amount}")
 
         for product_data in products_data:
             product_id = product_data.get('product_id')
@@ -110,16 +110,13 @@ class OrdersAPIView(APIView):
             product_variation_id = product_data.get('product_variation_id')
 
             if not product_variation_id:
-                print(f"Missing product_variation_id for product ID: {product_id}")
                 return Response({"error": f"Product variation for product ID {product_id} is missing."}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 product = models.Product.objects.get(id=product_id)
                 print(f"Product found: {product.name}")
 
-                item_price = product.price  # Price in rupees
-                # item_tax = item_price * Decimal('0.1')  # Assuming a 10% tax rate
-
+                item_price = product.price
                 item_total_price = (item_price - Decimal(discount_amount)) * quantity
                 total_amount += item_total_price
 
@@ -135,20 +132,18 @@ class OrdersAPIView(APIView):
                 )
                 print(f"OrderItem created for product: {product.name}, quantity: {quantity}")
 
+                # Update product variation quantity
+                product_variation = models.ProductVariation.objects.get(id=product_variation_id)
+                product_variation.quantity -= quantity
+                product_variation.save()
+                print(f"Updated product variation quantity for {product_variation.size}")
+
             except models.Product.DoesNotExist:
                 print(f"Product with ID {product_id} not found.")
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Step 2: Finalize the total amount after discount
-        # The frontend sends total_amount (without discount) and subtotal (with discount)
-        frontend_total_amount = request.data.get('total_amount', 0)
-        frontend_subtotal = request.data.get('subtotal', 0)
+        final_amount = frontend_total_amount - discount_amount
 
-        # Step 1: Calculate discount based on total_amount and subtotal
-        discount_amount = frontend_total_amount - frontend_subtotal
-        final_amount =   frontend_total_amount -discount_amount
-
-        # Step 3: Store the final amount and the discount amount
         new_order.total_amount = final_amount
         new_order.discount_amount = discount_amount
         new_order.save()
@@ -156,10 +151,8 @@ class OrdersAPIView(APIView):
         user_email = request.data.get('email')
         print(f"Order ID: {new_order.order_id}, Total Amount: {final_amount}, Discount: {discount_amount}")
 
-        # After saving the order, initiate the payment
         payment_service = services.PaymentService()
 
-        # Convert rupees to paise (payment gateway expects paise)
         amount_in_paise = int(final_amount * 100)  # Convert rupees to paise (multiply by 100)
 
         user_id = str(request.user.id)
@@ -172,9 +165,7 @@ class OrdersAPIView(APIView):
 
         if isinstance(payment_response, HttpResponse):
             url = payment_response.content.decode("utf-8").replace("Payment URL: ", "")
-            # Update payment status to 'paid'
             new_order.payment_status = 'paid'
-            # new_order.transaction_id = payment_response.content.get("transaction_id")
             new_order.save()
 
             return Response({
