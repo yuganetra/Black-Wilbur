@@ -16,7 +16,7 @@ const OffersBanner: React.FC = () => {
       {showConfetti && <Confetti />}
 
       {/* Banner with increased height (thickness) on small screens */}
-      <div className="bg-black text-white py-2 sm:py-6 w-full overflow-hidden">
+      <div className="bg-black text-white py-4 sm:py-8 w-full overflow-hidden">
         <motion.div
           className="whitespace-nowrap text-lg font-semibold cursor-pointer"
           animate={{
@@ -26,19 +26,19 @@ const OffersBanner: React.FC = () => {
             x: {
               repeat: Infinity, // Infinite loop
               repeatType: 'loop',
-              duration: 10, // Adjust speed here
+              duration: 8, // Adjust speed here
               ease: 'linear',
             },
           }}
           onClick={handleOfferClick}
         >
-          <span className="mr-8">🎉 Black Wilbur Launches New Designs - Shop Now! 🎉</span>
+          <span className="mr-8">Black Wilbur Launches New Designs - Shop Now!</span>
           {/* Offer 1 */}
-          <span className="mr-8 text-xs sm:text-base">🎉 Buy 2 products, get 15% off! 🎉</span>
+          <span className="mr-8">Buy 2 products, get 15% off!</span>
           
-          <span className="mr-8">🛍️ Limited Edition Items - Get Yours Now! 🛍️</span>
+          <span className="mr-8">Limited Edition Items - Get Yours Now!</span>
           {/* Offer 2 */}
-          <span className="mr-8 text-xs sm:text-base">🔥 Buy 3 or more products, get 30% off! 🔥</span>
+          <span className="mr-8">Buy 3 or more products, get 30% off!</span>
         </motion.div>
       </div>
     </div>

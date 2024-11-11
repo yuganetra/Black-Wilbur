@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status, exceptions
 from blackwilbur import models, serializers
 from azure.storage.blob import BlobServiceClient
-import os
+import re
+from decimal import Decimal, InvalidOperation
 import uuid
 
 
@@ -102,9 +103,16 @@ class ProductManageAPIView(APIView):
         # Extract product fields from request data
         name = request.data.get('name')
         description = request.data.get('description')
-        price = request.data.get('price')
+        price_str = request.data.get('price')
         category_id = request.data.get('category')
         
+        sanitized_price_str = re.sub(r'[^\d.-]', '', price_str)  # Remove any character that is not a number, dot or hyphen
+        try:
+            # Convert sanitized price string to Decimal
+            price = Decimal(sanitized_price_str)
+        except (ValueError, InvalidOperation):
+            return Response({"error": "Invalid price value"}, status=status.HTTP_400_BAD_REQUEST)
+
         # Generate UUID for the new product ID
         product_id = uuid.uuid4()
 

@@ -15,6 +15,7 @@ import {
 } from "../services/api";
 import { Product, ProductVariation, ProductsImage } from "../utiles/types";
 import Skeleton from "../utiles/Skeleton";
+import { FaTimes } from "react-icons/fa";
 
 const Productpage = () => {
   const [product, setProduct] = useState<Product | null>(null);
@@ -49,6 +50,11 @@ const handleBuyNow = async () => {
     showErrorMessage("Please select a size before proceeding to checkout.");
     return;
   }
+  if (selectedSize.quantity <= 0) {
+    showErrorMessage("Selected size is out of stock.");
+    return;
+  }
+
   
   if (product) {
     const cartItem = {
@@ -122,6 +128,12 @@ const handleBuyNow = async () => {
       return;
     }
   
+        // Check if the selected size is in stock
+        if (selectedSize.quantity <= 0) {
+          showErrorMessage("Selected size is out of stock.");
+          return;
+        }
+
     if (product) {
       const productToAdd = {
         product_id: product.id,
@@ -286,14 +298,25 @@ const handleBuyNow = async () => {
                     selectedSize?.id === sizeObj.id
                       ? "bg-black text-white border-transparent"
                       : "bg-white text-black border-black"
-                  }`}
-                  onClick={() => setSelectedSize(sizeObj)}
+                  } ${sizeObj.quantity <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={() => {
+                    if (sizeObj.quantity > 0) {
+                      setSelectedSize(sizeObj);
+                    }
+                  }}
                 >
                   {sizeObj.size}
+                  {sizeObj.quantity <= 0 && (
+                    <div className="absolute top-0 right-0 text-red-500 text-xl">
+                      <FaTimes />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
+
+
 
           {/* Size Chart Button */}
           <div className="flex gap-4 mb-8">
@@ -310,12 +333,14 @@ const handleBuyNow = async () => {
             <button
               onClick={handleAddToCart}
               className="px-5 py-2 bg-[#282828] text-white border border-transparent rounded-full transition duration-300 hover:bg-white hover:text-black"
+              disabled={!selectedSize || selectedSize.quantity <= 0}
             >
               ADD TO CART
             </button>
             <button
               onClick={handleBuyNow}
               className="px-5 py-2 bg-[#282828] text-white border border-transparent rounded-full transition duration-300 hover:bg-white hover:text-black"
+              disabled={!selectedSize || selectedSize.quantity <= 0}
             >
               BUY NOW
             </button>
