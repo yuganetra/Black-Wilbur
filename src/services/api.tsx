@@ -313,11 +313,9 @@ export const createOrder = async (orderData: Order) => {
 
     // Validate the payment URL before redirecting
     if (payment_url && isValidUrl(payment_url)) {
-      window.location.href = payment_url;  // Redirect to the payment URL
-      return; // Exit the function after redirecting
+      return { order_id, payment_url };
     }
 
-    // If no valid payment URL is returned, just return the order ID
     return { order_id };
 
   } catch (error) {

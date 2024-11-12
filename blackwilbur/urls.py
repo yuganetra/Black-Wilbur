@@ -33,5 +33,8 @@ urlpatterns = [
     path('api/discounts/', views.DiscountAPIView.as_view(), name='discount-list'),  # To get all discounts or create new
     path('api/discounts/<uuid:pk>/', views.DiscountAPIView.as_view(), name='discount-detail'),  # To retrieve, update or delete a specific discount by ID
     path('check-payment-status/', services.PaymentService.check_payment_status, name='check_payment_status'),
+  #  path('verify-payment/', services.verify_payment, name='verify_payment'),  # New route for payment verification
+    path('payment/redirect/', services.payment_redirect, name='payment_redirect'),
+    path('payment/callback/', services.payment_callback, name='payment_callback'),
 
 ]

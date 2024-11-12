@@ -175,20 +175,33 @@ const Checkout: React.FC = () => {
     };
 
     try {
-      console.log("orderData", orderData);
-      const response = await createOrder(orderData);
+      console.log("orderData", orderData);  // Log the order data for debugging
+    
+      const response = await createOrder(orderData);  // Create the order
+    
       if (response) {
-        console.log(response)
-        // navigate("/orderConfirmation", {
-        //   state: { orderId, paymentMethod: data.payment_method },
-        // });
+        console.log("Order created successfully:", response);  // Log the response for debugging
+    
+        const { order_id, payment_url } = response;  // Destructure response to get order_id and payment_url
+        console.log("orderId,payment_url",orderId,payment_url)        
+        if (payment_url) {
+          window.location.href = payment_url;  // Redirect to the payment URL
+        } else {
+          // If no payment URL is provided, navigate to the order confirmation page
+          navigate("/orderConfirmation", {
+            state: { orderId: order_id, paymentMethod: orderData.payment_method },  // Pass order data
+          });
+        }
       } else {
         alert("Failed to place order.");
-        navigate("/orderFailure");
+        navigate("/orderFailure");  // Navigate to failure page if no response
       }
     } catch (error) {
       console.error("Error creating order:", error);
+      alert("An error occurred while placing the order.");
+      navigate("/orderFailure");  // Navigate to failure page if an error occurs
     }
+    
   };
 
   const totalAmount = products.reduce(
