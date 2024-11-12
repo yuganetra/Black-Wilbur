@@ -53,9 +53,9 @@ const OffersBanner: React.FC = () => {
         >
           {/* Offers */}
           <span className="mr-8">Black Wilbur Launches New Designs - Shop Now!</span>
-          <span className="mr-8">Buy 2 products, get 15% off!</span>
+          <span className="mr-8">Buy 2 products, get 15% off!(Code: Buy2)</span>
           <span className="mr-8">Limited Edition Items - Get Yours Now!</span>
-          <span className="mr-8">Buy 3 or more products, get 30% off!</span>
+          <span className="mr-8">Buy 3 or more products, get 30% off!(Code: Buy3)</span>
         </motion.div>
       </div>
     </div>

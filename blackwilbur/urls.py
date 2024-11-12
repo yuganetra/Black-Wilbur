@@ -36,5 +36,6 @@ urlpatterns = [
   #  path('verify-payment/', services.verify_payment, name='verify_payment'),  # New route for payment verification
     path('payment/redirect/', services.payment_redirect, name='payment_redirect'),
     path('payment/callback/', services.payment_callback, name='payment_callback'),
+    path('users/', views.UserListAPIView.as_view(), name='user-list'),
 
 ]

@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-}
+import React, { useState, useEffect } from 'react';
+import { getUsers } from '../services/api';  // Adjust path as necessary
+import { User } from '../utiles/types';    // Adjust path as necessary
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
 
-  const handleDeleteUser = (userId: number) =>
+  // Fetch users using the imported getUsers function
+  const fetchUsers = async () => {
+    try {
+      const fetchedUsers = await getUsers();
+      setUsers(fetchedUsers);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  };
+
+  // Fetch users when component mounts
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Handle user deletion
+  const handleDeleteUser = (userId: string) => {
     setUsers(users.filter(user => user.id !== userId));
+    // Optionally, add an API call here to delete the user from the backend
+  };
 
   return (
     <div className="p-6 bg-black text-white min-h-screen">
@@ -20,7 +34,9 @@ const UserManagement: React.FC = () => {
         <table className="min-w-full bg-gray-900 mt-4">
           <thead>
             <tr className="bg-gray-800">
-              <th className="py-2 px-4 border-b border-gray-700">Username</th>
+              <th className="py-2 px-4 border-b border-gray-700">First Name</th>
+              <th className="py-2 px-4 border-b border-gray-700">Last Name</th>
+              <th className="py-2 px-4 border-b border-gray-700">Phone Number</th>
               <th className="py-2 px-4 border-b border-gray-700">Email</th>
               <th className="py-2 px-4 border-b border-gray-700">Actions</th>
             </tr>
@@ -28,7 +44,9 @@ const UserManagement: React.FC = () => {
           <tbody>
             {users.map(user => (
               <tr key={user.id} className="hover:bg-gray-800">
-                <td className="py-2 px-4 border-b border-gray-700">{user.username}</td>
+                <td className="py-2 px-4 border-b border-gray-700">{user.first_name}</td>
+                <td className="py-2 px-4 border-b border-gray-700">{user.last_name}</td>
+                <td className="py-2 px-4 border-b border-gray-700">{user.phone_number}</td>
                 <td className="py-2 px-4 border-b border-gray-700">{user.email}</td>
                 <td className="py-2 px-4 border-b border-gray-700">
                   <button 

@@ -18,6 +18,7 @@ import {
   ImageRequest,
   Discount,
   ProductCollection,
+  User
 } from "../utiles/types";
 
 const API_BASE_URL = "https://api.blackwilbur.com/";
@@ -279,6 +280,16 @@ export const sendSms = async (otp: string, numbers: string[]): Promise<SendSmsRe
   } catch (error) {
     console.error("Error sending SMS:", error);
     return { error: "Failed to send SMS." };
+  }
+};
+
+export const getUsers = async (): Promise<User[]> => {
+  try {
+    const response = await axios.get<User[]>(`${API_BASE_URL}users/`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+    throw error;
   }
 };
 

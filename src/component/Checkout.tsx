@@ -32,7 +32,6 @@ interface Order {
   total_amount: number; // Final total amount for the order
 }
 
-
 const Checkout: React.FC = () => {
   const location = useLocation();
   const {
@@ -171,37 +170,39 @@ const Checkout: React.FC = () => {
       subtotal: finalAmount,
       discount_amount: couponDiscount || quantityDiscount,
       tax_amount: 0,
-      total_amount: totalAmount
+      total_amount: totalAmount,
     };
 
     try {
-      console.log("orderData", orderData);  // Log the order data for debugging
-    
-      const response = await createOrder(orderData);  // Create the order
-    
+      console.log("orderData", orderData); // Log the order data for debugging
+
+      const response = await createOrder(orderData); // Create the order
+
       if (response) {
-        console.log("Order created successfully:", response);  // Log the response for debugging
-    
-        const { order_id, payment_url } = response;  // Destructure response to get order_id and payment_url
-        console.log("orderId,payment_url",orderId,payment_url)        
+        console.log("Order created successfully:", response); // Log the response for debugging
+
+        const { order_id, payment_url } = response; // Destructure response to get order_id and payment_url
+        console.log("orderId,payment_url", orderId, payment_url);
         if (payment_url) {
-          window.location.href = payment_url;  // Redirect to the payment URL
+          window.location.href = payment_url; // Redirect to the payment URL
         } else {
           // If no payment URL is provided, navigate to the order confirmation page
           navigate("/orderConfirmation", {
-            state: { orderId: order_id, paymentMethod: orderData.payment_method },  // Pass order data
+            state: {
+              orderId: order_id,
+              paymentMethod: orderData.payment_method,
+            }, // Pass order data
           });
         }
       } else {
         alert("Failed to place order.");
-        navigate("/orderFailure");  // Navigate to failure page if no response
+        navigate("/orderFailure"); // Navigate to failure page if no response
       }
     } catch (error) {
       console.error("Error creating order:", error);
       alert("An error occurred while placing the order.");
-      navigate("/orderFailure");  // Navigate to failure page if an error occurs
+      navigate("/orderFailure"); // Navigate to failure page if an error occurs
     }
-    
   };
 
   const totalAmount = products.reduce(
@@ -268,7 +269,7 @@ const Checkout: React.FC = () => {
                             </div>
                           </div>
                           <p className="text-lg font-bold">
-                            ${(Number(product.price) || 0).toFixed(2)}
+                            ₹{(Number(product.price) || 0).toFixed(2)}
                           </p>
                         </div>
                       );
@@ -535,7 +536,7 @@ const Checkout: React.FC = () => {
                     className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                   >
                     <option value="">Select a payment method</option>
-                    <option value="UPI">UPI</option>
+                    {/* <option value="UPI">UPI</option> */}
                     <option value="cash_on_delivery">Cash on Delivery</option>
                   </select>
                   {errors.payment_method && (

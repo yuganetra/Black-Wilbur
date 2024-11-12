@@ -6,6 +6,14 @@ export interface Category {
 
 export type ProductResponse = Product[];
 
+export interface User {
+  id: string;            // Unique identifier for the user
+  first_name: string;    // First name of the user
+  last_name: string;     // Last name of the user
+  phone_number: string;  // Phone number of the user
+  email: string;         // Email address of the user
+}
+
 
 
 // Interface for ProductImage

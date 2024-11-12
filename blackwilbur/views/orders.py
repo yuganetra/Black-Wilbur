@@ -13,7 +13,13 @@ class OrdersAPIView(APIView):
 
     def get(self, request):
         user = request.user
-        orders = models.Order.objects.filter(user=user)
+
+        # Check if the user is authenticated and retrieve orders accordingly
+        if user.is_authenticated:
+            orders = models.Order.objects.filter(user=user)
+        else:
+            orders = models.Order.objects.all()  # Fetch all orders if no specific user is set
+
         orders_data = []
 
         for order in orders:
@@ -54,8 +60,8 @@ class OrdersAPIView(APIView):
             orders_data.append(order_data)
 
         return Response(orders_data, status=status.HTTP_200_OK)
-
-    permission_classes = [IsAuthenticated]
+    
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request):
         print("Received POST request with data:", request.data)
