@@ -14,11 +14,12 @@ class OrdersAPIView(APIView):
     def get(self, request):
         user = request.user
 
-        # Check if the user is authenticated and retrieve orders accordingly
         if user.is_authenticated:
+            # Fetch orders for the authenticated user
             orders = models.Order.objects.filter(user=user)
         else:
-            orders = models.Order.objects.all()  # Fetch all orders if no specific user is set
+            # Fetch all orders if no specific user is authenticated
+            orders = models.Order.objects.all()
 
         orders_data = []
 
@@ -26,7 +27,7 @@ class OrdersAPIView(APIView):
             order_items = models.OrderItem.objects.filter(order=order)
             items_data = []
 
-            # Calculate item-specific fields (subtotal, discount, tax, total)
+            # Collect item-specific details
             for item in order_items:
                 item_data = {
                     "product": {
@@ -46,10 +47,20 @@ class OrdersAPIView(APIView):
                 }
                 items_data.append(item_data)
 
-            # Add user's name and phone number to each order's data
+            # If authenticated, get user's name and phone number directly
+            if user.is_authenticated:
+                user_name = user.get_full_name() or user.username
+                phone_number = user.profile.phone_number if hasattr(user, 'profile') and user.profile.phone_number else "N/A"
+            else:
+                # For unauthenticated requests, fetch the user's details by user_id for each order
+                order_user = order.user  # Get the user associated with the order
+                user_name = order_user.get_full_name() or order_user.username
+                phone_number = order_user.profile.phone_number if hasattr(order_user, 'profile') and order_user.profile.phone_number else "N/A"
+
+            # Add user and order details
             order_data = {
-                "user_name": user.get_full_name() or user.username,  # Use full name if available, otherwise username
-                "phone_number": user.profile.phone_number if hasattr(user, 'profile') and user.profile.phone_number else "N/A",
+                "user_name": user_name,
+                "phone_number": phone_number,
                 "order_id": order.order_id,
                 "created_at": order.created_at,
                 "status": order.status,
@@ -58,11 +69,12 @@ class OrdersAPIView(APIView):
                 "discount_amount": str(order.discount_amount),
                 "tax_amount": str(order.tax_amount),
                 "total_amount": str(order.total_amount),
-                "items": items_data  # Include items with calculated fields in the order data
+                "items": items_data
             }
             orders_data.append(order_data)
 
         return Response(orders_data, status=status.HTTP_200_OK)
+
     
         # permission_classes = [IsAuthenticated]
     def post(self, request):
