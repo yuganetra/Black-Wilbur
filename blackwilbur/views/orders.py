@@ -60,7 +60,7 @@ class OrdersAPIView(APIView):
             # Add user and order details
             order_data = {
                 "user_name": user_name,
-                "phone_number": phone_number,
+                "phone_number": order.phone_number,
                 "order_id": order.order_id,
                 "created_at": order.created_at,
                 "status": order.status,

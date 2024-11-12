@@ -92,6 +92,7 @@ const Authentication: React.FC = () => {
           email: formData.email,
           password: formData.password,
           password2: formData.password2,
+          isAdmin: 0
         };
         const response = await registerUser(userData);
         localStorage.setItem("user", JSON.stringify(response));
@@ -112,23 +113,35 @@ const Authentication: React.FC = () => {
     setApiError("");
 
     try {
+      // Login user by sending email and password
       const response = await loginUser({
         email: formData.email,
         password: formData.password,
+        isAdmin: 0
       });
 
       localStorage.setItem("user", JSON.stringify(response));
-      const cartItems = fetchCartItems();
-      localStorage.setItem("cart", JSON.stringify(cartItems));
+      console.log(response.isAdmin)
+      // If user is admin, redirect to admin dashboard, else user profile
+      if (response.isAdmin) {
+        // Navigate to the admin dashboard
+        navigate("/admin");
+      } else {
+        // Fetch and store cart items for the regular user
+        const cartItems = fetchCartItems();
+        localStorage.setItem("cart", JSON.stringify(cartItems));
 
-      const previousState = location.state?.from || "/user-profile";
-      navigate(previousState, {
-        state: { products: location.state?.products || [] },
-      });
+        // Navigate to the previous state or user profile
+        const previousState = location.state?.from || "/user-profile";
+        navigate(previousState, {
+          state: { products: location.state?.products || [] },
+        });
+      }
+
     } catch (error) {
       setApiError("Invalid credentials. Please check your email and password.");
     }
-  };
+};
 
   const inputClasses =
     "w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-1 focus:ring-black transition duration-200 text-gray-900 text-base";

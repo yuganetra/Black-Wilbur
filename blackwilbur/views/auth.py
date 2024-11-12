@@ -37,6 +37,7 @@ class LoginAPIView(APIView):
                 'last_name': user.last_name,
                 'phone_number': user.phone_number,
                 'email': user.email,
+                'isAdmin': user.is_superuser
             }
         }, status=status.HTTP_200_OK) 
 

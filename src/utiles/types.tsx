@@ -87,10 +87,7 @@ export interface AuthUser {
   email: string;
   password: string;
   password2?: string;
-}
-export interface LoginUser {
-  identifier: string; // Change this to identifier to accept either username or email
-  password: string;
+  isAdmin: number;
 }
 
 export interface Address {

@@ -1,4 +1,3 @@
-// AdminPanel.tsx
 import React, { useState } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import ProductManagement from './ProductManagement';
@@ -28,6 +27,13 @@ const AdminPanel: React.FC = () => {
 
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
+  };
+
+  const logout = () => {
+    // Remove user data from localStorage
+    localStorage.removeItem("user");
+    // Redirect to login page
+    navigate("/auth/login");
   };
 
   return (
@@ -117,6 +123,15 @@ const AdminPanel: React.FC = () => {
                 onClick={() => handleNavigate("/admin/discount", "Discount Management")}
               >
                 Discount Management
+              </button>
+            </li>
+            {/* Add the logout button here */}
+            <li>
+              <button
+                onClick={logout}
+                className="w-full text-left p-3 rounded hover:bg-gray-700 mt-4"
+              >
+                Logout
               </button>
             </li>
           </ul>

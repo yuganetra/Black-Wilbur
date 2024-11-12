@@ -16,18 +16,23 @@ import Authentication from "./component/Authentication";
 import AdminPanel from "./admin/adminPanel";
 import OrderConfirmation from "./component/OrderConfirmation";
 import OrderFailure from "./component/OrderFailure";
+import PrivateRoute from "././utiles/PrivateRoute"; // Import the PrivateRoute
 
 function App() {
+  // Check if the user is an admin from localStorage (or state management)
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = user?.isAdmin || false; // Use isAdmin flag
+
   return (
     <div className="App">
       <BrowserRouter>
         <ScrollToTop />
-        {/* Render Navbar and Footer only if not in admin routes */}
         <Routes>
-          <Route
-            path="/admin/*"
-            element={<AdminPanel />}
-          />
+          {/* Protect the admin route with PrivateRoute */}
+          <Route path="/admin/*" element={<PrivateRoute />}>
+            <Route path="/admin/*" element={<AdminPanel />} />
+          </Route>
+
           {/* All other routes */}
           <Route
             path="*"
@@ -46,8 +51,8 @@ function App() {
                   <Route path="/user-profile" element={<Userprofile />} />
                   <Route path="/auth/login" element={<Authentication />} />
                   <Route path="/auth/signup" element={<Authentication />} />
-                  <Route path="orderConfirmation" element={<OrderConfirmation orderId={""} paymentMethod={""}/>} />
-                  <Route path="orderFailure" element={<OrderFailure/>} />
+                  <Route path="orderConfirmation" element={<OrderConfirmation orderId={""} paymentMethod={""} />} />
+                  <Route path="orderFailure" element={<OrderFailure />} />
                 </Routes>
                 <Footer />
               </>
