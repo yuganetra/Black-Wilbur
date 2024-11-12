@@ -60,73 +60,40 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
         const discountData = await getDiscounts({});
         setDiscounts(discountData);
       } catch (error) {
-        console.error('Failed to fetch discounts', error);
+        console.error("Failed to fetch discounts", error);
       }
     };
     fetchDiscounts();
   }, []);
 
+  // Handle coupon code application
+  const handleCouponApply = () => {
+    const matchingCoupon = discounts.find(
+      (discount) =>
+       discount.coupon === couponCode
+    );
 
-    // Calculate and apply quantity-based discount
-    useEffect(() => {
-      const totalQuantity = cartProducts.reduce(
-        (total, item) => total + item.quantity,
-        0
-      );
-      // Find the discount for quantity based on the total quantity
-      const quantityDiscountData = discounts.find(
-        (discount) =>
-          discount.discount_type === "QUANTITY" &&
-          totalQuantity >= (discount.quantity_threshold || 0)
-      );
-  
-      if (quantityDiscountData) {
-        const discountPercentage = quantityDiscountData.percent_discount;
-        if (!isNaN(discountPercentage)) {
-          setQuantityDiscount(discountPercentage);
-        } else {
-          setQuantityDiscount(0);
-        }
-      } else {
-        setQuantityDiscount(0);
-      }
-    }, [cartProducts, discounts]);
-  
-    // Handle coupon code application
-    const handleCouponApply = () => {
-      const matchingCoupon = discounts.find(
-        (discount) =>
-          discount.discount_type === "COUPON" && discount.coupon === couponCode
-      );
-  
-      if (matchingCoupon) {
+    if (matchingCoupon) {
+      // Check if the coupon has a quantity threshold and if it is met
+      if (
+        matchingCoupon.quantity_threshold &&
+        totalQuantity >= matchingCoupon.quantity_threshold
+      ) {
+        setCouponDiscount(matchingCoupon.percent_discount);
+        setShowConfetti(true);
+      } else if (!matchingCoupon.quantity_threshold) {
+        // Apply coupon if no quantity threshold exists
         setCouponDiscount(matchingCoupon.percent_discount);
         setShowConfetti(true);
       } else {
-        alert("Invalid coupon code.");
+        alert(
+          `You need at least ${matchingCoupon.quantity_threshold} items to use this coupon.`
+        );
       }
-    };
-  
-
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // const calculateQuantityDiscount = () => {
-  //   const totalQuantity = cartProducts.reduce(
-  //     (total, item) => total + item.quantity,
-  //     0
-  //   );
-
-  //   if (totalQuantity >= 3) {
-  //     setQuantityDiscount(30); // 30% off for 3 or more products
-  //   } else if (totalQuantity === 2) {
-  //     setQuantityDiscount(15); // 15% off for 2 products
-  //   } else {
-  //     setQuantityDiscount(0); // No discount for less than 2 products
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   calculateQuantityDiscount();
-  // }, [calculateQuantityDiscount, cartProducts]);
+    } else {
+      alert("Invalid coupon code.");
+    }
+  };
 
   const handleCheckoutNavigate = async () => {
     const cartCount = getCartItemsCount();
@@ -241,7 +208,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       prev.map((item) => {
         if (item.id === cartItemId) {
           const newQuantity = Math.max(1, item.quantity + change);
-
+  
           updateCartItem(cartItemId, newQuantity).catch((error) => {
             console.error("Error updating cart item:", error);
             setCartProducts((prev) =>
@@ -252,7 +219,10 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
               )
             );
           });
-
+  
+          // Reset quantity discount whenever the quantity changes
+          setCouponDiscount(0);
+  
           return {
             ...item,
             quantity: newQuantity,
@@ -262,7 +232,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       })
     );
   };
-
+  
   const totalAmount = cartProducts.reduce(
     (total, item) => total + item.product.price * item.quantity,
     0

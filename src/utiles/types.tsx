@@ -212,7 +212,6 @@ export interface Discount {
   coupon?: string;  // Optional for 'QUANTITY' type discounts
   percent_discount: number;
   min_order_price: number;
-  discount_type: DiscountType;
   quantity_threshold?: number;  // Optional for 'COUPON' type discounts
   created_at: string;
   updated_at: string;

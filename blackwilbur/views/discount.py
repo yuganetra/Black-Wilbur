@@ -2,7 +2,6 @@ from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser
 from blackwilbur.models import Discount
 from blackwilbur.serializers import DiscountSerializer
 
@@ -39,17 +38,16 @@ class DiscountAPIView(APIView):
         """Create a new discount."""
         serializer = DiscountSerializer(data=request.data)
         if serializer.is_valid():
-            # Custom validation to check if discount_type and fields are valid
-            discount_type = request.data.get('discount_type')
-            if discount_type == 'COUPON' and 'coupon' not in request.data:
-                return Response({"error": "Coupon code is required for COUPON type discount."}, status=status.HTTP_400_BAD_REQUEST)
-            if discount_type == 'QUANTITY' and 'quantity_threshold' not in request.data:
-                return Response({"error": "Quantity threshold is required for QUANTITY type discount."}, status=status.HTTP_400_BAD_REQUEST)
+            # Custom validation to check if either coupon or quantity_threshold is provided
+            coupon = request.data.get('coupon')
+            quantity_threshold = request.data.get('quantity_threshold')
 
-            # Ensure that 'coupon' is not provided for 'QUANTITY' type discounts
-            if discount_type == 'QUANTITY' and 'coupon' in request.data:
-                return Response({"error": "Coupon code should not be provided for QUANTITY type discount."}, status=status.HTTP_400_BAD_REQUEST)
-            
+            if not coupon and not quantity_threshold:
+                return Response({"error": "Either a coupon code or a quantity threshold must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if coupon and quantity_threshold:
+                return Response({"error": "Coupon code and quantity threshold should not be provided together."}, status=status.HTTP_400_BAD_REQUEST)
+
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -63,16 +61,15 @@ class DiscountAPIView(APIView):
 
         serializer = DiscountSerializer(discount, data=request.data, partial=True)
         if serializer.is_valid():
-            # Custom validation to check if discount_type and fields are valid
-            discount_type = request.data.get('discount_type', discount.discount_type)
-            if discount_type == 'COUPON' and 'coupon' not in request.data:
-                return Response({"error": "Coupon code is required for COUPON type discount."}, status=status.HTTP_400_BAD_REQUEST)
-            if discount_type == 'QUANTITY' and 'quantity_threshold' not in request.data:
-                return Response({"error": "Quantity threshold is required for QUANTITY type discount."}, status=status.HTTP_400_BAD_REQUEST)
+            # Custom validation to check if either coupon or quantity_threshold is provided
+            coupon = request.data.get('coupon', discount.coupon)
+            quantity_threshold = request.data.get('quantity_threshold', discount.quantity_threshold)
 
-            # Ensure that 'coupon' is not provided for 'QUANTITY' type discounts
-            if discount_type == 'QUANTITY' and 'coupon' in request.data:
-                return Response({"error": "Coupon code should not be provided for QUANTITY type discount."}, status=status.HTTP_400_BAD_REQUEST)
+            if not coupon and not quantity_threshold:
+                return Response({"error": "Either a coupon code or a quantity threshold must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if coupon and quantity_threshold:
+                return Response({"error": "Coupon code and quantity threshold should not be provided together."}, status=status.HTTP_400_BAD_REQUEST)
 
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

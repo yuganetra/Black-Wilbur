@@ -2,25 +2,21 @@ import uuid
 from django.db import models
 
 class Discount(models.Model):
-    DISCOUNT_TYPE_CHOICES = [
-        ('COUPON', 'Coupon'),
-        ('QUANTITY', 'Quantity-based'),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    coupon = models.CharField(max_length=50, unique=True, null=True, blank=True)  # Coupon code (nullable for coupon-based discounts)
+    coupon = models.CharField(max_length=50, unique=True, null=True, blank=True)  # Coupon code
     percent_discount = models.DecimalField(max_digits=5, decimal_places=2)  # Percentage discount
-    min_order_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Minimum order price (optional for quantity discounts)
-    quantity_threshold = models.IntegerField(null=True, blank=True)  # Quantity threshold (optional for quantity-based discounts)
-    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES)  # Type of discount: Coupon or Quantity-based
+    min_order_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Minimum order price (optional)
+    quantity_threshold = models.IntegerField(null=True, blank=True)  # Minimum quantity for discount (optional)
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for creation
     updated_at = models.DateTimeField(auto_now=True)  # Timestamp for last update
 
     def __str__(self):
-        if self.discount_type == 'COUPON':
-            return f"{self.coupon} - {self.percent_discount}%"
+        if self.coupon:
+            return f"Coupon {self.coupon} - {self.percent_discount}%"
+        elif self.quantity_threshold:
+            return f"{self.percent_discount}% off on buying {self.quantity_threshold} or more"
         else:
-            return f"Buy {self.quantity_threshold} or more - {self.percent_discount}% off"
+            return f"{self.percent_discount}% off"
 
     class Meta:
         verbose_name = "Discount"

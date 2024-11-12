@@ -9,8 +9,7 @@ const DiscountManage: React.FC = () => {
     coupon: '',
     percent_discount: 0,
     min_order_price: 0,
-    discount_type: 'COUPON',
-    quantity_threshold: undefined,
+    quantity_threshold: 0,
     created_at: '',
     updated_at: '',
   });
@@ -56,8 +55,7 @@ const DiscountManage: React.FC = () => {
       coupon: '',
       percent_discount: 0,
       min_order_price: 0,
-      discount_type: 'COUPON',
-      quantity_threshold: undefined,
+      quantity_threshold: 0,
       created_at: '',
       updated_at: '',
     });
@@ -70,32 +68,18 @@ const DiscountManage: React.FC = () => {
       <div className="mb-6">
         <h2 className="text-xl mb-4">Create New Discount</h2>
         <div className="space-y-4">
-          {/* Coupon Code or Quantity Threshold */}
-          {newDiscount.discount_type === 'COUPON' ? (
-            <div>
-              <label htmlFor="coupon" className="block text-sm font-medium">Coupon Code</label>
-              <input
-                id="coupon"
-                type="text"
-                value={newDiscount.coupon}
-                onChange={(e) => setNewDiscount({ ...newDiscount, coupon: e.target.value })}
-                placeholder="Enter Coupon Code"
-                className="border border-gray-300 p-2 w-full bg-black text-white"
-              />
-            </div>
-          ) : (
-            <div>
-              <label htmlFor="quantity_threshold" className="block text-sm font-medium">Quantity Threshold</label>
-              <input
-                id="quantity_threshold"
-                type="number"
-                value={newDiscount.quantity_threshold ?? ''}
-                onChange={(e) => setNewDiscount({ ...newDiscount, quantity_threshold: Number(e.target.value) })}
-                placeholder="Enter Quantity Threshold"
-                className="border border-gray-300 p-2 w-full bg-black text-white"
-              />
-            </div>
-          )}
+          {/* Coupon Code */}
+          <div>
+            <label htmlFor="coupon" className="block text-sm font-medium">Coupon Code (Optional)</label>
+            <input
+              id="coupon"
+              type="text"
+              value={newDiscount.coupon || ''}
+              onChange={(e) => setNewDiscount({ ...newDiscount, coupon: e.target.value })}
+              placeholder="Enter Coupon Code (Optional)"
+              className="border border-gray-300 p-2 w-full bg-black text-white"
+            />
+          </div>
 
           {/* Discount Percentage */}
           <div>
@@ -123,33 +107,17 @@ const DiscountManage: React.FC = () => {
             />
           </div>
 
-          {/* Discount Type Toggle */}
+          {/* Quantity Threshold */}
           <div>
-            <label className="block text-sm font-medium">Discount Type</label>
-            <div className="flex items-center space-x-4">
-              <label>
-                <input
-                  type="radio"
-                  name="discount_type"
-                  value="COUPON"
-                  checked={newDiscount.discount_type === 'COUPON'}
-                  onChange={() => setNewDiscount({ ...newDiscount, discount_type: 'COUPON' })}
-                  className="mr-2"
-                />
-                Coupon
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="discount_type"
-                  value="QUANTITY"
-                  checked={newDiscount.discount_type === 'QUANTITY'}
-                  onChange={() => setNewDiscount({ ...newDiscount, discount_type: 'QUANTITY' })}
-                  className="mr-2"
-                />
-                Quantity
-              </label>
-            </div>
+            <label htmlFor="quantity_threshold" className="block text-sm font-medium">Quantity Threshold (Optional)</label>
+            <input
+              id="quantity_threshold"
+              type="number"
+              value={newDiscount.quantity_threshold || ''}
+              onChange={(e) => setNewDiscount({ ...newDiscount, quantity_threshold: Number(e.target.value) })}
+              placeholder="Enter Quantity Threshold (Optional)"
+              className="border border-gray-300 p-2 w-full bg-black text-white"
+            />
           </div>
 
           {/* Submit Button */}
@@ -169,20 +137,20 @@ const DiscountManage: React.FC = () => {
           <table className="min-w-full bg-black text-white border-collapse">
             <thead>
               <tr>
-                <th className="py-2 px-4 border-b">Discount Type</th>
                 <th className="py-2 px-4 border-b">Coupon/Quantity</th>
                 <th className="py-2 px-4 border-b">Discount %</th>
                 <th className="py-2 px-4 border-b">Min Order Price</th>
+                <th className="py-2 px-4 border-b">Quantity Threshold</th>
                 <th className="py-2 px-4 border-b">Actions</th>
               </tr>
             </thead>
             <tbody>
               {discounts.map((discount) => (
                 <tr key={discount.id}>
-                  <td className="py-2 px-4 border-b">{discount.discount_type}</td>
                   <td className="py-2 px-4 border-b">{discount.coupon || `Buy ${discount.quantity_threshold} Get ${discount.percent_discount}%`}</td>
                   <td className="py-2 px-4 border-b">{discount.percent_discount}%</td>
                   <td className="py-2 px-4 border-b">{discount.min_order_price}</td>
+                  <td className="py-2 px-4 border-b">{discount.quantity_threshold}</td>
                   <td className="py-2 px-4 border-b">
                     <button onClick={() => handleDeleteDiscount(discount.id)} className="bg-red-500 text-white p-2 rounded">
                       Delete
