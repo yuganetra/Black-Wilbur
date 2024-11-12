@@ -8,10 +8,10 @@ class Discount(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    coupon = models.CharField(max_length=50, unique=True, null=True, blank=True)  # Coupon code (only for coupon-based discounts)
+    coupon = models.CharField(max_length=50, unique=True, null=True, blank=True)  # Coupon code (nullable for coupon-based discounts)
     percent_discount = models.DecimalField(max_digits=5, decimal_places=2)  # Percentage discount
     min_order_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Minimum order price (optional for quantity discounts)
-    quantity_threshold = models.IntegerField(null=True, blank=True)  # Quantity threshold (only for quantity-based discounts)
+    quantity_threshold = models.IntegerField(null=True, blank=True)  # Quantity threshold (optional for quantity-based discounts)
     discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES)  # Type of discount: Coupon or Quantity-based
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for creation
     updated_at = models.DateTimeField(auto_now=True)  # Timestamp for last update

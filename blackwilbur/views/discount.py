@@ -1,4 +1,3 @@
-# views/discount_view.py
 from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -46,6 +45,10 @@ class DiscountAPIView(APIView):
                 return Response({"error": "Coupon code is required for COUPON type discount."}, status=status.HTTP_400_BAD_REQUEST)
             if discount_type == 'QUANTITY' and 'quantity_threshold' not in request.data:
                 return Response({"error": "Quantity threshold is required for QUANTITY type discount."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Ensure that 'coupon' is not provided for 'QUANTITY' type discounts
+            if discount_type == 'QUANTITY' and 'coupon' in request.data:
+                return Response({"error": "Coupon code should not be provided for QUANTITY type discount."}, status=status.HTTP_400_BAD_REQUEST)
             
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -66,6 +69,10 @@ class DiscountAPIView(APIView):
                 return Response({"error": "Coupon code is required for COUPON type discount."}, status=status.HTTP_400_BAD_REQUEST)
             if discount_type == 'QUANTITY' and 'quantity_threshold' not in request.data:
                 return Response({"error": "Quantity threshold is required for QUANTITY type discount."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Ensure that 'coupon' is not provided for 'QUANTITY' type discounts
+            if discount_type == 'QUANTITY' and 'coupon' in request.data:
+                return Response({"error": "Coupon code should not be provided for QUANTITY type discount."}, status=status.HTTP_400_BAD_REQUEST)
 
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
