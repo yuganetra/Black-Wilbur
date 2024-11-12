@@ -1,5 +1,6 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from blackwilbur import models, serializers
+from django.db.models import Avg
 
 class ProductSerializer(ModelSerializer):
     category = SerializerMethodField()
@@ -31,13 +32,12 @@ class ProductDetailSerializer(ModelSerializer):
             "rating",
         ]
 
-    def get_rating(self, instance):
-        ratings = instance.reviews.all()
-        if ratings.exists():
-            average_rating = ratings.aggregate(models.Avg('rating'))['rating__avg']
-        else:
-            return 0
-        return round(min(max(average_rating, 0), 5), 1)
+
+    def get_rating(self, product):
+        # Fetch all ratings for this product and calculate the average rating
+        ratings = product.reviews.all()  # Assuming 'reviews' is the related_name for the Rating model
+        average_rating = ratings.aggregate(Avg('rating'))['rating__avg']
+        return average_rating
 
     def get_sizes(self, instance):
         # Fetch all variations related to the product UUID

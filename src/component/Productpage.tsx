@@ -205,7 +205,7 @@ const handleBuyNow = async () => {
               setImages([]); // Set to empty in case of unexpected errors
             }
           }
-
+          fetchRatingsForProduct();
           const fetchedExplore = await fetchExplore();
           setExploreProducts(fetchedExplore);
         }

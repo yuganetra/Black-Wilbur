@@ -27,7 +27,7 @@ class RatingAPIView(APIView):
     def post(self, request):
         print(f"POST request received with data: {request.data}")  # Debug print
 
-        # Extract product ID from request data
+        # Extract product_id from request data
         product_id = request.data.get('product_id')
         if not product_id:
             print("product_id is missing in the request.")  # Debug print
@@ -39,8 +39,12 @@ class RatingAPIView(APIView):
             print("Rating value is missing in the request.")  # Debug print
             return Response({"detail": "rating value is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Check if product_id exists in the Product table (Optional but recommended)
+        if not models.Product.objects.filter(id=product_id).exists():
+            return Response({"detail": "Invalid product_id."}, status=status.HTTP_400_BAD_REQUEST)
+
         # Create a rating instance
-        serializer = serializers.RatingSerializer(data={'product': product_id, 'rating': rating_value})
+        serializer = serializers.RatingSerializer(data={'product': product_id, 'rating': rating_value, 'user': request.user.id})
         if not serializer.is_valid():
             print(f"Invalid data: {serializer.errors}")  # Debug print
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -4,8 +4,7 @@ from blackwilbur.models import Rating
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
-        fields = ['product', 'rating']  # Include 'product' field directly
-        read_only_fields = ['product']  # Make 'product' read-only if it's being set automatically
+        fields = ['product', 'rating']  # Use 'product' instead of 'product_id'
 
     def validate_rating(self, value):
         if not (1 <= value <= 5):  # Assuming rating is between 1 and 5

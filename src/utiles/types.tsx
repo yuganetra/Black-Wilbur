@@ -185,6 +185,9 @@ export interface GetOrder {
   created_at: string;     // Datetime when the order was created
   status: string;         // Status of the order (e.g., 'Pending', 'Completed')
   items: OrderItem[];     // Array of items in the order
+  payment_status: string;
+  user_name:string;
+  phone_number: string;
 }
 
 

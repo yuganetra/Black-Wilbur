@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
 import Confetti from 'react-confetti';
 
 const OffersBanner: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(false);
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
   // Function to toggle confetti
   const handleOfferClick = () => {
@@ -12,51 +10,34 @@ const OffersBanner: React.FC = () => {
     setTimeout(() => setShowConfetti(false), 3000); // Hide confetti after 3 seconds
   };
 
-  // Adjust screen width
-  useEffect(() => {
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  // Dynamically adjust animation speed and duration based on screen size
-  const duration = screenWidth < 640 ? 15 : 20; // Further extend duration on smaller screens
-  const speed = screenWidth < 640 ? 5 : 8;   // Adjust speed for smoother scrolling on small screens
-
   return (
     <div className="relative">
       {showConfetti && <Confetti />}
 
-      {/* Banner with responsive padding */}
-      <div className="bg-black text-white py-4 sm:py-8 w-full overflow-hidden">
-        <motion.div
-          className="whitespace-nowrap text-lg sm:text-xl font-semibold cursor-pointer"
-          style={{ minWidth: '400%' }} // Increased space for smooth animation
-          animate={{
-            x: ['100%', '-100%'], // Start from the right, end on the left
-          }}
-          transition={{
-            x: {
-              repeat: Infinity, // Infinite loop
-              repeatType: 'loop',
-              duration: duration, // Dynamically adjust duration based on screen size
-              ease: 'linear',
-            },
-          }}
-          onClick={handleOfferClick}
-        >
-          {/* Offers */}
-          <span className="mr-8">Black Wilbur Launches New Designs - Shop Now!</span>
-          <span className="mr-8">Buy 2 products, get 15% off!(Code: Buy2)</span>
-          <span className="mr-8">Limited Edition Items - Get Yours Now!</span>
-          <span className="mr-8">Buy 3 or more products, get 30% off!(Code: Buy3)</span>
-        </motion.div>
+      {/* Banner with centered, systematic offer cards */}
+      <div className="bg-black text-white py-6 w-full cursor-pointer" onClick={handleOfferClick}>
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4">Exclusive Offers</h2>
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
+            {/* Individual Offer Cards */}
+            <div className="border border-gray-700 p-4 rounded-lg w-full sm:w-1/4 text-center">
+              <h3 className="text-lg font-semibold">New Designs Launched</h3>
+              <p className="text-gray-400">Explore our latest collection - shop now!</p>
+            </div>
+            <div className="border border-gray-700 p-4 rounded-lg w-full sm:w-1/4 text-center">
+              <h3 className="text-lg font-semibold">Buy 2, Get 15% Off</h3>
+              <p className="text-gray-400">Use code <strong>Buy2</strong> at cart.</p>
+            </div>
+            <div className="border border-gray-700 p-4 rounded-lg w-full sm:w-1/4 text-center">
+              <h3 className="text-lg font-semibold">Limited Edition</h3>
+              <p className="text-gray-400">Get exclusive items while stocks last!</p>
+            </div>
+            <div className="border border-gray-700 p-4 rounded-lg w-full sm:w-1/4 text-center">
+              <h3 className="text-lg font-semibold">Buy 3, Get 30% Off</h3>
+              <p className="text-gray-400">Use code <strong>Buy3</strong> at cart.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

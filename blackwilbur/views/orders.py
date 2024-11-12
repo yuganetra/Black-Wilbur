@@ -46,7 +46,10 @@ class OrdersAPIView(APIView):
                 }
                 items_data.append(item_data)
 
+            # Add user's name and phone number to each order's data
             order_data = {
+                "user_name": user.get_full_name() or user.username,  # Use full name if available, otherwise username
+                "phone_number": user.profile.phone_number if hasattr(user, 'profile') and user.profile.phone_number else "N/A",
                 "order_id": order.order_id,
                 "created_at": order.created_at,
                 "status": order.status,
@@ -61,8 +64,7 @@ class OrdersAPIView(APIView):
 
         return Response(orders_data, status=status.HTTP_200_OK)
     
-    # permission_classes = [IsAuthenticated]
-
+        # permission_classes = [IsAuthenticated]
     def post(self, request):
         print("Received POST request with data:", request.data)
 
@@ -87,23 +89,24 @@ class OrdersAPIView(APIView):
         except models.Order.DoesNotExist:
             print("No existing order found. Creating new order...")
 
-            # Create a new order
+            # Create a new order with initial subtotal, discount, tax, shipping, and total values as zero
             new_order = models.Order.objects.create(
                 **{key: value for key, value in order_serializer.validated_data.items() if key != 'user'},
                 user=request.user,
-                order_id=order_id
+                order_id=order_id,
+                subtotal=Decimal(0),
+                discount_amount=Decimal(0),
+                tax_amount=Decimal(0),
+                shipping_cost=Decimal(0),
+                total_amount=Decimal(0)
             )
             print("New order created with ID:", new_order.order_id)
 
-        # Create order items and calculate totals
-        total_amount = 0
-        frontend_total_amount = request.data.get('total_amount', 0)
-        frontend_subtotal = request.data.get('subtotal', 0)
-        discount_amount = frontend_total_amount - frontend_subtotal
-        print(f"Calculated discount amount: {discount_amount}")
-
-        if discount_amount < 0:
-            return Response({"error": "Subtotal cannot be greater than total amount!"}, status=status.HTTP_400_BAD_REQUEST)
+        # Calculate subtotal from product prices and apply discount if provided
+        subtotal = Decimal(0)
+        discount_amount = Decimal(request.data.get('discount_amount', 0))
+        tax_amount = Decimal(request.data.get('tax_amount', 0))
+        shipping_cost = Decimal(request.data.get('shipping_cost', 0))
 
         for product_data in products_data:
             product_id = product_data.get('product_id')
@@ -117,20 +120,19 @@ class OrdersAPIView(APIView):
                 product = models.Product.objects.get(id=product_id)
                 print(f"Product found: {product.name}")
 
-                item_price = product.price
-                item_total_price = (item_price - Decimal(discount_amount)) * quantity
-                total_amount += item_total_price
+                item_price = product.price * quantity
+                subtotal += item_price
 
-                # Create order item
+                # Create order item with calculated fields
                 models.OrderItem.objects.create(
                     order=new_order,
                     product=product,
                     quantity=quantity,
                     product_variation_id=product_variation_id,
-                    price=item_price,
+                    price=product.price,
                     discount_amount=discount_amount,
-                    tax_amount=0,
-                    total_price=frontend_total_amount
+                    tax_amount=tax_amount,
+                    total_price=item_price
                 )
                 print(f"OrderItem created for product: {product.name}, quantity: {quantity}")
 
@@ -144,17 +146,19 @@ class OrdersAPIView(APIView):
                 print(f"Product with ID {product_id} not found.")
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Update order totals
-        final_amount = frontend_total_amount - discount_amount
-        new_order.total_amount = final_amount
+        # Calculate final order totals
+        total_amount = subtotal - discount_amount + tax_amount + shipping_cost
+        new_order.subtotal = subtotal
         new_order.discount_amount = discount_amount
+        new_order.tax_amount = tax_amount
+        new_order.shipping_cost = shipping_cost
+        new_order.total_amount = total_amount
         new_order.save()
 
-        print(f"Order ID: {new_order.order_id}, Total Amount: {final_amount}, Discount: {discount_amount}")
+        print(f"Order ID: {new_order.order_id}, Subtotal: {subtotal}, Discount: {discount_amount}, Tax: {tax_amount}, Shipping: {shipping_cost}, Total Amount: {total_amount}")
 
         # Check payment method
         if new_order.payment_method == 'cash_on_delivery':
-            # Return order ID without initiating payment
             return Response({
                 'order_id': new_order.order_id,
                 'message': "Order successfully created with Cash on Delivery payment method."
@@ -162,7 +166,7 @@ class OrdersAPIView(APIView):
 
         # Proceed with payment if payment method is UPI
         payment_service = services.PaymentService()
-        amount_in_paise = int(final_amount * 100)  # Convert rupees to paise
+        amount_in_paise = int(total_amount * 100)  # Convert rupees to paise
 
         user_id = str(request.user.id)
         mobile_number = request.data.get('phone_number', '9999999999')
