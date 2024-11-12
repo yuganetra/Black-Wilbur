@@ -52,7 +52,7 @@ class PaymentService:
             "merchantUserId": user_id,
             "amount": amount,
             "redirectUrl":'https://blackwilbur.com/orderConfirmation', #"http://localhost:5000/payment/redirect/",
-            "redirectMode": "POST",
+            #"redirectMode": "POST",
             "callbackUrl": "https://blackwilbur.com/orderFailure",
             "mobileNumber": mobile_number,
             "paymentInstrument": {
