@@ -292,7 +292,7 @@ const Authentication: React.FC = () => {
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                 />
-                {!otpSent && !otpVarified && (
+                {/* {!otpSent && !otpVarified && (
                   <button
                     type="button"
                     onClick={handleGetOtp}
@@ -300,9 +300,9 @@ const Authentication: React.FC = () => {
                   >
                     Get OTP
                   </button>
-                )}
+                )} */}
               </div>
-              {otpSent && !otpVarified && (
+              {/* {otpSent && !otpVarified && (
                 <div className="mt-4 flex items-center space-x-4">
                   <input
                     type="text"
@@ -333,7 +333,7 @@ const Authentication: React.FC = () => {
                 <p className="mt-2 text-sm text-green-600">
                   Phone number verified ✓
                 </p>
-              )}
+              )} */}
             </div>
 
             <div>

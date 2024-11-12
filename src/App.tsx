@@ -46,7 +46,7 @@ function App() {
                   <Route path="/user-profile" element={<Userprofile />} />
                   <Route path="/auth/login" element={<Authentication />} />
                   <Route path="/auth/signup" element={<Authentication />} />
-                  <Route path="orderConfirmation" element={<OrderConfirmation/>} />
+                  <Route path="orderConfirmation" element={<OrderConfirmation orderId={""} paymentMethod={""}/>} />
                   <Route path="orderFailure" element={<OrderFailure/>} />
                 </Routes>
                 <Footer />

@@ -79,7 +79,7 @@ class PaymentService:
 
         logger.debug(f"Sending payment request to PhonePe API with headers: {headers}")
         response = requests.post(
-            'https://api-preprod.phonepe.com/apis/hermes/pg/v1/pay',
+            'https://api.phonepe.com/apis/hermes/pg/v1/pay',
             headers=headers,
             json=json_data
         )
@@ -103,7 +103,7 @@ class PaymentService:
         print(f"Checking payment status for transaction ID: {transaction_id}")
         
         # Updated request URL for the Check Status API
-        request_url = f'https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status/{self.MERCHANT_ID}/{transaction_id}'
+        request_url = f'https://api.phonepe.com/apis/hermes/pg/v1/pay/status/{self.MERCHANT_ID}/{transaction_id}'
         
         # Calculating SHA-256 checksum
         sha256_Pay_load_String = f'/pg/v1/status/{self.MERCHANT_ID}/{transaction_id}{self.SALT_KEY}'

@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from decimal import Decimal
 
 class OrdersAPIView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
@@ -56,7 +55,6 @@ class OrdersAPIView(APIView):
 
         return Response(orders_data, status=status.HTTP_200_OK)
 
-class OrdersAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -75,6 +73,7 @@ class OrdersAPIView(APIView):
         order_id = str(uuid.uuid4())
         print("Generated new order UUID:", order_id)
 
+        # Check for existing order
         try:
             order = models.Order.objects.get(order_id=order_id, user=request.user)
             print("Order already exists with order_id:", order_id)
@@ -82,6 +81,7 @@ class OrdersAPIView(APIView):
         except models.Order.DoesNotExist:
             print("No existing order found. Creating new order...")
 
+            # Create a new order
             new_order = models.Order.objects.create(
                 **{key: value for key, value in order_serializer.validated_data.items() if key != 'user'},
                 user=request.user,
@@ -89,18 +89,13 @@ class OrdersAPIView(APIView):
             )
             print("New order created with ID:", new_order.order_id)
 
-        # Check payment method
-        if new_order.payment_method != 'UPI':
-            return Response({"error": "Payment method must be UPI to proceed with payment."}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Create order items and calculate totals
         total_amount = 0
-        discount_amount = 0  # Initialize discount amount to 0
-
         frontend_total_amount = request.data.get('total_amount', 0)
         frontend_subtotal = request.data.get('subtotal', 0)
-
-        discount_amount = frontend_total_amount - frontend_subtotal  # Difference between total amount and subtotal
+        discount_amount = frontend_total_amount - frontend_subtotal
         print(f"Calculated discount amount: {discount_amount}")
+
         if discount_amount < 0:
             return Response({"error": "Subtotal cannot be greater than total amount!"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -120,6 +115,7 @@ class OrdersAPIView(APIView):
                 item_total_price = (item_price - Decimal(discount_amount)) * quantity
                 total_amount += item_total_price
 
+                # Create order item
                 models.OrderItem.objects.create(
                     order=new_order,
                     product=product,
@@ -142,18 +138,25 @@ class OrdersAPIView(APIView):
                 print(f"Product with ID {product_id} not found.")
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Update order totals
         final_amount = frontend_total_amount - discount_amount
-
         new_order.total_amount = final_amount
         new_order.discount_amount = discount_amount
         new_order.save()
 
-        user_email = request.data.get('email')
         print(f"Order ID: {new_order.order_id}, Total Amount: {final_amount}, Discount: {discount_amount}")
 
-        payment_service = services.PaymentService()
+        # Check payment method
+        if new_order.payment_method == 'cash_on_delivery':
+            # Return order ID without initiating payment
+            return Response({
+                'order_id': new_order.order_id,
+                'message': "Order successfully created with Cash on Delivery payment method."
+            }, status=status.HTTP_200_OK)
 
-        amount_in_paise = int(final_amount * 100)  # Convert rupees to paise (multiply by 100)
+        # Proceed with payment if payment method is UPI
+        payment_service = services.PaymentService()
+        amount_in_paise = int(final_amount * 100)  # Convert rupees to paise
 
         user_id = str(request.user.id)
         mobile_number = request.data.get('phone_number', '9999999999')
@@ -169,7 +172,7 @@ class OrdersAPIView(APIView):
             new_order.save()
 
             return Response({
-                'order_id': order_id,
+                'order_id': new_order.order_id,
                 'payment_url': url
             }, status=status.HTTP_200_OK)
 

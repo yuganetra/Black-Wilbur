@@ -345,7 +345,7 @@ const Checkout: React.FC = () => {
                       onChange={(e) => setOtpInput(e.target.value)} // Capture phone number for OTP
                       className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                     />
-                    {errors.phone_number && (
+                    {/* {errors.phone_number && (
                       <p className="text-red-500 text-sm">
                         {errors.phone_number.message}
                       </p>
@@ -364,9 +364,9 @@ const Checkout: React.FC = () => {
                       >
                         Get OTP
                       </button>
-                    )}
+                    )} */}
 
-                    {otpSent && !otpVarified && (
+                    {/* {otpSent && !otpVarified && (
                       <>
                         <div className="mt-2">
                           <label
@@ -400,7 +400,7 @@ const Checkout: React.FC = () => {
                           </button>
                         )}
                       </>
-                    )}
+                    )} */}
                   </div>
                 </div>
                 <div>

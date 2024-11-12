@@ -345,7 +345,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
                     <div className="text-left">
                       <h3 className="font-medium">{item.product.name}</h3>
                       <p className="text-gray-600">
-                        Price: $
+                        Price: ₹
                         {(item.product.price * item.quantity).toFixed(2)}
                       </p>
                       <p className="text-sm text-gray-500">
@@ -398,10 +398,10 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
             <span>Total Amount</span>
             <span>₹{totalAmount}</span>
           </div>
-          <div className="flex justify-between">
+          {/* <div className="flex justify-between">
             <span>Quantity Discount ({quantityDiscount}%)</span>
             <span>-₹{(totalAmount * quantityDiscount) / 100}</span>
-          </div>
+          </div> */}
           <div className="flex justify-between">
             <span>Coupon Discount ({couponDiscount}%)</span>
             <span>-₹{(totalAmount * couponDiscount) / 100}</span>
