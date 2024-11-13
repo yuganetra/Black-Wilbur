@@ -15,8 +15,12 @@ class OrdersAPIView(APIView):
         user = request.user
 
         if user.is_authenticated:
-            # Fetch orders for the authenticated user
-            orders = models.Order.objects.filter(user=user)
+            if user.is_superuser:
+                # Superuser: Fetch all orders
+                orders = models.Order.objects.all()
+            else:
+                # Regular authenticated user: Fetch only their own orders
+                orders = models.Order.objects.filter(user=user)
         else:
             # Fetch all orders if no specific user is authenticated
             orders = models.Order.objects.all()
@@ -49,13 +53,18 @@ class OrdersAPIView(APIView):
 
             # If authenticated, get user's name and phone number directly
             if user.is_authenticated:
-                user_name = user.get_full_name() or user.username
-                phone_number = user.profile.phone_number if hasattr(user, 'profile') and user.profile.phone_number else "N/A"
+                if user.is_superuser:
+                    order_user = order.user  # Get the user associated with the order
+                    user_name = order_user.get_full_name() or order_user.username
+
+                else:
+                    # Regular authenticated user: Fetch only their own orders
+                    user_name = user.get_full_name() or user.username
+                                    
             else:
                 # For unauthenticated requests, fetch the user's details by user_id for each order
                 order_user = order.user  # Get the user associated with the order
                 user_name = order_user.get_full_name() or order_user.username
-                phone_number = order_user.profile.phone_number if hasattr(order_user, 'profile') and order_user.profile.phone_number else "N/A"
 
             # Add user and order details
             order_data = {
