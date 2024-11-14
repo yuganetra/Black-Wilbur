@@ -45,21 +45,20 @@ class PaymentService:
         logger.debug(f"Initiating payment for user_id={user_id}, amount={amount}, mobile_number={mobile_number}")
         
         transaction_id = shortuuid.uuid()
-        
+                
         MAINPAYLOAD = {
             "merchantId": self.MERCHANT_ID,
             "merchantTransactionId": transaction_id,
             "merchantUserId": user_id,
             "amount": amount,
-            "redirectUrl": 'https://api.blackwilbur.com/phonepe-callback/',#"http://127.0.0.1:8000/phonepe-callback/",#'https://blackwilbur.com/orderConfirmation', #
+            "redirectUrl": 'https://www.blackwilbur.com/api/phonepe-callback/',  # This stays the same
             "redirectMode": "POST",
-            "callbackUrl": 'https://api.blackwilbur.com/phonepe-callback/',#"http://127.0.0.1:8000/phonepe-callback/",
+            "callbackUrl": 'https://www.blackwilbur.com/api/phonepe-callback/',  # Update this to use the unified domain
             "mobileNumber": mobile_number,
             "paymentInstrument": {
                 "type": "PAY_PAGE"
             }
         }
-
         ENDPOINT = "/pg/v1/pay"
 
         base64String = self.base64_encode(MAINPAYLOAD)
