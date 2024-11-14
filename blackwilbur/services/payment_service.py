@@ -80,7 +80,7 @@ class PaymentService:
         #'https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay',
         logger.debug(f"Sending payment request to PhonePe API with headers: {headers}")
         response = requests.post(
-            'https://api.phonepe.com/apis/hermes',
+            'https://api.phonepe.com/apis/hermes/pg/v1/pay',
             headers=headers,
             json=json_data
         )
