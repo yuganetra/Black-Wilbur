@@ -15,7 +15,6 @@ const Userprofile: React.FC = () => {
       if (token) {
         try {
           const fetchedOrders: GetOrder[] = await getOrders();
-          console.log(fetchedOrders);
           if (Array.isArray(fetchedOrders)) {
             setOrders(fetchedOrders);
           } else {
@@ -96,8 +95,6 @@ const Userprofile: React.FC = () => {
           <div>
             <h2 className="text-xl md:text-2xl font-semibold mb-4">Orders</h2>
             {orders.map((order) => {
-              console.log("Order:", order); 
-
               return (
                 <li key={order.order_id} className="mb-4 border p-4 rounded">
                   <div className="font-bold">Order ID: {order.order_id}</div>

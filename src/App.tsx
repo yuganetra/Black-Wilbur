@@ -19,10 +19,6 @@ import OrderFailure from "./component/OrderFailure";
 import PrivateRoute from "././utiles/PrivateRoute"; // Import the PrivateRoute
 
 function App() {
-  // Check if the user is an admin from localStorage (or state management)
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const isAdmin = user?.isAdmin || false; // Use isAdmin flag
-
   return (
     <div className="App">
       <BrowserRouter>
@@ -30,8 +26,8 @@ function App() {
         <Routes>
           {/* Protect the admin route with PrivateRoute */}
           <Route path="/admin/*" element={<PrivateRoute />}>
-            <Route path="/admin/*" element={<AdminPanel />} />
-          </Route>
+  <Route path="*" element={<AdminPanel />} />
+</Route>
 
           {/* All other routes */}
           <Route
@@ -41,17 +37,28 @@ function App() {
                 <Navbar />
                 <Routes>
                   <Route path="/" element={<Home />} />
-                  <Route path="/collection/:category?" element={<Collection />} />
+                  <Route
+                    path="/collection/:category?"
+                    element={<Collection />}
+                  />
                   <Route path="/product/:id" element={<Productpage />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/about-us/:section?" element={<AboutUs />} />
-                  <Route path="/terms-and-condition" element={<TermsAndConditions />} />
+                  <Route
+                    path="/terms-and-condition"
+                    element={<TermsAndConditions />}
+                  />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/return-policy" element={<ReturnPolicy />} />
                   <Route path="/user-profile" element={<Userprofile />} />
                   <Route path="/auth/login" element={<Authentication />} />
                   <Route path="/auth/signup" element={<Authentication />} />
-                  <Route path="orderConfirmation" element={<OrderConfirmation orderId={""} paymentMethod={""} />} />
+                  <Route
+                    path="orderConfirmation"
+                    element={
+                      <OrderConfirmation orderId={""} paymentMethod={""} />
+                    }
+                  />
                   <Route path="orderFailure" element={<OrderFailure />} />
                 </Routes>
                 <Footer />

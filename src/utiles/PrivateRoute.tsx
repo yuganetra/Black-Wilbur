@@ -2,15 +2,15 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const PrivateRoute = () => {
-  // Check if the admin user is saved in localStorage
-  const adminData = localStorage.getItem('user');
+  // Retrieve the user data from localStorage
+  const userData = localStorage.getItem('user');
   
-  // If admin data doesn't exist or user is not an admin, redirect to login
-  if (!adminData || JSON.parse(adminData).role !== 'admin') {
+  // If user data doesn't exist or isAdmin is false, redirect to login
+  if (!userData || !JSON.parse(userData).isAdmin) {
     return <Navigate to="/auth/login" />;
   }
 
-  // If admin user exists, render the child routes
+  // If the user is an admin, render the child routes
   return <Outlet />;
 };
 

@@ -121,8 +121,6 @@ const Authentication: React.FC = () => {
       });
 
       localStorage.setItem("user", JSON.stringify(response));
-      console.log(response.isAdmin)
-      // If user is admin, redirect to admin dashboard, else user profile
       if (response.isAdmin) {
         // Navigate to the admin dashboard
         navigate("/admin");

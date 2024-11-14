@@ -1,7 +1,7 @@
 import React from "react";
 
 // Skeleton component for the loading state
-const Skeleton = () => {
+const ProductDetailsSkeleton = () => {
   return (
     <div className="bg-[#1B1B1B] text-white min-h-screen flex flex-col">
       <section className="w-full flex flex-col lg:flex-row gap-10">
@@ -66,4 +66,4 @@ const Skeleton = () => {
   );
 };
 
-export default Skeleton;
+export default ProductDetailsSkeleton;

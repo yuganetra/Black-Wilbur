@@ -24,7 +24,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   const [couponDiscount, setCouponDiscount] = useState<number>(0); // State for the coupon discount
   const [showConfetti, setShowConfetti] = useState<boolean>(false); // State for showing confetti
   const [isRemovingCoupon, setIsRemovingCoupon] = useState<boolean>(false); // State to track coupon removal fade
-  const [quantityDiscount, setQuantityDiscount] = useState<number>(0); // State for the quantity discount
   const [discounts, setDiscounts] = useState<Discount[]>([]); // State to store discounts
   const navigate = useNavigate();
 
@@ -101,10 +100,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
       alert("Please add products to the cart before proceeding to checkout.");
     } else {
       if (isUserLoggedIn()) {
-        console.log(cartProducts);
         onClose();
         navigate("/checkout", {
-          state: { products: cartProducts, couponDiscount, quantityDiscount },
+          state: { products: cartProducts, couponDiscount },
         });
       } else {
         onClose();
@@ -113,7 +111,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
             from: "/checkout",
             products: cartProducts,
             couponDiscount,
-            quantityDiscount,
           },
         }); // Pass cart and previous page
       }
@@ -263,9 +260,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   };
 
   const finalAmount =
-    totalAmount -
-    (totalAmount * quantityDiscount) / 100 -
-    (totalAmount * couponDiscount) / 100;
+    totalAmount - (totalAmount * couponDiscount) / 100;
 
   return (
     <>
@@ -368,10 +363,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
             <span>Total Amount</span>
             <span>₹{totalAmount}</span>
           </div>
-          {/* <div className="flex justify-between">
-            <span>Quantity Discount ({quantityDiscount}%)</span>
-            <span>-₹{(totalAmount * quantityDiscount) / 100}</span>
-          </div> */}
           <div className="flex justify-between">
             <span>Coupon Discount ({couponDiscount}%)</span>
             <span>-₹{(totalAmount * couponDiscount) / 100}</span>

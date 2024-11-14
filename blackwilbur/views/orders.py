@@ -8,6 +8,7 @@ from blackwilbur import models, serializers, services
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 from decimal import Decimal
+from django.db import transaction
 
 class OrdersAPIView(APIView):
 
@@ -85,7 +86,7 @@ class OrdersAPIView(APIView):
         return Response(orders_data, status=status.HTTP_200_OK)
 
     
-        # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         print("Received POST request with data:", request.data)
 
@@ -110,25 +111,30 @@ class OrdersAPIView(APIView):
         except models.Order.DoesNotExist:
             print("No existing order found. Creating new order...")
 
-            # Create a new order with initial subtotal, discount, tax, shipping, and total values as zero
+            # Extract fields from request data to calculate initial order values
+            subtotal = Decimal(request.data.get('subtotal', 0))
+            discount_amount = Decimal(request.data.get('discount_amount', 0))
+            tax_amount = Decimal(request.data.get('tax_amount', 0))
+            shipping_cost = Decimal(request.data.get('shipping_cost', 0))
+            total_amount = Decimal(request.data.get('total_amount', 0))
+
+            print("subtotal",subtotal,"discount_amount",discount_amount,"tax_amount",tax_amount,"total_amount,",total_amount)
+            # Create a new order with values from the frontend
             new_order = models.Order.objects.create(
                 **{key: value for key, value in order_serializer.validated_data.items() if key != 'user'},
                 user=request.user,
                 order_id=order_id,
-                subtotal=Decimal(0),
-                discount_amount=Decimal(0),
-                tax_amount=Decimal(0),
-                shipping_cost=Decimal(0),
-                total_amount=Decimal(0)
+                subtotal=subtotal,
+                discount_amount=discount_amount,
+                tax_amount=tax_amount,
+                shipping_cost=shipping_cost,
+                total_amount=total_amount
             )
             print("New order created with ID:", new_order.order_id)
 
-        # Calculate subtotal from product prices and apply discount if provided
-        subtotal = Decimal(0)
-        discount_amount = Decimal(request.data.get('discount_amount', 0))
-        tax_amount = Decimal(request.data.get('tax_amount', 0))
-        shipping_cost = Decimal(request.data.get('shipping_cost', 0))
+        new_order.save()
 
+        # Calculate subtotal from product prices and apply discount if provided
         for product_data in products_data:
             product_id = product_data.get('product_id')
             quantity = product_data.get('quantity')
@@ -142,7 +148,7 @@ class OrdersAPIView(APIView):
                 print(f"Product found: {product.name}")
 
                 item_price = product.price * quantity
-                subtotal += item_price
+                subtotal += item_price  # Update subtotal for the order
 
                 # Create order item with calculated fields
                 models.OrderItem.objects.create(
@@ -166,20 +172,23 @@ class OrdersAPIView(APIView):
             except models.Product.DoesNotExist:
                 print(f"Product with ID {product_id} not found.")
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Calculate final order totals
-        total_amount = subtotal - discount_amount + tax_amount + shipping_cost
-        new_order.subtotal = subtotal
-        new_order.discount_amount = discount_amount
-        new_order.tax_amount = tax_amount
-        new_order.shipping_cost = shipping_cost
-        new_order.total_amount = total_amount
+            
         new_order.save()
 
         print(f"Order ID: {new_order.order_id}, Subtotal: {subtotal}, Discount: {discount_amount}, Tax: {tax_amount}, Shipping: {shipping_cost}, Total Amount: {total_amount}")
 
         # Check payment method
         if new_order.payment_method == 'cash_on_delivery':
+            # Delete the cart and its items after the order is placed
+            try:
+                # Delete the cart and cart items associated with the user
+                user_cart = models.Cart.objects.get(user=request.user)
+                user_cart.items.all().delete()  # Delete cart items first
+                user_cart.delete()  # Then delete the cart
+                print("Cart and its items deleted for the user.")
+            except models.Cart.DoesNotExist:
+                print("No cart found for the user.")
+
             return Response({
                 'order_id': new_order.order_id,
                 'message': "Order successfully created with Cash on Delivery payment method."

@@ -14,7 +14,7 @@ import {
   getImageByProductId,
 } from "../services/api";
 import { Product, ProductVariation, ProductsImage } from "../utiles/types";
-import Skeleton from "../utiles/Skeleton";
+import Skeleton from "../utiles/ProductDetailsSkeleton";
 import { FaTimes } from "react-icons/fa";
 
 const Productpage = () => {
@@ -73,7 +73,6 @@ const handleBuyNow = async () => {
     };
 
     if (isUserLoggedIn()) {
-      console.log(cartItem)
       navigate("/checkout", {
         state: { products: [cartItem] },
       });
@@ -111,6 +110,7 @@ const handleBuyNow = async () => {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchRatingsForProduct = async () => {
     if (product) {
       try {
@@ -215,7 +215,7 @@ const handleBuyNow = async () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [fetchRatingsForProduct, id]);
 
   if (!product) {
     return <Skeleton />;

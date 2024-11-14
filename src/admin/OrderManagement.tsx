@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getOrders } from "../services/api";
-import { GetOrder, OrderItem, Product, ProductVariation } from ".././utiles/types";
+import { GetOrder } from ".././utiles/types";
 
 const OrderManagement: React.FC = () => {
   const [orders, setOrders] = useState<GetOrder[]>([]);

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import videoSrc from "../asset/homepage-vide-updated.MOV";
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
-import { Product, ProductCollection } from "../utiles/types";
+import { Product} from "../utiles/types";
 import GetFeatured from "./GetFeatured";
 import Carousel from "./Carousel";
 import OffersBanner from "./OffersBanner";

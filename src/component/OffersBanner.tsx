@@ -1,21 +1,10 @@
-import React, { useState } from 'react';
-import Confetti from 'react-confetti';
-
+import React from 'react';
 const OffersBanner: React.FC = () => {
-  const [showConfetti, setShowConfetti] = useState(false);
-
-  // Function to toggle confetti
-  const handleOfferClick = () => {
-    setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 3000); // Hide confetti after 3 seconds
-  };
 
   return (
     <div className="relative">
-      {showConfetti && <Confetti />}
-
       {/* Banner with centered, systematic offer cards */}
-      <div className="bg-black text-white py-6 w-full cursor-pointer" onClick={handleOfferClick}>
+      <div className="bg-black text-white py-6 w-full cursor-pointer">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4">Exclusive Offers</h2>
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">

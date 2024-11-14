@@ -9,3 +9,4 @@ from .product_variation import ProductVariationAPIView
 from .image import ImageManageAPIView
 from .discount import DiscountAPIView
 from .user import UserListAPIView
+from .phonepe_callback import phonepe_callback

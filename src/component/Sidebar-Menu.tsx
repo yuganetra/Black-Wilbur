@@ -34,8 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     navigate(path);
   };
 
-  const handleDistributorshipClick = () => setIsPopupOpen(true); // Open popup when 'DISTRIBUTORSHIP' is clicked
-
+  const handleDistributorshipClick = () => {
+    setIsPopupOpen(true); // Open the popup
+    onClose(); // Close the sidebar
+  };
   const closePopup = () => setIsPopupOpen(false); // Close popup
 
   const menuItems = [
@@ -64,13 +66,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
         <div className="flex flex-col items-start justify-center gap-6 pt-20 pl-10 pb-8 font-light tracking-wide">
           {menuItems.map((item, index) => (
-            <a
+            <button
               key={index}
               onClick={() => (item.action ? item.action() : handleNavigate(item.path))}
               className="text-2xl cursor-pointer transition duration-200 hover:border-b-2 hover:border-white" // Added hover border
             >
               {item.label}
-            </a>
+            </button>
           ))}
         </div>
         <div className="flex items-start justify-center space-x-4 pr-14 pt-16">

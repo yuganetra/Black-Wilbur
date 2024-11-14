@@ -63,7 +63,7 @@ const Navbar: React.FC = (): JSX.Element => {
     fetchData();
     const intervalId = setInterval(() => {
       fetchData();
-    }, 60000);
+    }, 6000);
 
     return () => clearInterval(intervalId);
   }, []);

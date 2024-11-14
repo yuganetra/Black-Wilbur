@@ -37,11 +37,9 @@ const Checkout: React.FC = () => {
   const {
     products: initialProducts = [],
     couponDiscount = 0,
-    quantityDiscount = 0,
   } = (location.state as {
     products: CartItemCheckout[];
     couponDiscount: number;
-    quantityDiscount: number;
   }) || {};
   const [products, setProducts] = useState<CartItemCheckout[]>(initialProducts);
 
@@ -58,8 +56,6 @@ const Checkout: React.FC = () => {
     const fetchProducts = () => {
       setTimeout(() => {
         setProducts(initialProducts);
-        console.log("products", products);
-        console.log("initialProducts", initialProducts);
         setLoading(false);
       }, 1000);
     };
@@ -123,6 +119,7 @@ const Checkout: React.FC = () => {
   );
 
   const onSubmit = async (data: Order) => {
+
     // if (!otpVarified) {
     //   alert("Please verify your phone number.");
     //   return;
@@ -139,8 +136,6 @@ const Checkout: React.FC = () => {
 
     // Transform products from frontend type to backend type
     const orderProducts: CheckoutProductForbackend[] = products.map((p) => {
-      console.log("Product Variation ID:", p.size.id);
-
       return {
         id: p.id,
         quantity: p.quantity,
@@ -148,9 +143,6 @@ const Checkout: React.FC = () => {
         product_variation_id: p.size.id || p.product_variation_id,
       };
     });
-
-    // Log orderProducts to verify structure and data
-    console.log("Order Products:", orderProducts);
 
     const orderData: Order = {
       order_id: orderId,
@@ -168,21 +160,16 @@ const Checkout: React.FC = () => {
       user: userId || 0,
       payment_status: "pending",
       subtotal: finalAmount,
-      discount_amount: couponDiscount || quantityDiscount,
+      discount_amount: couponDiscount,
       tax_amount: 0,
       total_amount: totalAmount,
     };
 
     try {
-      console.log("orderData", orderData); // Log the order data for debugging
-
       const response = await createOrder(orderData); // Create the order
 
       if (response) {
-        console.log("Order created successfully:", response); // Log the response for debugging
-
         const { order_id, payment_url } = response; // Destructure response to get order_id and payment_url
-        console.log("orderId,payment_url", orderId, payment_url);
         if (payment_url) {
           window.location.href = payment_url; // Redirect to the payment URL
         } else {
@@ -211,9 +198,7 @@ const Checkout: React.FC = () => {
   );
 
   const finalAmount =
-    totalAmount -
-    (totalAmount * quantityDiscount) / 100 -
-    (totalAmount * couponDiscount) / 100;
+    totalAmount - (totalAmount * couponDiscount) / 100;
 
   return (
     <div className="bg-black text-white min-h-screen flex flex-col font-montserrat">
@@ -288,10 +273,6 @@ const Checkout: React.FC = () => {
                       <span>₹{totalAmount}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Quantity Discount ({quantityDiscount}%)</span>
-                      <span>-₹{(totalAmount * quantityDiscount) / 100}</span>
-                    </div>
-                    <div className="flex justify-between">
                       <span>Coupon Discount ({couponDiscount}%)</span>
                       <span>-₹{(totalAmount * couponDiscount) / 100}</span>
                     </div>
@@ -346,7 +327,7 @@ const Checkout: React.FC = () => {
                       onChange={(e) => setOtpInput(e.target.value)} // Capture phone number for OTP
                       className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                     />
-                    {/* {errors.phone_number && (
+                    {errors.phone_number && (
                       <p className="text-red-500 text-sm">
                         {errors.phone_number.message}
                       </p>
@@ -365,9 +346,9 @@ const Checkout: React.FC = () => {
                       >
                         Get OTP
                       </button>
-                    )} */}
+                    )}
 
-                    {/* {otpSent && !otpVarified && (
+                    {otpSent && !otpVarified && (
                       <>
                         <div className="mt-2">
                           <label
@@ -401,7 +382,7 @@ const Checkout: React.FC = () => {
                           </button>
                         )}
                       </>
-                    )} */}
+                    )}
                   </div>
                 </div>
                 <div>
@@ -536,7 +517,7 @@ const Checkout: React.FC = () => {
                     className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                   >
                     <option value="">Select a payment method</option>
-                    {/* <option value="UPI">UPI</option> */}
+                    <option value="UPI">UPI</option>
                     <option value="cash_on_delivery">Cash on Delivery</option>
                   </select>
                   {errors.payment_method && (

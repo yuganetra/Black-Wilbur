@@ -4,6 +4,7 @@ import { MdClose, MdFilterList } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchCollection } from "../services/api";
 import { ProductCollection } from "../utiles/types";
+import SkeletonLoader from "../utiles/SkeletonLoader"; // Import the skeleton loader
 import Carousel from "./Carousel";
 
 const Collection: React.FC = () => {
@@ -23,6 +24,7 @@ const Collection: React.FC = () => {
   const [showCategory, setShowCategory] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]); // Wishlist state
   const [allProducts, setAllProducts] = useState<ProductCollection[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   const toggleWishlist = (productId: string) => {
     setWishlist((prevWishlist) => {
@@ -39,8 +41,6 @@ const Collection: React.FC = () => {
     const fetchProducts = async () => {
       try {
         const fetchProduct = await fetchCollection();
-        // console.log(fetchProduct);
-        // Check if fetchProduct is an array before mapping
         const formattedProducts = Array.isArray(fetchProduct)
           ? fetchProduct.map((item: any) => ({
               id: item.id,
@@ -61,6 +61,8 @@ const Collection: React.FC = () => {
         setAllProducts(formattedProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
+        setIsLoading(false); // Set loading to false once data is fetched
       }
     };
 
@@ -155,6 +157,11 @@ const Collection: React.FC = () => {
   const handleNavigate = (path: string) => {
     navigate(path);
   };
+
+  // Render Skeleton Loader when data is loading
+  if (isLoading) {
+    return <SkeletonLoader />;
+  }
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
