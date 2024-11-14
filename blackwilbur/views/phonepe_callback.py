@@ -15,6 +15,9 @@ logger.addHandler(console_handler)
 
 @csrf_exempt
 def phonepe_callback(request):
+    # Initialize context before use
+    context = {}
+
     try:
         # Constants
         merchant_id = 'M224GLLI0GBI1'
@@ -81,5 +84,5 @@ def phonepe_callback(request):
     except Exception as e:
         # Log the exception and return a generic error message
         logger.error(f"Error occurred during payment callback: {str(e)}")
-        context = {'error_message': f"Internal Server Error: {str(e)}"}
+        context['error_message'] = f"Internal Server Error: {str(e)}"
         return render(request, 'index.html', context)

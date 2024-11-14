@@ -21,7 +21,8 @@ import {
   User,
 } from "../utiles/types";
 
-const API_BASE_URL = "https://api.blackwilbur.com/";
+const API_BASE_URL = "https://blackwilbur.com/api/"
+//"https://api.blackwilbur.com/";
 
 // Axios instance for API calls
 const axiosInstance = axios.create({
@@ -195,7 +196,7 @@ export const refreshAuthToken = async (): Promise<string | null> => {
   }
 
   try {
-    const response = await axios.post(`${API_BASE_URL}api/token/refresh/`, {
+    const response = await axios.post(`${API_BASE_URL}token/refresh/`, {
       refresh: refreshToken,
     });
 
@@ -553,7 +554,7 @@ export const getDiscounts = async (params: {
   id?: string;
 }) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}api/discounts/`);
+    const response = await axios.get(`${API_BASE_URL}discounts/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching discounts:", error);
@@ -567,7 +568,7 @@ export const createDiscount = async (
 ) => {
   try {
     const response = await axios.post(
-      `${API_BASE_URL}api/discounts/`,
+      `${API_BASE_URL}discounts/`,
       discount
     );
     return response.data;
@@ -584,7 +585,7 @@ export const updateDiscount = async (
 ) => {
   try {
     const response = await axios.put(
-      `${API_BASE_URL}api/discounts/${id}`,
+      `${API_BASE_URL}discounts/${id}`,
       discount
     );
     return response.data;
@@ -597,7 +598,7 @@ export const updateDiscount = async (
 // Delete a discount
 export const deleteDiscount = async (id: string) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}api/discounts/`, {
+    const response = await axios.delete(`${API_BASE_URL}discounts/`, {
       data: { id }, // Passing the ID in the body
     });
     return response.data;
