@@ -1,15 +1,15 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Confetti from "react-confetti";
 
 // Define the interface for props
 interface OrderConfirmationProps {
-  orderId: string;
   paymentMethod: string;
 }
 
-const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderId, paymentMethod }) => {
+const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMethod }) => {
+  const { orderId } = useParams(); // Get orderId from URL params
   const navigate = useNavigate();
 
   useEffect(() => {

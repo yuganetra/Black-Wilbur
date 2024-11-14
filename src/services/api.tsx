@@ -18,7 +18,7 @@ import {
   ImageRequest,
   Discount,
   ProductCollection,
-  User
+  User,
 } from "../utiles/types";
 
 const API_BASE_URL = "https://api.blackwilbur.com/";
@@ -38,10 +38,7 @@ export const fetchCategories = async (): Promise<Category[]> => {
   return response.data;
 };
 
-export const addCategory = async (
-  name: string,
-  description: string
-) => {
+export const addCategory = async (name: string, description: string) => {
   const response = await axios.post(`${API_BASE_URL}categories`, {
     name,
     description,
@@ -49,7 +46,11 @@ export const addCategory = async (
   return response.data;
 };
 
-export const updateCategory = async (currentCategoryId: string, categoryName: string, categoryDescription: string) => {
+export const updateCategory = async (
+  currentCategoryId: string,
+  categoryName: string,
+  categoryDescription: string
+) => {
   const response = await axiosInstance.put(`${API_BASE_URL}categories`, {
     id: currentCategoryId,
     data: {
@@ -68,15 +69,17 @@ export const deleteCategory = async (currentCategoryId: string) => {
   });
 };
 
-
-
 export const fetchBestSeller = async (): Promise<Product[]> => {
-  const response = await axiosInstance.get<Product[]>(`${API_BASE_URL}bestseller`);
+  const response = await axiosInstance.get<Product[]>(
+    `${API_BASE_URL}bestseller`
+  );
   return response.data;
 };
 
 export const fetchProductById = async (productId: string): Promise<Product> => {
-  const response = await axiosInstance.get<Product>(`${API_BASE_URL}products/${productId}`);
+  const response = await axiosInstance.get<Product>(
+    `${API_BASE_URL}products/${productId}`
+  );
   return response.data;
 };
 
@@ -91,7 +94,9 @@ export const tokenExpiresIn = (token: string): number => {
 };
 
 export const fetchCollection = async (): Promise<ProductCollection[]> => {
-  const response = await axiosInstance.get<ProductCollection[]>(`${API_BASE_URL}collections`);
+  const response = await axiosInstance.get<ProductCollection[]>(
+    `${API_BASE_URL}collections`
+  );
   return response.data;
 };
 
@@ -158,19 +163,29 @@ export const loginUser = async (loginData: AuthUser): Promise<any> => {
       password: loginData.password,
     });
 
+    // Save tokens in localStorage
     localStorage.setItem("authToken", response.data.access_token);
     localStorage.setItem("refreshToken", response.data.refresh_token);
+
+    // Check if the user is an admin
+    if (response.data.user.isAdmin) {
+      // Redirect to /admin
+      window.location.href = "/admin"; // Redirects to the /admin page
+    }
 
     return response.data.user;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const errorMessage =
-        error.response?.data?.error || error.message || "Login failed. Please try again.";
+        error.response?.data?.error ||
+        error.message ||
+        "Login failed. Please try again.";
       throw new Error(errorMessage);
     }
     throw new Error("An unexpected error occurred");
   }
 };
+
 export const refreshAuthToken = async (): Promise<string | null> => {
   const refreshToken = localStorage.getItem("refreshToken");
 
@@ -216,10 +231,16 @@ export const addToCart = async (
   return response.data;
 };
 
-export const updateCartItem = async (cartItemId: number, newQuantity: number) => {
-  const response = await axiosInstance.put(`${API_BASE_URL}cart/${cartItemId}`, {
-    quantity: newQuantity,
-  });
+export const updateCartItem = async (
+  cartItemId: number,
+  newQuantity: number
+) => {
+  const response = await axiosInstance.put(
+    `${API_BASE_URL}cart/${cartItemId}`,
+    {
+      quantity: newQuantity,
+    }
+  );
   return response.data;
 };
 
@@ -269,7 +290,10 @@ export const fetchSearchResults = async (
 };
 
 // Function to send an SMS
-export const sendSms = async (otp: string, numbers: string[]): Promise<SendSmsResponse> => {
+export const sendSms = async (
+  otp: string,
+  numbers: string[]
+): Promise<SendSmsResponse> => {
   try {
     const response = await axios.post(`${API_BASE_URL}send-sms/`, {
       otp,
@@ -318,8 +342,6 @@ export const createOrder = async (orderData: Order) => {
         },
       }
     );
-    console.log("response.data",response.data)
-    // Handle the response, which should contain the order ID and payment URL
     const { order_id, payment_url } = response.data;
 
     // Validate the payment URL before redirecting
@@ -328,7 +350,6 @@ export const createOrder = async (orderData: Order) => {
     }
 
     return { order_id };
-
   } catch (error) {
     console.error("Error creating order:", error);
     throw error;
@@ -342,14 +363,15 @@ const isValidUrl = (url: string) => {
     new URL(url);
     return true;
   } catch (e) {
-    return false;  // If the URL constructor throws an error, it's invalid
+    return false; // If the URL constructor throws an error, it's invalid
   }
 };
 
-
 export const fetchRatings = async (productId: string) => {
   try {
-    const response = await axiosInstance.get(`${API_BASE_URL}ratings/?product_id=${productId}`);
+    const response = await axiosInstance.get(
+      `${API_BASE_URL}ratings/?product_id=${productId}`
+    );
     return response.data; // Return the fetched ratings
   } catch (error) {
     console.error("Error getting ratings:");
@@ -362,15 +384,13 @@ export const addRating = async (productId: string, rating: number) => {
     product_id: productId,
     rating: rating,
   };
-
   try {
-    const response = await axiosInstance.post(`${API_BASE_URL}ratings/`, ratingData);
+    await axiosInstance.post(`${API_BASE_URL}ratings/`, ratingData);
   } catch (error) {
-    console.error("Error adding rating:");
+    console.error("Error adding rating:", error);
     throw error;
   }
 };
-
 
 export const fetchProducts = async (): Promise<ProductAdmin[]> => {
   try {
@@ -386,11 +406,15 @@ export const fetchProducts = async (): Promise<ProductAdmin[]> => {
 export const addProduct = async (formData: FormData): Promise<ProductAdmin> => {
   try {
     // Set the appropriate headers for FormData
-    const response = await axios.post(`${API_BASE_URL}products-manage`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data", // Ensure the server knows we're sending form data
-      },
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}products-manage`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data", // Ensure the server knows we're sending form data
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error adding product:", error);
@@ -398,9 +422,15 @@ export const addProduct = async (formData: FormData): Promise<ProductAdmin> => {
   }
 };
 // Update Product
-export const updateProduct = async (productId: number, product: Product): Promise<Product> => {
+export const updateProduct = async (
+  productId: number,
+  product: Product
+): Promise<Product> => {
   try {
-    const response = await axios.put(`${API_BASE_URL}products-manage${productId}`, product);
+    const response = await axios.put(
+      `${API_BASE_URL}products-manage${productId}`,
+      product
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating product:", error);
@@ -410,16 +440,15 @@ export const updateProduct = async (productId: number, product: Product): Promis
 
 export const deleteProduct = async (productId: string) => {
   try {
-      const response = await axios.delete(`${API_BASE_URL}products-manage`, {
-          data: { id: productId },  // Pass productId in the request body
-      });
-      return response.data;
+    const response = await axios.delete(`${API_BASE_URL}products-manage`, {
+      data: { id: productId }, // Pass productId in the request body
+    });
+    return response.data;
   } catch (error) {
-      console.error('Error deleting product:', error);
-      throw error;
+    console.error("Error deleting product:", error);
+    throw error;
   }
 };
-
 
 // Fetch all product variations
 export const fetchProductVariations = async (): Promise<ProductVariation[]> => {
@@ -427,41 +456,61 @@ export const fetchProductVariations = async (): Promise<ProductVariation[]> => {
   return response.data;
 };
 
-export const getProductVariationsByProductId = async (id: string): Promise<ProductVariation> => {
-  const response = await axios.get<ProductVariation>(`${API_BASE_URL}product-variation/${id}/`);
+export const getProductVariationsByProductId = async (
+  id: string
+): Promise<ProductVariation> => {
+  const response = await axios.get<ProductVariation>(
+    `${API_BASE_URL}product-variation/${id}/`
+  );
   return response.data;
-}
+};
 
 export const createProductVariation = async (variation: {
   product: string;
   size: string;
   quantity: number;
 }): Promise<ProductVariation> => {
-  const response = await axios.post(`${API_BASE_URL}product-variation/`, variation);
+  const response = await axios.post(
+    `${API_BASE_URL}product-variation/`,
+    variation
+  );
   return response.data; // Return the created product variation data
 };
 
 // Update an existing product variation
-export const updateProductVariation = async (variation: ProductVariation): Promise<ProductVariation> => {
-  const response = await axios.put((`${API_BASE_URL}product-variation/`), variation);
+export const updateProductVariation = async (
+  variation: ProductVariation
+): Promise<ProductVariation> => {
+  const response = await axios.put(
+    `${API_BASE_URL}product-variation/`,
+    variation
+  );
   return response.data;
 };
 
 // Partially update an existing product variation
-export const partialUpdateProductVariation = async (variation: Partial<ProductVariation>): Promise<ProductVariation> => {
-  const response = await axios.patch((`${API_BASE_URL}product-variation/`), variation);
+export const partialUpdateProductVariation = async (
+  variation: Partial<ProductVariation>
+): Promise<ProductVariation> => {
+  const response = await axios.patch(
+    `${API_BASE_URL}product-variation/`,
+    variation
+  );
   return response.data;
 };
 
 // Delete a product variation
 export const deleteProductVariation = async (id: string): Promise<void> => {
-  await axios.delete((`${API_BASE_URL}product-variation/`), { data: { id } });
+  await axios.delete(`${API_BASE_URL}product-variation/`, { data: { id } });
 };
 
-
 // Function to fetch a single ProductsImage by ID
-export const getImageByProductId = async (id: string): Promise<ProductsImage[]> => {
-  const response = await axios.get<ProductsImage[]>(`${API_BASE_URL}images/product/${id}/`);
+export const getImageByProductId = async (
+  id: string
+): Promise<ProductsImage[]> => {
+  const response = await axios.get<ProductsImage[]>(
+    `${API_BASE_URL}images/product/${id}/`
+  );
   return response.data;
 };
 
@@ -472,30 +521,37 @@ export const getAllImages = async (): Promise<ProductsImage[]> => {
 };
 
 // Function to upload an image
-export const uploadImage = async (imageRequest: ImageRequest): Promise<ImageUploadResponse> => {
+export const uploadImage = async (
+  imageRequest: ImageRequest
+): Promise<ImageUploadResponse> => {
   const formData = new FormData();
-  formData.append('product', imageRequest.product.toString());
-  formData.append('image', imageRequest.image);
+  formData.append("product", imageRequest.product.toString());
+  formData.append("image", imageRequest.image);
 
-  const response = await axios.post<ImageUploadResponse>(`${API_BASE_URL}images/`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await axios.post<ImageUploadResponse>(
+    `${API_BASE_URL}images/`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
 
 // Function to delete an image by ID
 export const deleteImage = async (id: string): Promise<void> => {
   await axios.delete(`${API_BASE_URL}images/`, {
-    data: { id },  // Passing the ID in the request body
+    data: { id }, // Passing the ID in the request body
   });
 };
 
-
-
 // Get discounts (all, by coupon code, or by ID)
-export const getDiscounts = async (params: { coupon_code?: string; id?: string }) => {
+export const getDiscounts = async (params: {
+  coupon_code?: string;
+  id?: string;
+}) => {
   try {
     const response = await axios.get(`${API_BASE_URL}api/discounts/`);
     return response.data;
@@ -506,9 +562,14 @@ export const getDiscounts = async (params: { coupon_code?: string; id?: string }
 };
 
 // Create a new discount
-export const createDiscount = async (discount: Omit<Discount, 'id' | 'created_at' | 'updated_at'>) => {
+export const createDiscount = async (
+  discount: Omit<Discount, "id" | "created_at" | "updated_at">
+) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}api/discounts/`, discount);
+    const response = await axios.post(
+      `${API_BASE_URL}api/discounts/`,
+      discount
+    );
     return response.data;
   } catch (error) {
     console.error("Error creating discount:", error);
@@ -517,9 +578,15 @@ export const createDiscount = async (discount: Omit<Discount, 'id' | 'created_at
 };
 
 // Update an existing discount
-export const updateDiscount = async (id: string, discount: Partial<Discount>) => {
+export const updateDiscount = async (
+  id: string,
+  discount: Partial<Discount>
+) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}api/discounts/${id}`, discount);
+    const response = await axios.put(
+      `${API_BASE_URL}api/discounts/${id}`,
+      discount
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating discount:", error);

@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['api.blackwilbur.com','145.223.22.231','blackwilbur.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['api.blackwilbur.com','145.223.22.231','blackwilbur.com', 'localhost', '127.0.0.1','mercury-uat.phonepe.com']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -54,7 +54,11 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://blackwilbur.com",
-    "http://blackwilbur.com"
+    "http://blackwilbur.com",
+    'https://mercury-uat.phonepe.com',
+    'http://127.0.0.1:5000',  # Your local frontend URL
+  # PhonePe redirect URL (if necessary)
+
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -63,7 +67,9 @@ ROOT_URLCONF = 'blackwilbur.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates', 
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

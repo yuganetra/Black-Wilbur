@@ -53,11 +53,10 @@ function App() {
                   <Route path="/user-profile" element={<Userprofile />} />
                   <Route path="/auth/login" element={<Authentication />} />
                   <Route path="/auth/signup" element={<Authentication />} />
+                  {/* Update the OrderConfirmation route to accept orderId from URL */}
                   <Route
-                    path="orderConfirmation"
-                    element={
-                      <OrderConfirmation orderId={""} paymentMethod={""} />
-                    }
+                    path="/orderConfirmation/:orderId"
+                    element={<OrderConfirmation paymentMethod={""} />}
                   />
                   <Route path="orderFailure" element={<OrderFailure />} />
                 </Routes>

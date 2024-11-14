@@ -1,9 +1,11 @@
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-import base64
-from blackwilbur.services import PaymentService
 import logging
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+from phonepe.sdk.pg.payments.v1.payment_client import PhonePePaymentClient
+from phonepe.sdk.pg.env import Env
+
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -13,53 +15,59 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
-# This view will handle the PhonePe callback
+
 @csrf_exempt
 def phonepe_callback(request):
-    if request.method == "POST":
-        try:
-            # Log the raw request body to help debug the issue
-            logger.debug(f"Raw request body: {request.body.decode('utf-8')}")
-            
-            # The callback data from PhonePe
-            callback_data = json.loads(request.body)
-            logger.debug(f"Received callback data: {callback_data}")
-            
-            # Extract relevant data
-            received_checksum = request.headers.get('X-VERIFY')  # PhonePe checksum header
-            response_data = callback_data.get("response")  # The response from PhonePe
-            
-            if not response_data:
-                logger.error("Missing 'response' field in callback data.")
-                return JsonResponse({'status': 'failure', 'message': 'Missing response field'}, status=400)
-            
-            # Decode the response from base64
-            decoded_response = base64.b64decode(response_data).decode('utf-8')
-            logger.debug(f"Decoded Response: {decoded_response}")
-            
-            # Verify the checksum
-            payment_service = PaymentService()  # Instantiate your PaymentService class
-            computed_checksum = payment_service.calculate_sha256_string(decoded_response + '###' + payment_service.SALT_KEY)
-            
-            if received_checksum != computed_checksum:
-                logger.error(f"Checksum mismatch: received {received_checksum}, computed {computed_checksum}")
-                return JsonResponse({'status': 'failure', 'message': 'Checksum mismatch'}, status=400)
-            
-            # Parse the payment status from the callback data
-            payment_status = callback_data.get("status")  # You need to confirm how PhonePe provides this status
-            
-            if payment_status == "success":
-                # Process successful payment here (update the order, etc.)
-                logger.info("Payment successful")
-                # Add your code to process successful payments, e.g., update order status
-                return JsonResponse({'status': 'success', 'message': 'Payment successful'}, status=200)
-            else:
-                # Handle payment failure (e.g., log it or update the database accordingly)
-                logger.info("Payment failed")
-                return JsonResponse({'status': 'failure', 'message': 'Payment failed'}, status=200)
+    # Constants
+    merchant_id = "M224GLLI0GBI1"
+    salt_key = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'#'96434309-7796-489d-8924-ab56988a6076'
+    salt_index = 1  # Update your salt index
+    env = Env.UAT  # Use the appropriate environment (UAT for testing)
+    should_publish_events = True  # Set to False if events shouldn't be published
+    
+    # Create PhonePe client instance
+    phonepe_client = PhonePePaymentClient(merchant_id, salt_key, salt_index, env, should_publish_events)
+    
+    # Print the initial form data received
+    form_data = request.POST
+    form_data_dict = dict(form_data)
+    print("Form Data:", form_data_dict)
+    
+    transaction_id = form_data.get('transactionId', None)
+    print("Transaction ID:", transaction_id)
 
-        except Exception as e:
-            logger.error(f"Error processing callback: {e}", exc_info=True)
-            return JsonResponse({'status': 'failure', 'message': str(e)}, status=500)
-    else:
-        return JsonResponse({'status': 'failure', 'message': 'Invalid method'}, status=405)
+    if transaction_id:
+        # Using the PhonePe SDK to check the status
+        response = phonepe_client.check_status(transaction_id)
+
+        # Debugging output: Print the response
+        print("Response Status:", response.success)
+        print("Response Message:", response.message)
+        
+        if response.success:
+            # Handle the transaction details based on the payment instrument
+            if response.data:
+                if response.data.payment_instrument.type.value == "UPI":
+                    state = response.data.state
+                    ifsc = response.data.payment_instrument.ifsc
+                    utr = response.data.payment_instrument.utr
+                    print(f"State: {state}, IFSC: {ifsc}, UTR: {utr}")
+                
+                elif response.data.payment_instrument.type.value == "CARD":
+                    state = response.data.state
+                    pg_transaction_id = response.data.payment_instrument.pg_transaction_id
+                    pg_authorization_code = response.data.payment_instrument.pg_authorization_code
+                    bank_id = response.data.payment_instrument.bank_id
+                    print(f"State: {state}, PG Transaction ID: {pg_transaction_id}, Bank ID: {bank_id}")
+                
+                elif response.data.payment_instrument.type.value == "NETBANKING":
+                    state = response.data.state
+                    bank_id = response.data.payment_instrument.bank_id
+                    bank_transaction_id = response.data.payment_instrument.bank_transaction_id
+                    print(f"State: {state}, Bank ID: {bank_id}, Bank Transaction ID: {bank_transaction_id}")
+        
+        else:
+            print("Error: Payment Status Check Failed")
+            return HttpResponse(f"Error: Payment Status Check Failed: {response.message}", status=500)
+
+    return render(request, 'index.html', {'output': response.message, 'main_request': form_data_dict})

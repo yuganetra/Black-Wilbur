@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Status</title>
+    <!-- Link to Google Fonts for the aesthetic font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Set the background color to black and text color to white */
+      body {
+        background-color: #000;
+        color: #fff;
+        font-family: 'Poppins', sans-serif;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Loader Styles */
+      #loader {
+        border: 8px solid rgba(255, 255, 255, 0.2);
+        border-top: 8px solid #fff;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        animation: spin 2s linear infinite, pulse 1.5s ease-in-out infinite;
+        margin-bottom: 20px;
+      }
+
+      /* Keyframes for loader spinning */
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Keyframes for pulse effect */
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* Message Styles */
+      #status-message {
+        font-size: 18px;
+        font-weight: 400;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        animation: fadeIn 2s ease-out;
+      }
+
+      /* Keyframes for message fade-in effect */
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      /* Highlight styling for "Blackwilbur" part of the message */
+      .highlight {
+        color: #fff;
+        font-weight: 600;
+      }
+    </style>
+    <script>
+      // Function to check payment status and redirect after a delay
+      function checkPaymentStatus() {
+        // Clean up the paymentSuccess string to remove unwanted characters
+        const paymentSuccess = "{{ main_request.code }}".replace(/&#x27;/g, ""); // Replace &#x27; with actual single quote
+        // Display the loader while waiting
+        document.getElementById("loader").style.display = "block";
+
+        // Set a delay using setTimeout (e.g., 2000ms = 2 seconds)
+        setTimeout(function () {
+          if ("[PAYMENT_SUCCESS]" === paymentSuccess) {
+            // If payment is successful, redirect to confirmation page with orderId
+            const orderId = "12345"; // Replace with actual orderId
+            window.location.href = `https://blackwilbur.com/orderConfirmation${orderId}`; // Include the orderId in URL
+          } else {
+            // If payment fails, redirect to failure page
+            window.location.href = "https://blackwilbur.com/orderFailure"; // Replace with failure page URL
+          }
+        }, 2000); // Adjust the delay as needed
+      }
+
+      // Run the check when the page loads
+      window.onload = checkPaymentStatus;
+    </script>
+  </head>
+  <body>
+    <!-- Loader -->
+    <div id="loader"></div>
+
+    <!-- Message about the payment status -->
+    <div id="status-message">
+      <p><span class="highlight">Blackwilbur</span> is verifying your payment...</p>
+    </div>
+  </body>
+</html>
