@@ -20,7 +20,7 @@ logger.addHandler(console_handler)
 
 class PaymentService:
     def __init__(self):
-        self.BASE_URL = 'https://blackwilbur.com/',#'http://localhost:3000/'#"http://blackwilbur.com/"  # Replace with your domain
+        self.BASE_URL = 'https://blackwilbur.com/'  # No comma
         self.MERCHANT_ID = 'M224GLLI0GBI1'#'PGTESTPAYUAT86' #'M224GLLI0GBI1'
         self.SALT_KEY = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'#'96434309-7796-489d-8924-ab56988a6076'  # Corrected
         self.INDEX = "1"
@@ -93,7 +93,7 @@ class PaymentService:
         logger.debug(f"Response Data: {responseData}")
 
         try:
-            url = responseData['data']['instrumentResponse']['redirectInfo']['url']
+            url = responseData.get('data', {}).get('instrumentResponse', {}).get('redirectInfo', {}).get('url')
             logger.debug(f"Redirect URL: {url}")
             return HttpResponse(f"Payment URL: {url}")  # Return the URL in the response
         except KeyError:

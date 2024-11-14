@@ -19,10 +19,10 @@ logger.addHandler(console_handler)
 @csrf_exempt
 def phonepe_callback(request):
     # Constants
-    merchant_id = "M224GLLI0GBI1"
+    merchant_id = 'M224GLLI0GBI1'
     salt_key = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'#'96434309-7796-489d-8924-ab56988a6076'
     salt_index = 1  # Update your salt index
-    env = Env.UAT  # Use the appropriate environment (UAT for testing)
+    env = Env.PROD    # Use the appropriate environment (UAT for testing)
     should_publish_events = True  # Set to False if events shouldn't be published
     
     # Create PhonePe client instance
