@@ -5,8 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 from blackwilbur import models, serializers
 
 class RatingAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def get(self, request):
         product_id = request.query_params.get('product_id')
         print(f"GET request received for product_id: {product_id}")  # Debug print

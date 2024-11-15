@@ -42,50 +42,8 @@ const Productpage = () => {
     // Remove the error message after 3 seconds
     setTimeout(() => {
       setErrorMessage('');
-    }, 3000);
+    }, 4000);
   };
-
-const handleBuyNow = async () => {
-  if (!selectedSize) {
-    showErrorMessage("Please select a size before proceeding to checkout.");
-    return;
-  }
-  if (selectedSize.quantity <= 0) {
-    showErrorMessage("Selected size is out of stock.");
-    return;
-  }
-
-  
-  if (product) {
-    const cartItem = {
-      id: product.id,
-      quantity: 1,
-      product: {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        availability: true,
-        product_images: product.image,
-      },
-      size: selectedSize.size,
-      product_variation_id: selectedSize.id,
-    };
-
-    if (isUserLoggedIn()) {
-      navigate("/checkout", {
-        state: { products: [cartItem] },
-      });
-    } else {
-      navigate("/auth/login", {
-        state: {
-          from: "/checkout",
-          products: [cartItem],
-        },
-      });
-    }
-  }
-};
 
   const toggleCartSidebar = (): void => {
     setIsCartOpen(!isCartOpen);
@@ -115,7 +73,7 @@ const handleBuyNow = async () => {
     if (product) {
       try {
         const fetchedRatings = await fetchRatings(product.id);
-        setRatings(fetchedRatings); // Update state with fetched ratings
+        setRatings(fetchedRatings);
       } catch (error) {
         console.error("Error fetching ratings:", error);
       }
@@ -128,12 +86,11 @@ const handleBuyNow = async () => {
       return;
     }
   
-        // Check if the selected size is in stock
-        if (selectedSize.quantity <= 0) {
+    if (selectedSize.quantity <= 0) {
           showErrorMessage("Selected size is out of stock.");
-          return;
-        }
-
+      return;
+    }
+  
     if (product) {
       const productToAdd = {
         product_id: product.id,
@@ -168,6 +125,50 @@ const handleBuyNow = async () => {
       }
     }
   };
+  
+  const handleBuyNow = async () => {
+    if (!selectedSize) {
+      showErrorMessage("Please select a size before proceeding to checkout.");
+      return;
+    }
+    
+    if (selectedSize.quantity <= 0) {
+      showErrorMessage("Selected size is out of stock.")
+
+      return;
+    }
+  
+    if (product) {
+      const cartItem = {
+        id: product.id,
+        quantity: 1,
+        product: {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          availability: true,
+          product_images: product.image,
+        },
+        size: selectedSize.size,
+        product_variation_id: selectedSize.id,
+      };
+  
+      if (isUserLoggedIn()) {
+        navigate("/checkout", {
+          state: { products: [cartItem] },
+        });
+      } else {
+        navigate("/auth/login", {
+          state: {
+            from: "/checkout",
+            products: [cartItem],
+          },
+        });
+      }
+    }
+  };
+  
 
   const toggleWishlist = (productId: string) => {
     setWishlist((prevWishlist) => {
@@ -180,42 +181,65 @@ const handleBuyNow = async () => {
     });
   };
 
+  // Fetch Product Data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (id) {
+    const fetchProduct = async () => {
+      if (id && !product) {
+        try {
           const fetchedProduct = await fetchProductById(id);
           setProduct(fetchedProduct);
-
-          // Fetch images using product ID
-          try {
-            const fetchedImages = await getImageByProductId(id);
-            setImages(fetchedImages);
-          } catch (error) {
-            // Check if the error has a response property or if it's a typical Error
-            if (error instanceof Error) {
-              // Handle 404 or other errors gracefully
-              console.warn(
-                `Error fetching images for product ID ${id}: ${error.message}`
-              );
-
-              setImages([]); // Set images to an empty array if no images are found
-            } else {
-              console.error("Unexpected error fetching images:", error);
-              setImages([]); // Set to empty in case of unexpected errors
-            }
-          }
-          fetchRatingsForProduct();
-          const fetchedExplore = await fetchExplore();
-          setExploreProducts(fetchedExplore);
+        } catch (error) {
+          console.error("Error fetching product:", error);
         }
-      } catch (error) {
-        console.error("Error fetching product:", error);
       }
     };
+    fetchProduct();
+  }, [id, product]);
 
-    fetchData();
-  }, [fetchRatingsForProduct, id]);
+  // Fetch Product Images
+  useEffect(() => {
+    const fetchImages = async () => {
+      if (id && images.length === 0) {
+        try {
+          const fetchedImages = await getImageByProductId(id);
+          setImages(fetchedImages);
+        } catch (error) {
+          console.error("Error fetching images:", error);
+        }
+      }
+    };
+    fetchImages();
+  }, [id, images]);
+
+  // Fetch Ratings
+  useEffect(() => {
+    const fetchProductRatings = async () => {
+      if (id && ratings.length === 0) {
+        try {
+          const fetchedRatings = await fetchRatings(id);
+          setRatings(fetchedRatings);
+        } catch (error) {
+          console.error("Error fetching ratings:", error);
+        }
+      }
+    };
+    fetchProductRatings();
+  }, [id, ratings]);
+
+  // Fetch Explore Products
+  useEffect(() => {
+    const fetchExploreProducts = async () => {
+      if (exploreProducts.length === 0) {
+        try {
+          const fetchedExplore = await fetchExplore();
+          setExploreProducts(fetchedExplore);
+        } catch (error) {
+          console.error("Error fetching explore products:", error);
+        }
+      }
+    };
+    fetchExploreProducts();
+  }, [exploreProducts]);
 
   if (!product) {
     return <Skeleton />;
@@ -224,10 +248,6 @@ const handleBuyNow = async () => {
   const combinedImages = product.image
     ? [product.image, ...images.map((image) => image.image_url)]
     : [...images.map((image) => image.image_url)];
-
-  if (!product) {
-    return <Skeleton />;
-  }
 
   const averageRating =
     ratings.length > 0
@@ -333,14 +353,12 @@ const handleBuyNow = async () => {
             <button
               onClick={handleAddToCart}
               className="px-5 py-2 bg-[#282828] text-white border border-transparent rounded-full transition duration-300 hover:bg-white hover:text-black"
-              disabled={!selectedSize || selectedSize.quantity <= 0}
             >
               ADD TO CART
             </button>
             <button
               onClick={handleBuyNow}
               className="px-5 py-2 bg-[#282828] text-white border border-transparent rounded-full transition duration-300 hover:bg-white hover:text-black"
-              disabled={!selectedSize || selectedSize.quantity <= 0}
             >
               BUY NOW
             </button>

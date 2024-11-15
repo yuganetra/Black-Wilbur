@@ -176,7 +176,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       loadCartItems();
-      const intervalId = setInterval(loadCartItems, 50000);
+      const intervalId = setInterval(loadCartItems, 5000);
       return () => clearInterval(intervalId);
     }
   }, [isOpen]);
@@ -240,15 +240,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ isOpen, onClose }) => {
     0
   );
 
-  // // Handle coupon code application
-  // const handleCouponApply = () => {
-  //   if (couponCode === "DISCOUNT10") {
-  //     setCouponDiscount(10); // Apply 10% discount for the coupon
-  //     setShowConfetti(true); // Show confetti effect
-  //   } else {
-  //     alert("Invalid coupon code.");
-  //   }
-  // };
   const handleRemoveCoupon = () => {
     setIsRemovingCoupon(true); // Start fade-out effect
     setTimeout(() => {

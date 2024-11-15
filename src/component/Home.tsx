@@ -47,26 +47,45 @@ const Home: React.FC = () => {
     });
   };
 
+
+  // Fetch Best Seller products
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const fetchedCategories = await fetchBestSeller();
-        setBestSeller(fetchedCategories);
-        const fetchedExplore = await fetchExplore();
-        setExploreProducts(fetchedExplore);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
+    const fetchBestSellers = async () => {
+      if (bestseller.length === 0) { // Only fetch if not already loaded
+        try {
+          const fetchedCategories = await fetchBestSeller();
+          setBestSeller(fetchedCategories);
+        } catch (error) {
+          console.error("Error fetching bestsellers:", error);
+        }
       }
     };
+    fetchBestSellers();
+  }, [bestseller]);
 
-    fetchData();
-    // Fetch wishlist from local storage
+  // Fetch Explore products
+  useEffect(() => {
+    const fetchExploreProducts = async () => {
+      if (exploreProducts.length === 0) { // Only fetch if not already loaded
+        try {
+          const fetchedExplore = await fetchExplore();
+          setExploreProducts(fetchedExplore);
+        } catch (error) {
+          console.error("Error fetching explore products:", error);
+        }
+      }
+    };
+    fetchExploreProducts();
+  }, [exploreProducts]);
+
+  // Fetch Wishlist from local storage
+  useEffect(() => {
     const storedWishlist = localStorage.getItem("wishlist");
     if (storedWishlist) {
       setWishlist(JSON.parse(storedWishlist));
     }
   }, []);
-
+  
   return (
     <>
         <Carousel/>

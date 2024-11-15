@@ -21,8 +21,9 @@ import {
   User,
 } from "../utiles/types";
 
-const API_BASE_URL = "https://blackwilbur.com/api/"
-//"https://api.blackwilbur.com/";
+const API_BASE_URL ="https://api.blackwilbur.com/";
+//"https://blackwilbur.com/api/"
+//
 
 // Axios instance for API calls
 const axiosInstance = axios.create({

@@ -26,8 +26,8 @@ function App() {
         <Routes>
           {/* Protect the admin route with PrivateRoute */}
           <Route path="/admin/*" element={<PrivateRoute />}>
-  <Route path="*" element={<AdminPanel />} />
-</Route>
+            <Route path="*" element={<AdminPanel />} />
+          </Route>
 
           {/* All other routes */}
           <Route

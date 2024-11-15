@@ -34,13 +34,11 @@ interface Order {
 
 const Checkout: React.FC = () => {
   const location = useLocation();
-  const {
-    products: initialProducts = [],
-    couponDiscount = 0,
-  } = (location.state as {
-    products: CartItemCheckout[];
-    couponDiscount: number;
-  }) || {};
+  const { products: initialProducts = [], couponDiscount = 0 } =
+    (location.state as {
+      products: CartItemCheckout[];
+      couponDiscount: number;
+    }) || {};
   const [products, setProducts] = useState<CartItemCheckout[]>(initialProducts);
 
   const [loading, setLoading] = useState(true);
@@ -56,6 +54,7 @@ const Checkout: React.FC = () => {
     const fetchProducts = () => {
       setTimeout(() => {
         setProducts(initialProducts);
+        console.log("Fetched couponDiscount:", couponDiscount); // Log after fetching couponDiscount
         setLoading(false);
       }, 1000);
     };
@@ -119,7 +118,6 @@ const Checkout: React.FC = () => {
   );
 
   const onSubmit = async (data: Order) => {
-
     // if (!otpVarified) {
     //   alert("Please verify your phone number.");
     //   return;
@@ -174,7 +172,8 @@ const Checkout: React.FC = () => {
           window.location.href = payment_url; // Redirect to the payment URL
         } else {
           // If no payment URL is provided, navigate to the order confirmation page
-          navigate("/orderConfirmation", {
+          navigate(`/orderConfirmation/${orderId}`, {
+            // Corrected the template string
             state: {
               orderId: order_id,
               paymentMethod: orderData.payment_method,
@@ -197,8 +196,7 @@ const Checkout: React.FC = () => {
     0
   );
 
-  const finalAmount =
-    totalAmount - (totalAmount * couponDiscount) / 100;
+  const finalAmount = totalAmount - (totalAmount * couponDiscount) / 100;
 
   return (
     <div className="bg-black text-white min-h-screen flex flex-col font-montserrat">
