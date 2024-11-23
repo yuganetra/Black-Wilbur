@@ -9,7 +9,7 @@ import {
   ErrorResponse,
   SendSmsResponse,
   Order,
-  CartItem,
+  // CartItem,
   GetOrder,
   ProductAdmin,
   ProductVariation,
@@ -20,6 +20,10 @@ import {
   ProductCollection,
   User,
 } from "../utiles/types";
+interface CartItem extends Product {
+  selectedSize: string | undefined;
+  quantity: number;
+}
 
 const API_BASE_URL ="https://api.blackwilbur.com/";
 //"https://blackwilbur.com/api/"
@@ -234,19 +238,30 @@ export const addToCart = async (
 };
 
 export const updateCartItem = async (
-  cartItemId: number,
-  newQuantity: number
-) => {
-  const response = await axiosInstance.put(
-    `${API_BASE_URL}cart/${cartItemId}`,
-    {
-      quantity: newQuantity,
+  cartItemId: string,
+  quantity: number
+): Promise<any> => {
+  try {
+    const response = await axiosInstance.put(
+      `${API_BASE_URL}cart`, // Replace with your actual endpoint
+      {
+        cart_item_id: cartItemId,
+        quantity,
+      }
+    );
+    return response.data; // Return the updated cart item data
+  } catch (error: any) {
+    console.error("Error updating cart item quantity:", error.response || error);
+    if (error.response) {
+      return {
+        error: error.response.data.error || "Failed to update cart item quantity",
+      };
     }
-  );
-  return response.data;
+    return { error: "An unknown error occurred" };
+  }
 };
 
-export const removeFromCart = async (cartItemId: number) => {
+export const removeFromCart = async (cartItemId: string) => {
   await axiosInstance.delete(`${API_BASE_URL}cart`, {
     data: {
       cart_item_id: cartItemId,

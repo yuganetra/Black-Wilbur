@@ -51,34 +51,132 @@ class CartAPIView(APIView):
         return Response(serializers.CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
 
     def put(self, request):
-        data = request.data.get('data', {})
-        serializer = serializers.EditQuantitySerializer(data=data)
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        response = serializer.validated_data
-
+        """
+        Update the quantity of a specific cart item
+        """
         try:
-            cart_item = models.CartItem.objects.get(
-                pk=response.get("cart_item_id"))
-        except models.CartItem.DoesNotExist:
-            return Response({"detail": "Cart item not found!"}, status=status.HTTP_404_NOT_FOUND)
 
-        cart_item.quantity = response.get("quantity")
-        cart_item.save()
-        return Response(serializers.CartItemSerializer(cart_item).data, status=status.HTTP_200_OK)
+            # Get the data directly from request.data
+            cart_item_id = request.data.get("cart_item_id")
+            quantity = request.data.get("quantity")
+
+            # Validate required fields
+            if not cart_item_id or not quantity:
+                return Response(
+                    {"error": "cart_item_id and quantity are required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Convert quantity to integer and validate
+            try:
+                quantity = int(quantity)
+                if quantity < 1:
+                    return Response(
+                        {"error": "Quantity must be at least 1"}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except (ValueError, TypeError):
+                return Response(
+                    {"error": "Quantity must be a valid number"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get the cart item and verify ownership
+            cart_item = models.CartItem.objects.get(
+                pk=cart_item_id,
+                cart__user=request.user
+            )
+
+            # Check if requested quantity is available in stock
+            if cart_item.product_variation.quantity < quantity:
+                return Response(
+                    {
+                        "error": "Requested quantity not available in stock",
+                        "available_quantity": cart_item.product_variation.quantity
+                    }, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Update the quantity
+            cart_item.quantity = quantity
+            cart_item.save()
+
+            # Return updated cart item data
+            return Response(
+                {
+                    "message": "Quantity updated successfully",
+                    "cart_item": serializers.CartItemSerializer(cart_item).data
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except models.CartItem.DoesNotExist:
+            return Response(
+                {"error": "Cart item not found or you don't have permission to update it"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to update quantity: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def delete(self, request):
+        """
+        Delete a specific cart item while preserving the cart
+        """
+        # If no cart_item_id is provided, return an error instead of deleting the cart
+        if not request.data:
+            return Response(
+                {"error": "cart_item_id is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         cart_item_id = request.data.get("cart_item_id")
-
+        
         if not cart_item_id:
-            return Response({"error": "cart_item_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "cart_item_id is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        # Get the user's cart
         try:
-            cart_item = models.CartItem.objects.get(pk=cart_item_id)
-        except models.CartItem.DoesNotExist:
-            raise exceptions.NotFound("Cart item not found!")
+            cart = models.Cart.objects.get(user=request.user)
+        except models.Cart.DoesNotExist:
+            return Response(
+                {"error": "Cart not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-        cart_item.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        # Find and delete only the specific cart item
+        try:
+            cart_item = models.CartItem.objects.filter(
+                pk=cart_item_id,
+                cart=cart  # Ensure the item belongs to the user's cart
+            ).first()
+
+            if not cart_item:
+                return Response(
+                    {"error": "Cart item not found or you don't have permission to delete it"}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Delete only the cart item, not the cart
+            cart_item.delete()
+
+            # Return remaining cart items
+            remaining_items = models.CartItem.objects.filter(cart=cart)
+            return Response(
+                {
+                    "message": "Cart item successfully deleted",
+                    "remaining_items": serializers.CartItemSerializer(remaining_items, many=True).data
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to delete cart item: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoIosStar } from "react-icons/io";
 import CartComponent from "./Cart";
@@ -17,29 +17,38 @@ import { Product, ProductVariation, ProductsImage } from "../utiles/types";
 import Skeleton from "../utiles/ProductDetailsSkeleton";
 import { FaTimes } from "react-icons/fa";
 
+interface CartItem extends Product {
+  selectedSize: string | undefined;
+  quantity: number;
+}
+
 const Productpage = () => {
   const [product, setProduct] = useState<Product | null>(null);
-  const [images, setImages] = useState<ProductsImage[]>([]); // New state for images
+  const [images, setImages] = useState<ProductsImage[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(
-    null
-  );
-  const [wishlist, setWishlist] = useState<string[]>([]); // Wishlist state
+  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(null);
+  const [wishlist, setWishlist] = useState<string[]>(() => {
+    const savedWishlist = localStorage.getItem("wishlist");
+    return savedWishlist ? JSON.parse(savedWishlist) : [];
+  });
   const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
   const [userRating, setUserRating] = useState(0);
-  const [ratings, setRatings] = useState<any[]>([]); // Store fetched ratings
+  const [ratings, setRatings] = useState<any[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams();
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+
 
   const handleNavigate = (path: string) => {
     navigate(path);
   };
 
-  const showErrorMessage = (message: React.SetStateAction<string>) => {
+  const showErrorMessage = (message: string) => {
     setErrorMessage(message);
-    // Remove the error message after 3 seconds
     setTimeout(() => {
       setErrorMessage('');
     }, 4000);
@@ -53,196 +62,162 @@ const Productpage = () => {
     setIsSizeChartOpen(!isSizeChartOpen);
   };
 
+  const fetchRatingsForProduct = useCallback(async (productId: string) => {
+    try {
+      const fetchedRatings = await fetchRatings(productId);
+      setRatings(fetchedRatings);
+    } catch (error) {
+      console.error("Error fetching ratings:", error);
+    }
+  }, []);
+
   const handleRatingClick = async (rating: number) => {
+    if (!product) return;
+    
     setUserRating(rating);
-    if (product) {
-      try {
-        // Call addRating with product ID and user rating
-        await addRating(product.id, rating);
-        alert(`Rating: ${rating} stars submitted.`);
-        fetchRatingsForProduct(); // Fetch updated ratings after submission
-      } catch (error) {
-        console.error("Error submitting rating:", error);
-        alert("Failed to submit rating. Please try again.");
-      }
+    try {
+      await addRating(product.id, rating);
+      alert(`Rating: ${rating} stars submitted.`);
+      fetchRatingsForProduct(product.id);
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      alert("Failed to submit rating. Please try again.");
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchRatingsForProduct = async () => {
-    if (product) {
-      try {
-        const fetchedRatings = await fetchRatings(product.id);
-        setRatings(fetchedRatings);
-      } catch (error) {
-        console.error("Error fetching ratings:", error);
-      }
-    }
+// Updated handleAddToCart function
+const handleAddToCart = async () => {
+  if (!selectedSize) {
+    showErrorMessage("Please select a size before adding to the cart.");
+    return;
+  }
+
+  if (selectedSize.quantity <= 0) {
+    showErrorMessage("Selected size is out of stock.");
+    return;
+  }
+
+  if (!product) return;
+
+  const productToAdd: CartItem = {
+    ...product,
+    selectedSize: selectedSize.size,
+    quantity: 1,
   };
 
-  const handleAddToCart = async () => {
-    if (!selectedSize) {
-      showErrorMessage("Please select a size before adding to the cart.");
-      return;
+  const user = localStorage.getItem("user");
+
+  if (!user) {
+    // Add to local cart
+    const cartString = localStorage.getItem("cart");
+    let existingCart: CartItem[] = cartString ? JSON.parse(cartString) : [];
+    existingCart.push(productToAdd);
+    localStorage.setItem("cart", JSON.stringify(existingCart));
+    setCartItems(existingCart); // Update state
+  } else {
+    // Add to server-side cart
+    try {
+      await addToCart(
+        productToAdd.id,
+        selectedSize.id,
+        productToAdd.quantity
+      );
+      setCartItems((prevCart) => [...prevCart, productToAdd]); // Update state
+    } catch (error) {
+      console.error("Error adding to cart:", error);
     }
-  
-    if (selectedSize.quantity <= 0) {
-          showErrorMessage("Selected size is out of stock.");
-      return;
-    }
-  
-    if (product) {
-      const productToAdd = {
-        product_id: product.id,
-        product_variation_id: selectedSize.id,
-        quantity: 1,
-      };
-  
-      const user = localStorage.getItem("user");
-  
-      if (!user) {
-        const cartString = localStorage.getItem("cart");
-        let existingCart = cartString ? JSON.parse(cartString) : [];
-  
-        if (!Array.isArray(existingCart)) {
-          existingCart = [];
-        }
-  
-        existingCart.push(productToAdd);
-        localStorage.setItem("cart", JSON.stringify(existingCart));
-        setIsCartOpen(true);
-      } else {
-        try {
-          await addToCart(
-            productToAdd.product_id,
-            productToAdd.product_variation_id,
-            productToAdd.quantity
-          );
-          setIsCartOpen(true);
-        } catch (error) {
-          console.error("Error adding to cart:", error);
-        }
-      }
-    }
-  };
-  
+  }
+
+  setIsCartOpen(true);
+};
+
   const handleBuyNow = async () => {
     if (!selectedSize) {
       showErrorMessage("Please select a size before proceeding to checkout.");
       return;
     }
-    
-    if (selectedSize.quantity <= 0) {
-      showErrorMessage("Selected size is out of stock.")
 
+    if (selectedSize.quantity <= 0) {
+      showErrorMessage("Selected size is out of stock.");
       return;
     }
-  
-    if (product) {
-      const cartItem = {
+
+    if (!product) return;
+
+    const cartItem = {
+      id: product.id,
+      quantity: 1,
+      product: {
         id: product.id,
-        quantity: 1,
-        product: {
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          availability: true,
-          product_images: product.image,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        availability: true,
+        product_images: product.image,
+      },
+      size: selectedSize.size,
+      product_variation_id: selectedSize.id,
+    };
+
+    if (isUserLoggedIn()) {
+      navigate("/checkout", {
+        state: { products: [cartItem] },
+      });
+    } else {
+      navigate("/auth/login", {
+        state: {
+          from: "/checkout",
+          products: [cartItem],
         },
-        size: selectedSize.size,
-        product_variation_id: selectedSize.id,
-      };
-  
-      if (isUserLoggedIn()) {
-        navigate("/checkout", {
-          state: { products: [cartItem] },
-        });
-      } else {
-        navigate("/auth/login", {
-          state: {
-            from: "/checkout",
-            products: [cartItem],
-          },
-        });
-      }
+      });
     }
   };
-  
 
   const toggleWishlist = (productId: string) => {
     setWishlist((prevWishlist) => {
       const newWishlist = prevWishlist.includes(productId)
-        ? prevWishlist.filter((id) => id !== productId) // Remove from wishlist
-        : [...prevWishlist, productId]; // Add to wishlist
+        ? prevWishlist.filter((id) => id !== productId)
+        : [...prevWishlist, productId];
 
-      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to local storage
+      localStorage.setItem("wishlist", JSON.stringify(newWishlist));
       return newWishlist;
     });
   };
 
-  // Fetch Product Data
+  // Combined fetch effect
   useEffect(() => {
-    const fetchProduct = async () => {
-      if (id && !product) {
-        try {
-          const fetchedProduct = await fetchProductById(id);
-          setProduct(fetchedProduct);
-        } catch (error) {
-          console.error("Error fetching product:", error);
-        }
-      }
-    };
-    fetchProduct();
-  }, [id, product]);
+    const fetchAllData = async () => {
+      if (!id) return;
 
-  // Fetch Product Images
-  useEffect(() => {
-    const fetchImages = async () => {
-      if (id && images.length === 0) {
-        try {
-          const fetchedImages = await getImageByProductId(id);
-          setImages(fetchedImages);
-        } catch (error) {
-          console.error("Error fetching images:", error);
-        }
-      }
-    };
-    fetchImages();
-  }, [id, images]);
+      setIsLoading(true);
+      try {
+        const [fetchedProduct, fetchedImages, fetchedRatings, fetchedExplore] = await Promise.all([
+          fetchProductById(id),
+          getImageByProductId(id),
+          fetchRatings(id),
+          fetchExplore()
+        ]);
 
-  // Fetch Ratings
-  useEffect(() => {
-    const fetchProductRatings = async () => {
-      if (id && ratings.length === 0) {
-        try {
-          const fetchedRatings = await fetchRatings(id);
-          setRatings(fetchedRatings);
-        } catch (error) {
-          console.error("Error fetching ratings:", error);
-        }
+        setProduct(fetchedProduct);
+        setImages(fetchedImages);
+        setRatings(fetchedRatings);
+        setExploreProducts(fetchedExplore);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchProductRatings();
-  }, [id, ratings]);
 
-  // Fetch Explore Products
-  useEffect(() => {
-    const fetchExploreProducts = async () => {
-      if (exploreProducts.length === 0) {
-        try {
-          const fetchedExplore = await fetchExplore();
-          setExploreProducts(fetchedExplore);
-        } catch (error) {
-          console.error("Error fetching explore products:", error);
-        }
-      }
-    };
-    fetchExploreProducts();
-  }, [exploreProducts]);
+    fetchAllData();
+  }, [id]); // Only depends on id parameter
+
+  if (isLoading) {
+    return <Skeleton />;
+  }
 
   if (!product) {
-    return <Skeleton />;
+    return <div>Product not found</div>;
   }
 
   const combinedImages = product.image
@@ -253,7 +228,7 @@ const Productpage = () => {
     ratings.length > 0
       ? ratings.reduce((acc, rating) => acc + rating.rating, 0) / ratings.length
       : 0;
-
+      
   return (
     <div className="bg-[#1B1B1B] text-white min-h-screen flex flex-col">
       {/* Display error message */}
@@ -397,7 +372,7 @@ const Productpage = () => {
       </section>
       {/* Add to Cart Sidebar */}
       <div className="text-black">
-        <CartComponent isOpen={isCartOpen} onClose={toggleCartSidebar} />
+      <CartComponent isOpen={isCartOpen} onClose={toggleCartSidebar} cartItems={cartItems} />
       </div>
       <div className="text-black">
         <SizeChart isOpen={isSizeChartOpen} onClose={toggleSizeChart} />

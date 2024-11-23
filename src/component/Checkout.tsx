@@ -59,11 +59,11 @@ const Checkout: React.FC = () => {
       }, 1000);
     };
     fetchProducts();
-  }, [initialProducts, products]);
+  }, [couponDiscount, initialProducts, products]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (otpSent) {
+    if (otpSent) {  
       // Start a timer for 2 minutes
       timer = setTimeout(() => {
         setResendEnabled(true);
@@ -515,7 +515,7 @@ const Checkout: React.FC = () => {
                     className="mt-1 p-2 border border-gray-700 rounded-md w-full bg-gray-100 text-black"
                   >
                     <option value="">Select a payment method</option>
-                    <option value="UPI">UPI</option>
+                    {/* <option value="UPI">UPI</option> */}
                     <option value="cash_on_delivery">Cash on Delivery</option>
                   </select>
                   {errors.payment_method && (

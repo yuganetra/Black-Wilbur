@@ -174,7 +174,7 @@ const Navbar: React.FC = (): JSX.Element => {
 
       {/* Add to Cart Sidebar */}
       <div className="text-black">
-        <CartComponent isOpen={isCartOpen} onClose={toggleCartSidebar} />
+        <CartComponent isOpen={isCartOpen} onClose={toggleCartSidebar} cartItems={[]} />
       </div>
     </>
   );

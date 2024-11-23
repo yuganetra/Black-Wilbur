@@ -10,6 +10,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
+APPEND_SLASH = False
+
 ALLOWED_HOSTS = ['api.blackwilbur.com','145.223.22.231','blackwilbur.com', 'localhost', '127.0.0.1','mercury-uat.phonepe.com']
 INSTALLED_APPS = [
     'django.contrib.admin',
