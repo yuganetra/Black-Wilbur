@@ -3,26 +3,90 @@ import { useNavigate } from "react-router-dom";
 import videoSrc from "../asset/homepage-vide-updated.MOV";
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
-import { Product} from "../utiles/types";
-import GetFeatured from "./GetFeatured";
-import Carousel from "./Carousel";
-import OffersBanner from "./OffersBanner";
+import { Product } from "../utiles/types";
+import GetFeatured from "../utiles/Banners/GetFeatured";
+import Carousel from "../utiles/Carousel";
+import OffersBanner from "../utiles/Banners/OffersBanner";
+import ProductCard from "../utiles/Cards/ProductCard"; // Import the ProductCard component
+import BestSellerProductCard from "../utiles/Cards/BestSellerProductCard";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const productRef = useRef<HTMLDivElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const sectionRef = useRef<HTMLDivElement | null>(null); // Reference for the video section
+
   const [bestseller, setBestSeller] = useState<Product[]>([]);
   const [exploreProducts, setExploreProducts] = useState<Product[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]); // Wishlist state
+  const [wishlist, setWishlist] = useState<Product[]>([]); // Wishlist state
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for managing popup visibility
+  const [isInView, setIsInView] = useState(false); // State to track if video section is in view
 
-  const handleNavigate = (path: string) => {
-    navigate(path);
-  };
+  useEffect(() => {
+    // Fetch wishlist from localStorage on mount
+    const storedWishlist = localStorage.getItem("wishlist");
+    if (storedWishlist) {
+      setWishlist(JSON.parse(storedWishlist));
+    }
+  }, []);
 
-  const togglePopup = () => {
-    setIsPopupOpen(!isPopupOpen);
-  };
+  useEffect(() => {
+    // Intersection Observer for video visibility
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { root: null, threshold: 0.5 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (sectionRef.current) observer.unobserve(sectionRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Handle video play/mute based on visibility
+    const video = videoRef.current;
+    if (video) {
+      if (isInView) {
+        video.muted = false;
+        video.play().catch((error) => console.error('Error playing video:', error));
+      } else {
+        video.muted = true;
+        video.pause();
+      }
+    }
+  }, [isInView,videoRef]);
+
+  useEffect(() => {
+    // Fetch Best Sellers only once
+    const fetchBestSellers = async () => {
+      try {
+        const fetchedCategories = await fetchBestSeller();
+        setBestSeller(fetchedCategories);
+      } catch (error) {
+        console.error("Error fetching bestsellers:", error);
+      }
+    };
+    if (bestseller.length === 0) fetchBestSellers();
+  }, [bestseller]);
+
+  useEffect(() => {
+    // Fetch Explore products only once
+    const fetchExploreProducts = async () => {
+      try {
+        const fetchedExplore = await fetchExplore();
+        setExploreProducts(fetchedExplore);
+      } catch (error) {
+        console.error("Error fetching explore products:", error);
+      }
+    };
+    if (exploreProducts.length === 0) fetchExploreProducts();
+  }, [exploreProducts]);
+
+  const handleNavigate = (path: string) => navigate(path);
+
+  const togglePopup = () => setIsPopupOpen(!isPopupOpen);
 
   const scrollLeft = () => {
     if (productRef.current) {
@@ -36,56 +100,25 @@ const Home: React.FC = () => {
     }
   };
 
-  const toggleWishlist = (productId: string) => {
-    setWishlist((prevWishlist) => {
-      const newWishlist = prevWishlist.includes(productId)
-        ? prevWishlist.filter((id) => id !== productId) // Remove from wishlist
-        : [...prevWishlist, productId]; // Add to wishlist
-
-      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to local storage
+  const toggleWishlist = (product: Product) => {
+    setWishlist((prevWishlist: Product[]) => {
+      const exists = prevWishlist.find((item) => item.id === product.id);
+      let newWishlist;
+  
+      if (exists) {
+        // Remove product if it exists
+        newWishlist = prevWishlist.filter((item) => item.id !== product.id);
+      } else {
+        // Add product if it doesn't exist
+        newWishlist = [...prevWishlist, product];
+      }
+  
+      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to localStorage
       return newWishlist;
     });
   };
-
-
-  // Fetch Best Seller products
-  useEffect(() => {
-    const fetchBestSellers = async () => {
-      if (bestseller.length === 0) { // Only fetch if not already loaded
-        try {
-          const fetchedCategories = await fetchBestSeller();
-          setBestSeller(fetchedCategories);
-        } catch (error) {
-          console.error("Error fetching bestsellers:", error);
-        }
-      }
-    };
-    fetchBestSellers();
-  }, [bestseller]);
-
-  // Fetch Explore products
-  useEffect(() => {
-    const fetchExploreProducts = async () => {
-      if (exploreProducts.length === 0) { // Only fetch if not already loaded
-        try {
-          const fetchedExplore = await fetchExplore();
-          setExploreProducts(fetchedExplore);
-        } catch (error) {
-          console.error("Error fetching explore products:", error);
-        }
-      }
-    };
-    fetchExploreProducts();
-  }, [exploreProducts]);
-
-  // Fetch Wishlist from local storage
-  useEffect(() => {
-    const storedWishlist = localStorage.getItem("wishlist");
-    if (storedWishlist) {
-      setWishlist(JSON.parse(storedWishlist));
-    }
-  }, []);
   
+
   return (
     <>
         <Carousel/>
@@ -107,43 +140,16 @@ const Home: React.FC = () => {
               ref={productRef}
               className="flex gap-1 sm:gap-2 overflow-x-auto w-full snap-x snap-mandatory "
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              {bestseller.map((bestseller) => {
-                const productImages = bestseller.image;
-                const imageSrc = productImages.length > 0 ? productImages : "default-image-url.jpg";
-
-                return (
-                  <div
-                    key={bestseller.id}
-                    className="sm:min-h-[52vh] max-h-[72vh] min-w-[200px] sm:min-w-[350px] lg:min-w-[400px] relative card bg-[#0B0B0B] overflow-hidden flex flex-col items-center justify-between rounded-md"
-                  >
-                    <img
-                      className="w-full h-[94%] object-contain transition-transform duration-300 ease-in-out transform hover:scale-105"
-                      onClick={() => handleNavigate(`/Product/${bestseller.id}`)}
-                      src={imageSrc}
-                      alt={bestseller.name}
-                    />
-                    <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-9 sm:h-5 bg-white">
-                      {" "}
-                      <div className="text-[#282828] text-[10px] w-3/4 sm:text-base md:text-base font-semibold truncate responsive-text">
-                        {bestseller.name.toUpperCase()}
-                      </div>
-                      <div className=" text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold responsive-text">
-                        ₹ {bestseller.price}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => toggleWishlist(bestseller.id)}
-                      className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center ${
-                        wishlist.includes(bestseller.id) ? "bg-red-500" : "bg-gray-500"
-                      } text-white`}
-                    >
-                      {wishlist.includes(bestseller.id) ? "♥" : "♡"}
-                    </button>
-                  </div>
-                );
-              })}
+            >{bestseller.map((bestseller) => (
+              <BestSellerProductCard
+                key={bestseller.id}
+                bestseller={bestseller}
+                handleNavigate={handleNavigate} // Ensure this function is defined
+                toggleWishlist={toggleWishlist} // Ensure this function is defined
+                wishlist={wishlist} // The wishlist array should be passed down
+              />
+            ))}
+            
             </div>
             <button
               onClick={scrollRight}
@@ -155,47 +161,49 @@ const Home: React.FC = () => {
         </div>
       </section>
       
-      {/* Large Screen Section (Visible only for screens over 1000px) */}
-      <section className="py-16 bg-[#1B1B1B] relative hidden md:block">
-      <div className="mb-16"><OffersBanner/></div>
+      <section
+      ref={sectionRef}
+      className="py-16 bg-[#1B1B1B] relative hidden md:block"
+    >
+      <div className="mb-16"><OffersBanner /></div>
 
-        <div className="container mx-auto md:px-6 text-center">
-          <div className="relative w-full h-[90vh] overflow-hidden">
-            <video
-              src={videoSrc}
-              autoPlay
-              loop
-              muted
-              className="absolute top-1/2 left-1/2 w-full h-full object-contain"
-              style={{
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              Your browser does not support the video tag.
-            </video>
-            {/* Button to open the popup */}
-            <button
-              onClick={togglePopup}
-              className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-gray-800 transition"
-            >
-              Featured on BlackWilbur.com
+      <div className="container mx-auto md:px-6 text-center">
+        <div className="relative w-full h-[90vh] overflow-hidden">
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            autoPlay
+            loop
+            playsInline
+            className="absolute top-1/2 left-1/2 w-full h-full object-contain"
+            style={{
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            Your browser does not support the video tag.
+          </video>
+          {/* Button to open the popup */}
+          <button
+            onClick={togglePopup}
+            className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-gray-800 transition"
+          >
+            Featured on BlackWilbur.com
+          </button>
+        </div>
+      </div>
+
+      {/* Popup for GetFeatured */}
+      {isPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-60">
+          <div className="relative w-full h-screen max-w-3xl flex items-center justify-center p-6 backdrop-blur-sm text-white rounded-lg shadow-lg overflow-hidden">
+            <GetFeatured />
+            <button onClick={togglePopup} className="absolute top-2 right-2 text-white text-3xl">
+              &times; {/* Close button */}
             </button>
           </div>
         </div>
-
-        {/* Popup for GetFeatured */}
-        {isPopupOpen && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-60">
-            <div className="relative w-full h-screen max-w-3xl flex items-center justify-center p-6 backdrop-blur-sm text-white rounded-lg shadow-lg overflow-hidden">
-              <GetFeatured />
-              <button onClick={togglePopup} className="absolute top-2 right-2 text-white text-3xl">
-                &times; {/* Close button */}
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
-
+      )}
+    </section>
       {/* Small Screen Section (Visible only for screens under 1000px) */}
       <section className="py-16 bg-[#1B1B1B] relative block md:hidden">
       <OffersBanner/>
@@ -248,35 +256,13 @@ const Home: React.FC = () => {
           <div className="product-container w-full mt-6 px-0">
             <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
               {exploreProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="relative bg-[#0B0B0B] overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
-                >
-                  <img
-                    className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
-                    onClick={() => handleNavigate(`/Product/${product.id}`)}
-                    src={product.image && product.image.length > 0 ? product.image : ""}
-                    alt={product.name}
-                  />
-                  <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-9 sm:h-5 h-4 bg-white">
-                    {" "}
-                    <div className="text-[#282828] text-[10px] sm:w-3/4 md:w-3/4 w-1/2 sm:text-base md:text-base font-semibold truncate responsive-text">
-                      {product.name.toUpperCase()}
-                    </div>
-                    <div className=" text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold responsive-text">
-                      ₹ {product.price}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => toggleWishlist(product.id)}
-                    className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
-                      wishlist.includes(product.id) ? "bg-red-500" : "bg-gray-500"
-                    } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
-                  >
-                    {wishlist.includes(product.id) ? "♥" : "♡"}
-                  </button>
-                </div>
+                <ProductCard
+                key={product.id}
+                product={product}
+                onNavigate={handleNavigate}
+                isWishlisted={wishlist.includes(product)}
+                onToggleWishlist={toggleWishlist}
+              />
               ))}
             </div>
           </div>

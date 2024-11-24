@@ -1,180 +1,178 @@
-import { useState, useEffect } from "react";
-import { AiOutlineLeft, AiOutlinePlus, AiOutlineRight } from "react-icons/ai";
-import { MdClose, MdFilterList } from "react-icons/md";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchCollection } from "../services/api";
-import { ProductCollection } from "../utiles/types";
-import SkeletonLoader from "../utiles/SkeletonLoader"; // Import the skeleton loader
-import Carousel from "./Carousel";
+import type { Product, ProductCollection } from "../utiles/types";
+import SkeletonLoader from "../utiles/Skeletons/SkeletonLoader";
+import Carousel from "../utiles/Carousel";
+import { AiOutlineLeft, AiOutlinePlus, AiOutlineRight } from "react-icons/ai";
+import { MdClose, MdFilterList } from "react-icons/md";
+import ProductCard from "../utiles/Cards/ProductCard"; // Import the ProductCard component
+
+// Constants
+const PRODUCTS_PER_PAGE = 9;
+const PRICE_RANGES = ["Low to High", "High to Low"] as const;
+const SIZES = ["S", "M", "L", "XL","XXL"] as const;
+const CATEGORIES = ["knitted", "polo", "round-neck", "oversize"] as const;
+
+// Types
+type FilterState = {
+  sizes: string[];
+  price: string | null;
+  categories: string[];
+};
+
+const FilterSection = ({ 
+  title, 
+  isOpen, 
+  onToggle, 
+  children 
+}: { 
+  title: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) => (
+  <div className="mb-4">
+    <div
+      className="flex items-center justify-between cursor-pointer"
+      onClick={onToggle}
+    >
+      <span>{title}</span>
+      <AiOutlinePlus className="text-md" />
+    </div>
+    {isOpen && <div className="mt-2 flex flex-col">{children}</div>}
+  </div>
+);
 
 const Collection: React.FC = () => {
   const { category = "all" } = useParams<{ category?: string }>();
+  const navigate = useNavigate();
+  
+  // State
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const productsPerPage = 9;
+  const [filters, setFilters] = useState<FilterState>({
+    sizes: [],
+    price: null,
+    categories: [],
+  });
+  const [expandedSections, setExpandedSections] = useState({
+    size: false,
+    price: false,
+    category: false,
+  });
+  const [wishlist, setWishlist] = useState<Product[]>(() => 
+    JSON.parse(localStorage.getItem("wishlist") || "[]")
+  );
+  const [products, setProducts] = useState<ProductCollection[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // State for Filters
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
-  // Expandable filter sections
-  const [showSize, setShowSize] = useState(false);
-  const [showPrice, setShowPrice] = useState(false);
-  const [showCategory, setShowCategory] = useState(false);
-  const [wishlist, setWishlist] = useState<string[]>([]); // Wishlist state
-  const [allProducts, setAllProducts] = useState<ProductCollection[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
-
-  const toggleWishlist = (productId: string) => {
-    setWishlist((prevWishlist) => {
-      const newWishlist = prevWishlist.includes(productId)
-        ? prevWishlist.filter((id) => id !== productId) // Remove from wishlist
-        : [...prevWishlist, productId]; // Add to wishlist
-
-      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to local storage
-      return newWishlist;
-    });
-  };
-
+  // Fetch products
   useEffect(() => {
-    const fetchProducts = async () => {
+    const loadProducts = async () => {
       try {
-        const fetchProduct = await fetchCollection();
-        const formattedProducts = Array.isArray(fetchProduct)
-          ? fetchProduct.map((item: any) => ({
-              id: item.id,
-              name: item.name,
-              price: item.price,
-              category: item.category,
-              image: item.image,
-              description: item.description || "",
-              sizes:
-                item.sizes?.map((size: any) => ({
-                  id: size.id,
-                  size: size.size,
-                })) || [],
-              rating: item.rating || 0,
-            }))
-          : [];
-
-        setAllProducts(formattedProducts);
+        setIsLoading(true);
+        const data = await fetchCollection();
+        setProducts(Array.isArray(data) ? data.map(formatProduct) : []);
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
-        setIsLoading(false); // Set loading to false once data is fetched
+        setIsLoading(false);
       }
     };
 
-    fetchProducts();
-    // Fetch wishlist from local storage
-    const storedWishlist = localStorage.getItem("wishlist");
-    if (storedWishlist) {
-      setWishlist(JSON.parse(storedWishlist));
-    }
+    loadProducts();
   }, []);
 
+  // Reset filters when category changes
   useEffect(() => {
-    setSelectedSizes([]);
-    setSelectedPrice(null);
-    setSelectedCategories([]);
+    setFilters({ sizes: [], price: null, categories: [] });
     setCurrentPage(1);
   }, [category]);
 
-  // Filter products based on selected filters
-  const filteredProducts = allProducts.filter((product) => {
-    const trimmedProductCategory = product.category.trim().toLowerCase();
-    const trimmedSelectedCategory = category?.trim().toLowerCase();
+  // Memoized filtered and sorted products
+  const processedProducts = useMemo(() => {
+    let filtered = products.filter(product => {
+      const trimmedProductCategory = product.category.trim().toLowerCase();
+      const trimmedSelectedCategory = category?.trim().toLowerCase();
 
-    const matchesCategory =
-      trimmedSelectedCategory === "collection" || // Allow all products if category is "collection"
-      (trimmedProductCategory && trimmedProductCategory === trimmedSelectedCategory);
+      const categoryMatch = trimmedSelectedCategory === "all" || 
+                          trimmedSelectedCategory === "collection" || 
+                          trimmedProductCategory === trimmedSelectedCategory;
 
-    const matchesSize = selectedSizes.length
-      ? product.sizes?.some((sizeObj: { size: string }) => selectedSizes.includes(sizeObj.size)) ??
-        false
-      : true;
+      const sizeMatch = filters.sizes.length === 0 || 
+                       product.sizes?.some(({ size }) => filters.sizes.includes(size));
 
-    // Price filtering
-    let matchesPrice = true;
-    if (selectedPrice) {
-      const priceValue = product.price;
-      if (selectedPrice === "Below 1000") {
-        matchesPrice = priceValue < 1000;
-      } else if (selectedPrice === "1000 - 3000") {
-        matchesPrice = priceValue >= 1000 && priceValue <= 3000;
-      } else if (selectedPrice === "Above 3000") {
-        matchesPrice = priceValue > 3000;
+      const categoryFilterMatch = filters.categories.length === 0 || 
+                                filters.categories.includes(trimmedProductCategory);
+
+      return categoryMatch && sizeMatch && categoryFilterMatch;
+    });
+
+    // Sort products if price filter is applied
+    if (filters.price) {
+      filtered.sort((a, b) => {
+        return filters.price === "High to Low" ? 
+          b.price - a.price : 
+          a.price - b.price;
+      });
+    }
+
+    return filtered;
+  }, [products, category, filters]);
+
+  // Pagination calculations
+  const currentProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    return processedProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+  }, [processedProducts, currentPage]);
+
+  const totalPages = Math.ceil(processedProducts.length / PRODUCTS_PER_PAGE);
+
+  // Handlers
+  const handleNavigate = useCallback((id: string) => {
+    navigate(`/Product/${id}`);
+  }, [navigate]);
+
+  const toggleWishlist = (product: Product) => {
+    setWishlist((prevWishlist: Product[]) => {
+      const exists = prevWishlist.find((item) => item.id === product.id);
+      let newWishlist;
+  
+      if (exists) {
+        // Remove product if it exists
+        newWishlist = prevWishlist.filter((item) => item.id !== product.id);
+      } else {
+        // Add product if it doesn't exist
+        newWishlist = [...prevWishlist, product];
       }
-    }
-    // Category filtering
-    const matchesSelectedCategories =
-      selectedCategories.length === 0 || selectedCategories.includes(trimmedProductCategory);
-
-    return matchesCategory && matchesSize && matchesPrice && matchesSelectedCategories; // Combine conditions
-  });
-
-  // Sort filtered products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (selectedPrice === "High to Low") {
-      return b.price - a.price;
-    } else if (selectedPrice === "Low to High") {
-      return a.price - b.price;
-    }
-    return 0;
-  });
-
-  const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
-  const startIdx = (currentPage - 1) * productsPerPage;
-  const currentProducts =
-    category === "all"
-      ? allProducts // Use sortedProducts directly if category is "collection"
-      : sortedProducts.slice(startIdx, startIdx + productsPerPage).filter(Boolean);
-
-  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  
+      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to localStorage
+      return newWishlist;
+    });
   };
+  
+  const updateFilters = useCallback((key: keyof FilterState, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  }, []);
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-  };
-
-  const handleApplyFilters = () => {
-    toggleSidebar(); // Close the sidebar after applying filters
-  };
-
-  // Function to clear all filters
-  const handleRemoveAllFilters = () => {
-    setSelectedSizes([]);
-    setSelectedPrice(null);
-    setSelectedCategories([]);
-  };
-
-  const navigate = useNavigate();
-
-  const handleNavigate = (path: string) => {
-    navigate(path);
-  };
-
-  // Render Skeleton Loader when data is loading
-  if (isLoading) {
-    return <SkeletonLoader />;
-  }
+  if (isLoading) return <SkeletonLoader />;
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
-      <Carousel/>
-
+      <Carousel />
+      
+      {/* Main Content */}
       <div className="content-container w-full bg-[#141414] pb-4">
-        <div className="header-container w-full flex justify-between items-center p-6 border-b border-[#6C6C6C]">
-          <div className="collections md:text-4xl sm:text-2xl lg:text-5xl font-normal font-montserrat uppercase leading-tight text-white mb-2 text-start">
+        {/* Header */}
+        <header className="w-full flex justify-between items-center p-6 border-b border-[#6C6C6C]">
+          <h1 className="collections md:text-4xl sm:text-2xl lg:text-5xl font-normal font-montserrat uppercase">
             COLLECTIONS
-          </div>
+          </h1>
           <div className="flex items-center">
-            <div
-              className="filters hidden md:block text-[#FFFFFF] font-medium cursor-pointer"
+            <button
+              className="filters hidden md:block text-white font-medium cursor-pointer"
               style={{
                 fontWeight: 200,
                 fontSize: "clamp(1.5rem, 3vw, 1.75rem)",
@@ -182,64 +180,36 @@ const Collection: React.FC = () => {
                 width: "115px",
                 height: "89px",
               }}
-              onClick={toggleSidebar}
+              onClick={() => setSidebarOpen(true)}
             >
               FILTERS
-            </div>
+            </button>
             <MdFilterList
-              className="text-[#FFFFFF] text-2xl md:hidden cursor-pointer"
-              onClick={toggleSidebar}
+              className="text-white text-2xl md:hidden cursor-pointer"
+              onClick={() => setSidebarOpen(true)}
             />
           </div>
-        </div>
+        </header>
 
-        {/* Product grid */}
+        {/* Product Grid */}
         <div className="product-container w-full mt-6 px-0">
           <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
-            {currentProducts.map((product) => {
-              return (
-                <div
-                  key={product.id}
-                  className="relative bg-[#0B0B0B] overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
-                >
-                  <img
-                    className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
-                    onClick={() => handleNavigate(`/Product/${product.id}`)}
-                    src={
-                      product.image && product.image !== ""
-                        ? product.image
-                        : "https://via.placeholder.com/300" // Fallback URL
-                    }
-                    alt={product.name}
-                  />
-                  <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-8 sm:h-5 h-4 bg-white">
-                    {" "}
-                    <div className="text-[#282828] text-[10px] sm:w-3/4 md:w-3/4 w-1/2 sm:text-base md:text-base font-semibold truncate responsive-text">
-                      {product.name.toUpperCase()}
-                    </div>
-                    <div className=" text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold responsive-text">
-                      ₹ {product.price}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => toggleWishlist(product.id)}
-                    className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
-                      wishlist.includes(product.id) ? "bg-red-500" : "bg-gray-500"
-                    } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
-                  >
-                    {wishlist.includes(product.id) ? "♥" : "♡"}
-                  </button>
-                </div>
-              );
-            })}
+            {currentProducts.map(product => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onNavigate={handleNavigate}
+                isWishlisted={wishlist.includes(product)}
+                onToggleWishlist={toggleWishlist}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Pagination Controls */}
-        <div className="pagination-container flex justify-center items-center mt-4">
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-4">
           <button
-            onClick={handlePrevPage}
+            onClick={() => setCurrentPage(prev => prev - 1)}
             disabled={currentPage === 1}
             className="w-7 h-7 text-black rounded-full bg-white disabled:bg-gray-400 flex items-center justify-center"
           >
@@ -249,7 +219,7 @@ const Collection: React.FC = () => {
             {currentPage} of {totalPages}
           </span>
           <button
-            onClick={handleNextPage}
+            onClick={() => setCurrentPage(prev => prev + 1)}
             disabled={currentPage === totalPages}
             className="w-7 h-7 text-black rounded-full bg-white disabled:bg-gray-400 flex items-center justify-center"
           >
@@ -258,15 +228,14 @@ const Collection: React.FC = () => {
         </div>
       </div>
 
-      {/* Backdrop */}
+      {/* Filters Sidebar */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
-          onClick={toggleSidebar}
+          onClick={() => setSidebarOpen(false)}
         />
       )}
-
-      {/* Sidebar */}
+      
       <div
         className={`fixed top-0 left-0 w-80 h-full bg-[#141414] text-white z-50 flex flex-col items-center transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -274,125 +243,117 @@ const Collection: React.FC = () => {
       >
         <div className="pt-6 pb-4 border-b border-[#6C6C6C] flex justify-between items-center w-[220px]">
           <span className="text-lg font-normal">FILTERS</span>
-          <MdClose className="text-xl cursor-pointer" onClick={toggleSidebar} />
+          <MdClose 
+            className="text-xl cursor-pointer" 
+            onClick={() => setSidebarOpen(false)} 
+          />
         </div>
+        
         <div className="flex-grow mt-6 w-[235px]">
-          {/* SIZE Filter */}
-          <div className="mb-4">
-            <div
-              className="flex items-center justify-between cursor-pointer"
-              onClick={() => setShowSize(!showSize)}
-            >
-              <span>SIZE</span>
-              <AiOutlinePlus className="text-md" />
-            </div>
-            {showSize && (
-              <div className="mt-2 flex flex-col">
-                {["small", "medium", "large", "X-large"].map((size) => (
-                  <label key={size} className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="mr-2"
-                      value={size}
-                      checked={selectedSizes.includes(size)}
-                      onChange={(e) => {
-                        const newSize = e.target.value;
-                        setSelectedSizes((prev) =>
-                          prev.includes(newSize)
-                            ? prev.filter((s) => s !== newSize)
-                            : [...prev, newSize]
-                        );
-                      }}
-                    />
-                    {size.charAt(0).toUpperCase() + size.slice(1)}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Size Filter */}
+          <FilterSection
+            title="SIZE"
+            isOpen={expandedSections.size}
+            onToggle={() => setExpandedSections(prev => ({ ...prev, size: !prev.size }))}
+          >
+            {SIZES.map((size) => (
+              <label key={size} className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={filters.sizes.includes(size)}
+                  onChange={(e) => {
+                    const newSizes = e.target.checked
+                      ? [...filters.sizes, size]
+                      : filters.sizes.filter(s => s !== size);
+                    updateFilters("sizes", newSizes);
+                  }}
+                />
+                {size.charAt(0).toUpperCase() + size.slice(1)}
+              </label>
+            ))}
+          </FilterSection>
 
-          {/* PRICE Filter */}
-          <div className="mb-4">
-            <div
-              className="flex items-center justify-between cursor-pointer"
-              onClick={() => setShowPrice(!showPrice)}
-            >
-              <span>SORT</span>
-              <AiOutlinePlus className="text-md" />
-            </div>
-            {showPrice && (
-              <div className="mt-2 flex flex-col">
-                {["Low to High", "High to Low"].map((sortOption) => (
-                  <label key={sortOption} className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      className="mr-2"
-                      value={sortOption}
-                      checked={selectedPrice === sortOption}
-                      onChange={(e) => setSelectedPrice(e.target.value)}
-                    />
-                    {sortOption}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Price Filter */}
+          <FilterSection
+            title="SORT"
+            isOpen={expandedSections.price}
+            onToggle={() => setExpandedSections(prev => ({ ...prev, price: !prev.price }))}
+          >
+            {PRICE_RANGES.map((option) => (
+              <label key={option} className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  className="mr-2"
+                  checked={filters.price === option}
+                  onChange={() => updateFilters("price", option)}
+                />
+                {option}
+              </label>
+            ))}
+          </FilterSection>
 
-          {/* CATEGORY Filter */}
-          <div className="mb-4">
-            <div
-              className="flex items-center justify-between cursor-pointer"
-              onClick={() => setShowCategory(!showCategory)}
-            >
-              <span>CATEGORY</span>
-              <AiOutlinePlus className="text-md" />
-            </div>
-            {showCategory && (
-              <div className="mt-2 flex flex-col">
-                {["knitted", "polo", "round-neck", "oversize"].map((cat) => (
-                  <label key={cat} className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="mr-2"
-                      value={cat}
-                      checked={selectedCategories.includes(cat)}
-                      onChange={(e) => {
-                        const newCategory = e.target.value;
-                        setSelectedCategories((prev) =>
-                          prev.includes(newCategory)
-                            ? prev.filter((c) => c !== newCategory)
-                            : [...prev, newCategory]
-                        );
-                      }}
-                    />
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Category Filter */}
+          <FilterSection
+            title="CATEGORY"
+            isOpen={expandedSections.category}
+            onToggle={() => setExpandedSections(prev => ({ ...prev, category: !prev.category }))}
+          >
+            {CATEGORIES.map((cat) => (
+              <label key={cat} className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={filters.categories.includes(cat)}
+                  onChange={(e) => {
+                    const newCategories = e.target.checked
+                      ? [...filters.categories, cat]
+                      : filters.categories.filter(c => c !== cat);
+                    updateFilters("categories", newCategories);
+                  }}
+                />
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </label>
+            ))}
+          </FilterSection>
 
-          <div
-            className="apply-filters-button bg-white text-black cursor-pointer w-full py-2 mt-4"
-            onClick={handleApplyFilters}
+          {/* Action Buttons */}
+          <button
+            className="w-full py-2 mt-4 bg-white text-black cursor-pointer"
+            onClick={() => setSidebarOpen(false)}
           >
             APPLY FILTERS
-          </div>
+          </button>
 
-          {/* Remove All Filters Button */}
-          <div
-            className="remove-filters-button bg-red-500 text-black cursor-pointer w-full py-2 mt-2"
+          <button
+            className="w-full py-2 mt-2 bg-red-500 text-black cursor-pointer"
             onClick={() => {
-              handleRemoveAllFilters();
-              toggleSidebar();
+              setFilters({ sizes: [], price: null, categories: [] });
+              setSidebarOpen(false);
             }}
           >
             REMOVE ALL FILTERS
-          </div>
+          </button>
         </div>
       </div>
     </div>
   );
 };
+
+// Utility functions
+const formatProduct = (item: any): ProductCollection => ({
+  id: item.id,
+  name: item.name,
+  price: item.price,
+  category: item.category,
+  image: item.image,
+  description: item.description || "",
+  sizes: item.sizes?.map((size: any) => ({
+    id: size.id,
+    size: size.size,
+    quantity : size.quantity
+  })) || [],
+  rating: item.rating || 0,
+});
 
 export default Collection;

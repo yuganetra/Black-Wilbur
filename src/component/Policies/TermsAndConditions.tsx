@@ -137,7 +137,7 @@ const TermsAndConditions: React.FC = () => {
           <h3 className="font-bold">11. CONTACT INFORMATION</h3>
           <p>
             IF YOU HAVE ANY QUESTIONS ABOUT THESE TERMS, PLEASE CONTACT US AT
-            SUPPORT@BLACKWILBUR.COM.
+            Blackwilburofficial@gmail.com .
           </p>
         </div>
         <div className="border-b border-black mb-4" />

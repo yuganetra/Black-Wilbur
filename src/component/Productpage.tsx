@@ -14,13 +14,29 @@ import {
   getImageByProductId,
 } from "../services/api";
 import { Product, ProductVariation, ProductsImage } from "../utiles/types";
-import Skeleton from "../utiles/ProductDetailsSkeleton";
+import Skeleton from "../utiles/Skeletons/ProductDetailsSkeleton";
 import { FaTimes } from "react-icons/fa";
 
 interface CartItem extends Product {
   selectedSize: string | undefined;
   quantity: number;
 }
+
+type CartItemCheckout = {
+  id: string;
+  product: {
+    id:string;
+    name: string;
+    description: string;
+    price: number;
+    product_images: string;
+  };
+  quantity: number;
+  size: string;
+  product_variation_id: string;
+  selectedSize: string; // Add this explicitly
+};
+
 
 const Productpage = () => {
   const [product, setProduct] = useState<Product | null>(null);
@@ -39,7 +55,7 @@ const Productpage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItemCheckout[]>([]);
 
 
 
@@ -105,13 +121,29 @@ const handleAddToCart = async () => {
     quantity: 1,
   };
 
+  const cartItem: CartItemCheckout = {
+    id: product.id,
+    quantity: 1,
+    product: {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      product_images: product.image,
+    },
+    size: selectedSize.size,
+    selectedSize: selectedSize.size, // Include this
+    product_variation_id: selectedSize.id,
+  };
+  
+  setCartItems([cartItem]); // If starting a new cart array
   const user = localStorage.getItem("user");
 
   if (!user) {
     // Add to local cart
     const cartString = localStorage.getItem("cart");
-    let existingCart: CartItem[] = cartString ? JSON.parse(cartString) : [];
-    existingCart.push(productToAdd);
+    let existingCart: CartItemCheckout[] = cartString ? JSON.parse(cartString) : [];
+    existingCart.push(cartItem);
     localStorage.setItem("cart", JSON.stringify(existingCart));
     setCartItems(existingCart); // Update state
   } else {
@@ -122,7 +154,7 @@ const handleAddToCart = async () => {
         selectedSize.id,
         productToAdd.quantity
       );
-      setCartItems((prevCart) => [...prevCart, productToAdd]); // Update state
+      setCartItems((prevCart) => [...prevCart, cartItem]); // Update state
     } catch (error) {
       console.error("Error adding to cart:", error);
     }

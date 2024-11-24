@@ -54,7 +54,6 @@ const Checkout: React.FC = () => {
     const fetchProducts = () => {
       setTimeout(() => {
         setProducts(initialProducts);
-        console.log("Fetched couponDiscount:", couponDiscount); // Log after fetching couponDiscount
         setLoading(false);
       }, 1000);
     };
@@ -190,7 +189,7 @@ const Checkout: React.FC = () => {
       navigate("/orderFailure"); // Navigate to failure page if an error occurs
     }
   };
-
+  console.log(products)
   const totalAmount = products.reduce(
     (total, item) => total + item.product.price * item.quantity,
     0

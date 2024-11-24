@@ -108,7 +108,7 @@ const ReturnPolicy: React.FC = () => {
           <p className="text-justify text-sm md:text-base">
             ANY QUERIES OR CONCERNS RELATING TO THE RETURN AND CANCELLATION MAY
             BE DIRECTED BY YOU TO OUR CUSTOMER SUPPORT TEAM WHO CAN BE CONTACTED
-            AT: WRITE TO US AT support@blackwilbur.com
+            AT: WRITE TO US AT Blackwilburofficial@gmail.com 
           </p>
         </div>
         <div className="border-b border-black mb-4" />

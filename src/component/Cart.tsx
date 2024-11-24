@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Product, Discount } from "../utiles/types";
+import { Discount } from "../utiles/types";
 import { motion } from "framer-motion";
 import Confetti from "react-confetti";
 import {
@@ -11,15 +11,25 @@ import {
   removeFromCart,
 } from "../services/api";
 
-interface CartItem extends Product {
-  selectedSize: string | undefined;
+type CartItemCheckout = {
+  id: string;
+  product: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    product_images: string;
+  };
   quantity: number;
-}
+  size: string;
+  product_variation_id: string;
+  selectedSize: string; // Add this explicitly
+};
 
 interface CartComponentProps {
   isOpen: boolean;
   onClose: () => void;
-  cartItems: CartItem[];
+  cartItems: CartItemCheckout[];
 }
 
 const CartComponent: React.FC<CartComponentProps> = ({
@@ -27,7 +37,8 @@ const CartComponent: React.FC<CartComponentProps> = ({
   onClose,
   cartItems,
 }) => {
-  const [cartProducts, setCartProducts] = useState<CartItem[]>(cartItems);
+  const [cartProducts, setCartProducts] =
+    useState<CartItemCheckout[]>(cartItems);
   const [couponCode, setCouponCode] = useState<string>("");
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
@@ -35,9 +46,9 @@ const CartComponent: React.FC<CartComponentProps> = ({
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const navigate = useNavigate();
 
+  // Fetch cart items periodically (every 5 minutes)
   useEffect(() => {
-    const getCartItems = async () => {
-      setCartProducts(cartProducts);
+    const fetchCartData = async () => {
       if (isUserLoggedIn()) {
         try {
           const cartData = await fetchCartItems(); // API call to get cart items
@@ -57,43 +68,33 @@ const CartComponent: React.FC<CartComponentProps> = ({
         }
       }
     };
-  
-    getCartItems();
-  }, []); // The effect runs once when the component is mounted
-  
-  const mapApiResponseToCart = (apiResponse: any[]): CartItem[] => {
+
+    // Initial fetch
+    fetchCartData();
+
+    // Set interval to fetch cart every 5 minutes (300000ms)
+    const interval = setInterval(fetchCartData, 150000);
+
+    // Cleanup the interval when the component is unmounted
+    return () => clearInterval(interval);
+  }, [cartItems]);
+
+  const mapApiResponseToCart = (apiResponse: any[]): CartItemCheckout[] => {
     return apiResponse.map((item) => ({
       id: item.id,
-      name: item.product.name,
-      description: item.product.description,
-      price: parseFloat(item.product.price),
-      image: item.product.image,
       quantity: item.quantity,
-      selectedSize: item.size.size,
-      category: item.product.category || "Default Category",
-      sizes: item.product.sizes || [], // Make sure sizes is provided, fallback to empty array
+      product: {
+        id: item.product.id,
+        name: item.product.name,
+        description: item.product.description,
+        price: parseFloat(item.product.price),
+        product_images: item.product.image,
+      },
+      size: item.size.size,
+      product_variation_id: item.size.id,
+      selectedSize: item.size.size, // Ensure selectedSize is set here
     }));
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (showConfetti) {
-      const confettiTimer = setTimeout(() => {
-        setShowConfetti(false);
-      }, 3000);
-      return () => clearTimeout(confettiTimer);
-    }
-  }, [showConfetti]);
 
   useEffect(() => {
     const fetchDiscounts = async () => {
@@ -111,22 +112,30 @@ const CartComponent: React.FC<CartComponentProps> = ({
     const matchingCoupon = discounts.find(
       (discount) => discount.coupon === couponCode
     );
-
+  
     if (matchingCoupon) {
       const totalQuantity = cartProducts.reduce(
         (total, item) => total + item.quantity,
         0
       );
-
+  
       if (
         matchingCoupon.quantity_threshold &&
         totalQuantity >= matchingCoupon.quantity_threshold
       ) {
         setCouponDiscount(matchingCoupon.percent_discount);
         setShowConfetti(true);
+  
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 3000); 
       } else if (!matchingCoupon.quantity_threshold) {
         setCouponDiscount(matchingCoupon.percent_discount);
         setShowConfetti(true);
+  
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 3000);
       } else {
         alert(
           `You need at least ${matchingCoupon.quantity_threshold} items to use this coupon.`
@@ -136,13 +145,14 @@ const CartComponent: React.FC<CartComponentProps> = ({
       alert("Invalid coupon code.");
     }
   };
-
+  
   const handleCheckoutNavigate = async () => {
     if (cartProducts.length === 0) {
       alert("Please add products to the cart before proceeding to checkout.");
     } else {
       if (isUserLoggedIn()) {
         onClose();
+        console.log(cartProducts);
         navigate("/checkout", {
           state: { products: cartProducts, couponDiscount },
         });
@@ -178,8 +188,6 @@ const CartComponent: React.FC<CartComponentProps> = ({
           console.error("Error removing item from cart:", error);
         });
       }
-
-      // Directly update the state and localStorage without calling getCartItems()
       return updatedCart;
     });
   };
@@ -230,7 +238,7 @@ const CartComponent: React.FC<CartComponentProps> = ({
   };
 
   const totalAmount = cartProducts.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) => total + item.product.price * item.quantity,
     0
   );
 
@@ -248,6 +256,14 @@ const CartComponent: React.FC<CartComponentProps> = ({
       setIsRemovingCoupon(false);
     }, 500);
   };
+
+  // // Filter cart items: Show only the product that matches both id and selectedSize
+  // const filteredCart = cartProducts.filter((item, index, self) =>
+  //   self.findIndex(
+  //     (t) =>
+  //       t.id === item.id && t.selectedSize === item.selectedSize
+  //   ) === index
+  // );
 
   const finalAmount = totalAmount - (totalAmount * couponDiscount) / 100;
 
@@ -287,14 +303,20 @@ const CartComponent: React.FC<CartComponentProps> = ({
                 >
                   <div className="flex">
                     <img
-                      src={item.image || "fallback-image-url.jpg"}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover mr-4"
+                      src={
+                        item.product.product_images || "fallback-image-url.jpg"
+                      }
+                      alt={item.product.name}
+                      className="w-20 h-20 object-contain mr-4" // Fixed width and height for image
                     />
                     <div className="text-left">
-                      <h3 className="font-medium">{item.name}</h3>
+                      <h3 className="font-medium text-sm">
+                        {item.product.name}
+                      </h3>{" "}
+                      {/* Smaller font size for name */}
                       <p className="text-gray-600">
-                        Price: ₹{(item.price * item.quantity).toFixed(2)}
+                        Price: ₹
+                        {(item.product.price * item.quantity).toFixed(2)}
                       </p>
                       <p className="text-sm text-gray-500">
                         Size: {item.selectedSize}
@@ -337,20 +359,20 @@ const CartComponent: React.FC<CartComponentProps> = ({
           </div>
         )}
 
-        <div className="p-4 border-t">
-          <div className="flex justify-between">
+        <div className="p-2 border-t mt-auto">
+          <div className="flex justify-between text-sm">
             <span>Total Quantity</span>
             <span>{totalQuantity}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between text-sm">
             <span>Total Amount</span>
             <span>₹{totalAmount}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between text-sm">
             <span>Coupon Discount ({couponDiscount}%)</span>
             <span>-₹{(totalAmount * couponDiscount) / 100}</span>
           </div>
-          <div className="flex justify-between font-bold">
+          <div className="flex justify-between font-semibold text-sm">
             <span>Final Amount</span>
             <span>₹{finalAmount}</span>
           </div>
@@ -359,7 +381,7 @@ const CartComponent: React.FC<CartComponentProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: isRemovingCoupon ? 0 : 1 }}
             transition={{ duration: 0.5 }}
-            className="mt-4"
+            className="mt-2"
           >
             <div className="relative">
               <input
@@ -367,12 +389,12 @@ const CartComponent: React.FC<CartComponentProps> = ({
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 placeholder="Enter coupon code"
-                className="p-2 border rounded w-full pr-10"
+                className="p-1.5 border rounded w-full pr-10 text-sm"
               />
               {couponCode && (
                 <button
                   onClick={handleRemoveCoupon}
-                  className="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500"
+                  className="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500 text-sm"
                 >
                   &times;
                 </button>
@@ -380,13 +402,13 @@ const CartComponent: React.FC<CartComponentProps> = ({
             </div>
             <button
               onClick={handleCouponApply}
-              className="w-full mt-4 bg-black text-white py-2 rounded hover:bg-gray-600 transition-colors"
+              className="w-full mt-2 bg-black text-white py-1.5 rounded hover:bg-gray-600 transition-colors text-sm"
             >
               Apply Coupon
             </button>
           </motion.div>
           <button
-            className="w-full mt-4 bg-black text-white py-2 rounded hover:bg-gray-600 transition-colors"
+            className="w-full mt-2 bg-black text-white py-1.5 rounded hover:bg-gray-600 transition-colors text-sm"
             onClick={handleCheckoutNavigate}
           >
             Checkout

@@ -92,7 +92,7 @@ const PrivacyPolicy: React.FC = () => {
           <p>
             YOU HAVE THE RIGHT TO ACCESS, CORRECT, OR DELETE YOUR PERSONAL
             INFORMATION THAT WE HOLD. YOU MAY DO THIS BY CONTACTING US AT
-            CONTACT@BLACKWILBUR.COM.
+            Blackwilburofficial@gmail.com .
           </p>
         </div>
         <div className="border-b border-white mb-4" />
@@ -110,7 +110,7 @@ const PrivacyPolicy: React.FC = () => {
           <h3 className="font-bold">9. CONTACT US</h3>
           <p>
             IF YOU HAVE ANY QUESTIONS ABOUT THIS PRIVACY POLICY, PLEASE CONTACT
-            US AT support@blackwilbur.com.
+            US AT Blackwilburofficial@gmail.com .
           </p>
           <p>
             Black Wilbur emphasises its dedication to creating a community that

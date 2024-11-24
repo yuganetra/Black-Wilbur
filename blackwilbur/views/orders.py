@@ -39,6 +39,7 @@ class OrdersAPIView(APIView):
                         "id": item.product.id,
                         "name": item.product.name,
                         "price": str(item.product.price),
+                        "image": item.product.image
                     },
                     "quantity": item.quantity,
                     "product_variation": {

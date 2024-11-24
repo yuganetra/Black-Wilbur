@@ -33,7 +33,7 @@ const GetFeatured: React.FC = () => {
           4. Video duration: 25 to 30 seconds.
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
-          5. Send everything to our email (Official@blackwilbur.com).
+          5. Send everything to our email (Blackwilburofficial@gmail.com).
         </li>
         <li className="flex items-center transition hover:text-yellow-400 ">
           6. If selected, we’ll reach out via email.
