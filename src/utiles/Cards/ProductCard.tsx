@@ -4,7 +4,7 @@ import { Product, ProductCollection } from "../types";
 
 interface ProductCardProps {
   product: Product | ProductCollection; 
-  onNavigate: (id: string) => void;
+  handleNavigate: (url: string) => void;
   isWishlisted: boolean;
   onToggleWishlist: (id: Product) => void;
 }
@@ -21,7 +21,7 @@ const calculateTotalQuantity = (product: ProductCollection): number => {
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
-  onNavigate,
+  handleNavigate,
   isWishlisted,
   onToggleWishlist,
 }) => {
@@ -40,7 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Product image */}
       <img
         className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
-        onClick={() => onNavigate(product.id)}
+        onClick={() => handleNavigate(`${product.id}`)}
         src={product.image || "https://via.placeholder.com/300"} 
         alt={product.name} 
       />

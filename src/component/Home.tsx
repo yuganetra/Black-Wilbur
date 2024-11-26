@@ -259,7 +259,7 @@ const Home: React.FC = () => {
                 <ProductCard
                 key={product.id}
                 product={product}
-                onNavigate={handleNavigate}
+                handleNavigate={handleNavigate}
                 isWishlisted={wishlist.includes(product)}
                 onToggleWishlist={toggleWishlist}
               />

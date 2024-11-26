@@ -3,12 +3,15 @@ import { MdFacebook } from "react-icons/md";
 import { BsTwitterX } from "react-icons/bs";
 import { FaInstagram } from "react-icons/fa";
 import logo from "../asset/logo.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GetFeatured from "../utiles/Banners/GetFeatured";
+import { Category } from "../utiles/types";
+import { fetchCategories } from "../services/api";
 
 const Footer = () => {
   const navigate = useNavigate();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -17,6 +20,24 @@ const Footer = () => {
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedCategories = await fetchCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 6000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <div className="footer bg-[#000000] text-white w-full flex flex-col justify-center items-center p-4 cursor-pointer">
@@ -29,11 +50,22 @@ const Footer = () => {
             >
               SHOP
             </h4>
-            <ul className="space-y-2 text-[#7d7d7d] cursor-pointer">
-              <li className="hover:text-white">Oversize</li>
-              <li className="hover:text-white">Round Neck</li>
-              <li className="hover:text-white">Polo</li>
-              <li className="hover:text-white">Knitted</li>
+            <ul className="space-y-2 text-gray-500">
+              {categories.length > 0 ? (
+                categories.map((category) => (
+                  <li
+                    key={category.id}
+                    className="hover:text-white cursor-pointer"
+                    onClick={() =>
+                      handleNavigate(`/collection/${category.name}`)
+                    }
+                  >
+                    {category.name}
+                  </li>
+                ))
+              ) : (
+                <li>No categories available</li>
+              )}
             </ul>
           </div>
           <div className="flex flex-col space-y-4 w-full max-w-[260px] text-center lg:text-left">
@@ -67,7 +99,14 @@ const Footer = () => {
           <div className="flex flex-col space-y-4 w-full max-w-[260px] text-center lg:text-left">
             <h4 className="font-semibold text-lg">CONTACT</h4>
             <ul className="space-y-2 text-[#7d7d7d]">
-              <li className="hover:text-white">Blackwilburofficial@gmail.com </li>
+              <li>
+                <a
+                  href="mailto:Blackwilburofficial@gmail.com"
+                  className="hover:text-white"
+                >
+                  Blackwilburofficial@gmail.com
+                </a>
+              </li>
               {/* <li className="hover:text-white">+91 9575555383</li> */}
               <li onClick={() => togglePopup()} className="hover:text-white">
                 Featured on BlackWilbur.com

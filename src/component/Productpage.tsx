@@ -16,6 +16,7 @@ import {
 import { Product, ProductVariation, ProductsImage } from "../utiles/types";
 import Skeleton from "../utiles/Skeletons/ProductDetailsSkeleton";
 import { FaTimes } from "react-icons/fa";
+import ProductCard from "../utiles/Cards/ProductCard";
 
 interface CartItem extends Product {
   selectedSize: string | undefined;
@@ -25,7 +26,7 @@ interface CartItem extends Product {
 type CartItemCheckout = {
   id: string;
   product: {
-    id:string;
+    id: string;
     name: string;
     description: string;
     price: number;
@@ -37,14 +38,15 @@ type CartItemCheckout = {
   selectedSize: string; // Add this explicitly
 };
 
-
 const Productpage = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [images, setImages] = useState<ProductsImage[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(null);
-  const [wishlist, setWishlist] = useState<string[]>(() => {
+  const [selectedSize, setSelectedSize] = useState<ProductVariation | null>(
+    null
+  );
+  const [wishlist, setWishlist] = useState<Product[]>(() => {
     const savedWishlist = localStorage.getItem("wishlist");
     return savedWishlist ? JSON.parse(savedWishlist) : [];
   });
@@ -57,16 +59,17 @@ const Productpage = () => {
   const { id } = useParams();
   const [cartItems, setCartItems] = useState<CartItemCheckout[]>([]);
 
-
-
-  const handleNavigate = (path: string) => {
-    navigate(path);
-  };
+  const handleNavigate = useCallback(
+    (id: string) => {
+      navigate(`/Product/${id}`);
+    },
+    [navigate]
+  );
 
   const showErrorMessage = (message: string) => {
     setErrorMessage(message);
     setTimeout(() => {
-      setErrorMessage('');
+      setErrorMessage("");
     }, 4000);
   };
 
@@ -89,7 +92,7 @@ const Productpage = () => {
 
   const handleRatingClick = async (rating: number) => {
     if (!product) return;
-    
+
     setUserRating(rating);
     try {
       await addRating(product.id, rating);
@@ -101,67 +104,69 @@ const Productpage = () => {
     }
   };
 
-// Updated handleAddToCart function
-const handleAddToCart = async () => {
-  if (!selectedSize) {
-    showErrorMessage("Please select a size before adding to the cart.");
-    return;
-  }
-
-  if (selectedSize.quantity <= 0) {
-    showErrorMessage("Selected size is out of stock.");
-    return;
-  }
-
-  if (!product) return;
-
-  const productToAdd: CartItem = {
-    ...product,
-    selectedSize: selectedSize.size,
-    quantity: 1,
-  };
-
-  const cartItem: CartItemCheckout = {
-    id: product.id,
-    quantity: 1,
-    product: {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      product_images: product.image,
-    },
-    size: selectedSize.size,
-    selectedSize: selectedSize.size, // Include this
-    product_variation_id: selectedSize.id,
-  };
-  
-  setCartItems([cartItem]); // If starting a new cart array
-  const user = localStorage.getItem("user");
-
-  if (!user) {
-    // Add to local cart
-    const cartString = localStorage.getItem("cart");
-    let existingCart: CartItemCheckout[] = cartString ? JSON.parse(cartString) : [];
-    existingCart.push(cartItem);
-    localStorage.setItem("cart", JSON.stringify(existingCart));
-    setCartItems(existingCart); // Update state
-  } else {
-    // Add to server-side cart
-    try {
-      await addToCart(
-        productToAdd.id,
-        selectedSize.id,
-        productToAdd.quantity
-      );
-      setCartItems((prevCart) => [...prevCart, cartItem]); // Update state
-    } catch (error) {
-      console.error("Error adding to cart:", error);
+  // Updated handleAddToCart function
+  const handleAddToCart = async () => {
+    if (!selectedSize) {
+      showErrorMessage("Please select a size before adding to the cart.");
+      return;
     }
-  }
 
-  setIsCartOpen(true);
-};
+    if (selectedSize.quantity <= 0) {
+      showErrorMessage("Selected size is out of stock.");
+      return;
+    }
+
+    if (!product) return;
+
+    const productToAdd: CartItem = {
+      ...product,
+      selectedSize: selectedSize.size,
+      quantity: 1,
+    };
+
+    const cartItem: CartItemCheckout = {
+      id: product.id,
+      quantity: 1,
+      product: {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        product_images: product.image,
+      },
+      size: selectedSize.size,
+      selectedSize: selectedSize.size, // Include this
+      product_variation_id: selectedSize.id,
+    };
+
+    setCartItems([cartItem]); // If starting a new cart array
+    const user = localStorage.getItem("user");
+
+    if (!user) {
+      // Add to local cart
+      const cartString = localStorage.getItem("cart");
+      let existingCart: CartItemCheckout[] = cartString
+        ? JSON.parse(cartString)
+        : [];
+      existingCart.push(cartItem);
+      localStorage.setItem("cart", JSON.stringify(existingCart));
+      setCartItems(existingCart); // Update state
+    } else {
+      // Add to server-side cart
+      try {
+        await addToCart(
+          productToAdd.id,
+          selectedSize.id,
+          productToAdd.quantity
+        );
+        setCartItems((prevCart) => [...prevCart, cartItem]); // Update state
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+      }
+    }
+
+    setIsCartOpen(true);
+  };
 
   const handleBuyNow = async () => {
     if (!selectedSize) {
@@ -205,17 +210,24 @@ const handleAddToCart = async () => {
     }
   };
 
-  const toggleWishlist = (productId: string) => {
-    setWishlist((prevWishlist) => {
-      const newWishlist = prevWishlist.includes(productId)
-        ? prevWishlist.filter((id) => id !== productId)
-        : [...prevWishlist, productId];
-
-      localStorage.setItem("wishlist", JSON.stringify(newWishlist));
+  const toggleWishlist = (product: Product) => {
+    setWishlist((prevWishlist: Product[]) => {
+      const exists = prevWishlist.find((item) => item.id === product.id);
+      let newWishlist;
+  
+      if (exists) {
+        // Remove product if it exists
+        newWishlist = prevWishlist.filter((item) => item.id !== product.id);
+      } else {
+        // Add product if it doesn't exist
+        newWishlist = [...prevWishlist, product];
+      }
+  
+      localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to localStorage
       return newWishlist;
     });
   };
-
+  
   // Combined fetch effect
   useEffect(() => {
     const fetchAllData = async () => {
@@ -223,12 +235,13 @@ const handleAddToCart = async () => {
 
       setIsLoading(true);
       try {
-        const [fetchedProduct, fetchedImages, fetchedRatings, fetchedExplore] = await Promise.all([
-          fetchProductById(id),
-          getImageByProductId(id),
-          fetchRatings(id),
-          fetchExplore()
-        ]);
+        const [fetchedProduct, fetchedImages, fetchedRatings, fetchedExplore] =
+          await Promise.all([
+            fetchProductById(id),
+            getImageByProductId(id),
+            fetchRatings(id),
+            fetchExplore(),
+          ]);
 
         setProduct(fetchedProduct);
         setImages(fetchedImages);
@@ -260,14 +273,12 @@ const handleAddToCart = async () => {
     ratings.length > 0
       ? ratings.reduce((acc, rating) => acc + rating.rating, 0) / ratings.length
       : 0;
-      
+
   return (
     <div className="bg-[#1B1B1B] text-white min-h-screen flex flex-col">
       {/* Display error message */}
       {errorMessage && (
-        <div className="bg-red-500 text-white mb-4 rounded">
-          {errorMessage}
-        </div>
+        <div className="bg-red-500 text-white mb-4 rounded">{errorMessage}</div>
       )}
       <section className="w-full flex flex-col lg:flex-row gap-10">
         {/* Image Section */}
@@ -325,7 +336,9 @@ const handleAddToCart = async () => {
                     selectedSize?.id === sizeObj.id
                       ? "bg-black text-white border-transparent"
                       : "bg-white text-black border-black"
-                  } ${sizeObj.quantity <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  } ${
+                    sizeObj.quantity <= 0 ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   onClick={() => {
                     if (sizeObj.quantity > 0) {
                       setSelectedSize(sizeObj);
@@ -342,8 +355,6 @@ const handleAddToCart = async () => {
               ))}
             </div>
           </div>
-
-
 
           {/* Size Chart Button */}
           <div className="flex gap-4 mb-8">
@@ -404,7 +415,11 @@ const handleAddToCart = async () => {
       </section>
       {/* Add to Cart Sidebar */}
       <div className="text-black">
-      <CartComponent isOpen={isCartOpen} onClose={toggleCartSidebar} cartItems={cartItems} />
+        <CartComponent
+          isOpen={isCartOpen}
+          onClose={toggleCartSidebar}
+          cartItems={cartItems}
+        />
       </div>
       <div className="text-black">
         <SizeChart isOpen={isSizeChartOpen} onClose={toggleSizeChart} />
@@ -416,48 +431,15 @@ const handleAddToCart = async () => {
           VISIT MORE
         </div>
         <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
-          {exploreProducts.length > 0 ? (
-            exploreProducts.map((product) => (
-              <div
-                key={product.id}
-                className="relative bg-[#0B0B0B] overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none"
-              >
-                <img
-                  className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
-                  onClick={() => handleNavigate(`/Product/${product.id}`)}
-                  src={
-                    product.image && product.image.length > 0
-                      ? product.image
-                      : ""
-                  }
-                  alt={product.name}
-                />
-                <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-8 sm:h-5 h-4 bg-white">
-                  {" "}
-                  <div className="text-[#282828] text-[10px] sm:w-3/4 md:w-3/4 w-1/2 sm:text-base md:text-base font-semibold truncate responsive-text">
-                    {product.name.toUpperCase()}
-                  </div>
-                  <div className=" text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold responsive-text">
-                    ₹ {product.price}
-                  </div>
-                  <button
-                    onClick={() => toggleWishlist(product.id)}
-                    className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${
-                      wishlist.includes(product.id)
-                        ? "bg-red-500"
-                        : "bg-gray-500"
-                    } text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
-                  >
-                    {wishlist.includes(product.id) ? "♥" : "♡"}
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center text-gray-500">
-              No products available
-            </div>
-          )}
+          {exploreProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              handleNavigate={handleNavigate}
+              isWishlisted={wishlist.includes(product)}
+              onToggleWishlist={toggleWishlist}
+            />
+          ))}
         </div>
       </section>
     </div>

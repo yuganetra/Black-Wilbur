@@ -11,7 +11,7 @@ import ProductCard from "../utiles/Cards/ProductCard"; // Import the ProductCard
 // Constants
 const PRODUCTS_PER_PAGE = 9;
 const PRICE_RANGES = ["Low to High", "High to Low"] as const;
-const SIZES = ["S", "M", "L", "XL","XXL"] as const;
+const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 const CATEGORIES = ["knitted", "polo", "round-neck", "oversize"] as const;
 
 // Types
@@ -21,12 +21,12 @@ type FilterState = {
   categories: string[];
 };
 
-const FilterSection = ({ 
-  title, 
-  isOpen, 
-  onToggle, 
-  children 
-}: { 
+const FilterSection = ({
+  title,
+  isOpen,
+  onToggle,
+  children,
+}: {
   title: string;
   isOpen: boolean;
   onToggle: () => void;
@@ -47,7 +47,7 @@ const FilterSection = ({
 const Collection: React.FC = () => {
   const { category = "all" } = useParams<{ category?: string }>();
   const navigate = useNavigate();
-  
+
   // State
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -61,11 +61,16 @@ const Collection: React.FC = () => {
     price: false,
     category: false,
   });
-  const [wishlist, setWishlist] = useState<Product[]>(() => 
+  const [wishlist, setWishlist] = useState<Product[]>(() =>
     JSON.parse(localStorage.getItem("wishlist") || "[]")
   );
   const [products, setProducts] = useState<ProductCollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Scroll to top on page or category change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage, category]);
 
   // Fetch products
   useEffect(() => {
@@ -92,19 +97,22 @@ const Collection: React.FC = () => {
 
   // Memoized filtered and sorted products
   const processedProducts = useMemo(() => {
-    let filtered = products.filter(product => {
+    let filtered = products.filter((product) => {
       const trimmedProductCategory = product.category.trim().toLowerCase();
       const trimmedSelectedCategory = category?.trim().toLowerCase();
 
-      const categoryMatch = trimmedSelectedCategory === "all" || 
-                          trimmedSelectedCategory === "collection" || 
-                          trimmedProductCategory === trimmedSelectedCategory;
+      const categoryMatch =
+        trimmedSelectedCategory === "all" ||
+        trimmedSelectedCategory === "collection" ||
+        trimmedProductCategory === trimmedSelectedCategory;
 
-      const sizeMatch = filters.sizes.length === 0 || 
-                       product.sizes?.some(({ size }) => filters.sizes.includes(size));
+      const sizeMatch =
+        filters.sizes.length === 0 ||
+        product.sizes?.some(({ size }) => filters.sizes.includes(size));
 
-      const categoryFilterMatch = filters.categories.length === 0 || 
-                                filters.categories.includes(trimmedProductCategory);
+      const categoryFilterMatch =
+        filters.categories.length === 0 ||
+        filters.categories.includes(trimmedProductCategory);
 
       return categoryMatch && sizeMatch && categoryFilterMatch;
     });
@@ -112,9 +120,7 @@ const Collection: React.FC = () => {
     // Sort products if price filter is applied
     if (filters.price) {
       filtered.sort((a, b) => {
-        return filters.price === "High to Low" ? 
-          b.price - a.price : 
-          a.price - b.price;
+        return filters.price === "High to Low" ? b.price - a.price : a.price - b.price;
       });
     }
 
@@ -130,15 +136,18 @@ const Collection: React.FC = () => {
   const totalPages = Math.ceil(processedProducts.length / PRODUCTS_PER_PAGE);
 
   // Handlers
-  const handleNavigate = useCallback((id: string) => {
-    navigate(`/Product/${id}`);
-  }, [navigate]);
+  const handleNavigate = useCallback(
+    (id: string) => {
+      navigate(`/Product/${id}`);
+    },
+    [navigate]
+  );
 
   const toggleWishlist = (product: Product) => {
     setWishlist((prevWishlist: Product[]) => {
       const exists = prevWishlist.find((item) => item.id === product.id);
       let newWishlist;
-  
+
       if (exists) {
         // Remove product if it exists
         newWishlist = prevWishlist.filter((item) => item.id !== product.id);
@@ -146,23 +155,26 @@ const Collection: React.FC = () => {
         // Add product if it doesn't exist
         newWishlist = [...prevWishlist, product];
       }
-  
+
       localStorage.setItem("wishlist", JSON.stringify(newWishlist)); // Save to localStorage
       return newWishlist;
     });
   };
-  
-  const updateFilters = useCallback((key: keyof FilterState, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1);
-  }, []);
+
+  const updateFilters = useCallback(
+    (key: keyof FilterState, value: any) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+      setCurrentPage(1);
+    },
+    []
+  );
 
   if (isLoading) return <SkeletonLoader />;
 
   return (
     <div className="main-container scrollbar-thin w-full min-h-screen bg-[#1b1b1b] text-white">
       <Carousel />
-      
+
       {/* Main Content */}
       <div className="content-container w-full bg-[#141414] pb-4">
         {/* Header */}
@@ -194,11 +206,11 @@ const Collection: React.FC = () => {
         {/* Product Grid */}
         <div className="product-container w-full mt-6 px-0">
           <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
-            {currentProducts.map(product => (
+            {currentProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
-                onNavigate={handleNavigate}
+                handleNavigate={handleNavigate}
                 isWishlisted={wishlist.includes(product)}
                 onToggleWishlist={toggleWishlist}
               />
@@ -209,7 +221,7 @@ const Collection: React.FC = () => {
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
           <button
-            onClick={() => setCurrentPage(prev => prev - 1)}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
             disabled={currentPage === 1}
             className="w-7 h-7 text-black rounded-full bg-white disabled:bg-gray-400 flex items-center justify-center"
           >
@@ -219,7 +231,7 @@ const Collection: React.FC = () => {
             {currentPage} of {totalPages}
           </span>
           <button
-            onClick={() => setCurrentPage(prev => prev + 1)}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
             disabled={currentPage === totalPages}
             className="w-7 h-7 text-black rounded-full bg-white disabled:bg-gray-400 flex items-center justify-center"
           >
@@ -235,7 +247,7 @@ const Collection: React.FC = () => {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
+
       <div
         className={`fixed top-0 left-0 w-80 h-full bg-[#141414] text-white z-50 flex flex-col items-center transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -243,18 +255,20 @@ const Collection: React.FC = () => {
       >
         <div className="pt-6 pb-4 border-b border-[#6C6C6C] flex justify-between items-center w-[220px]">
           <span className="text-lg font-normal">FILTERS</span>
-          <MdClose 
-            className="text-xl cursor-pointer" 
-            onClick={() => setSidebarOpen(false)} 
+          <MdClose
+            className="text-xl cursor-pointer"
+            onClick={() => setSidebarOpen(false)}
           />
         </div>
-        
+
         <div className="flex-grow mt-6 w-[235px]">
           {/* Size Filter */}
           <FilterSection
             title="SIZE"
             isOpen={expandedSections.size}
-            onToggle={() => setExpandedSections(prev => ({ ...prev, size: !prev.size }))}
+            onToggle={() =>
+              setExpandedSections((prev) => ({ ...prev, size: !prev.size }))
+            }
           >
             {SIZES.map((size) => (
               <label key={size} className="flex items-center cursor-pointer">
@@ -265,7 +279,7 @@ const Collection: React.FC = () => {
                   onChange={(e) => {
                     const newSizes = e.target.checked
                       ? [...filters.sizes, size]
-                      : filters.sizes.filter(s => s !== size);
+                      : filters.sizes.filter((s) => s !== size);
                     updateFilters("sizes", newSizes);
                   }}
                 />
@@ -278,7 +292,9 @@ const Collection: React.FC = () => {
           <FilterSection
             title="SORT"
             isOpen={expandedSections.price}
-            onToggle={() => setExpandedSections(prev => ({ ...prev, price: !prev.price }))}
+            onToggle={() =>
+              setExpandedSections((prev) => ({ ...prev, price: !prev.price }))
+            }
           >
             {PRICE_RANGES.map((option) => (
               <label key={option} className="flex items-center cursor-pointer">
@@ -297,7 +313,12 @@ const Collection: React.FC = () => {
           <FilterSection
             title="CATEGORY"
             isOpen={expandedSections.category}
-            onToggle={() => setExpandedSections(prev => ({ ...prev, category: !prev.category }))}
+            onToggle={() =>
+              setExpandedSections((prev) => ({
+                ...prev,
+                category: !prev.category,
+              }))
+            }
           >
             {CATEGORIES.map((cat) => (
               <label key={cat} className="flex items-center cursor-pointer">
@@ -308,7 +329,7 @@ const Collection: React.FC = () => {
                   onChange={(e) => {
                     const newCategories = e.target.checked
                       ? [...filters.categories, cat]
-                      : filters.categories.filter(c => c !== cat);
+                      : filters.categories.filter((c) => c !== cat);
                     updateFilters("categories", newCategories);
                   }}
                 />
@@ -348,11 +369,12 @@ const formatProduct = (item: any): ProductCollection => ({
   category: item.category,
   image: item.image,
   description: item.description || "",
-  sizes: item.sizes?.map((size: any) => ({
-    id: size.id,
-    size: size.size,
-    quantity : size.quantity
-  })) || [],
+  sizes:
+    item.sizes?.map((size: any) => ({
+      id: size.id,
+      size: size.size,
+      quantity: size.quantity,
+    })) || [],
   rating: item.rating || 0,
 });
 
