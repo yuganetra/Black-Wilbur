@@ -117,8 +117,7 @@ export interface CheckoutProduct {
   product: Product;
   size: string;
 }
-interface CheckoutProductForbackend{
-  id: number;
+export interface CheckoutProductForbackend{
   quantity: number;
   product_id: string;
   product_variation_id: string;
@@ -143,6 +142,46 @@ export interface Order {
   discount_amount: number; // Total discount applied to the order
   tax_amount: number; // Total tax applied to the order
   total_amount: number; // Final total amount for the order
+}
+
+export interface ShippingAddress {
+  address_line1: string;
+  address_line2?: string;  // Optional, depending on whether the address has a second line
+  city: string;
+  state: string;
+  zipcode: string;
+  country: string;
+  phone_number: string;
+}
+
+export interface NewOrder {
+  products: CheckoutProductForbackend[];  // Array of products being ordered
+  shipping_address: ShippingAddress;  // Shipping address for the order
+  subtotal: number;  // Total amount before discounts
+  discount_amount: number;  // Discount applied to the order
+  tax_amount: number;  // Tax applied to the order
+  shipping_cost: number;  // Shipping cost
+  total_amount: number;  // Final amount after all calculations
+  payment_method: string;  // Payment method selected by the user
+  phone_number: string;  // Phone number (needed for UPI payment)
+}
+
+export interface NewGetOrder {
+  products: CheckoutProductForbackend[];  // Array of products being ordered
+  shipping_address: ShippingAddress;  // Shipping address for the order
+  subtotal: number;  // Total amount before discounts
+  discount_amount: number;  // Discount applied to the order
+  tax_amount: number;  // Tax applied to the order
+  shipping_cost: number;  // Shipping cost
+  total_amount: number;  // Final amount after all calculations
+  payment_method: string;  // Payment method selected by the user
+  phone_number: string; 
+  order_id: string;       // Unique identifier for the order
+  created_at: string;     // Datetime when the order was created
+  status: string;         // Status of the order (e.g., 'Pending', 'Completed')
+  items: OrderItem[];     // Array of items in the order
+  payment_status: string;
+  user_name:string;
 }
 
 

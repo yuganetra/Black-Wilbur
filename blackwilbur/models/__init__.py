@@ -12,3 +12,4 @@ from .newsletter import NewsletterSubscription
 from .rating import Rating
 from .distribution import DistributionPartnership
 from .discount import Discount
+from .shippingaddress import ShippingAddress

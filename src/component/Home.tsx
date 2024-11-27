@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import videoSrc from "../asset/homepage-vide-updated.MOV";
 import blackBackground from "../asset/blackBackground.png";
@@ -85,6 +85,13 @@ const Home: React.FC = () => {
   }, [exploreProducts]);
 
   const handleNavigate = (path: string) => navigate(path);
+
+  const handleNavigate2 = useCallback(
+    (id: string) => {
+      navigate(`/Product/${id}`);
+    },
+    [navigate]
+  );
 
   const togglePopup = () => setIsPopupOpen(!isPopupOpen);
 
@@ -259,7 +266,7 @@ const Home: React.FC = () => {
                 <ProductCard
                 key={product.id}
                 product={product}
-                handleNavigate={handleNavigate}
+                handleNavigate={handleNavigate2}
                 isWishlisted={wishlist.includes(product)}
                 onToggleWishlist={toggleWishlist}
               />

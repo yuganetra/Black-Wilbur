@@ -1,8 +1,11 @@
 from rest_framework import serializers
 from blackwilbur import models
 from blackwilbur.serializers.product import ProductSerializer
+from blackwilbur.serializers.shippingaddress import ShippingAddressSerializer
 
 class OrderSerializer(serializers.ModelSerializer):
+    shipping_address = ShippingAddressSerializer()  # Nest the ShippingAddressSerializer
+
     subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     discount_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     tax_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
@@ -10,12 +13,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Order
-        fields = [
-            'order_id', 'status', 'phone_number', 'address_line_1', 'address_line_2',
-            'city', 'state', 'zip_code', 'country', 'email', 'payment_method', 
-            'payment_status', 'subtotal', 'discount_amount', 'tax_amount', 'total_amount',
-            'created_at', 'updated_at'
-        ]
+        fields = ['subtotal', 'discount_amount', 'tax_amount', 'shipping_cost', 'total_amount', 'payment_method', 'phone_number', 'shipping_address']
         read_only_fields = ['order_id', 'created_at', 'updated_at', 'subtotal', 'discount_amount', 'tax_amount', 'total_amount']
 
 

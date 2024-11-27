@@ -9,3 +9,4 @@ from .request_serializers import SendSmsSerializer ,EditCategory,CreateCategoryS
 from .rating import RatingSerializer
 from .discount import DiscountSerializer
 from .user import UserSerializer
+from .shippingaddress import ShippingAddressSerializer

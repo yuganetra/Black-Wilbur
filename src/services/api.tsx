@@ -19,6 +19,8 @@ import {
   Discount,
   ProductCollection,
   User,
+  NewOrder,
+  NewGetOrder,
 } from "../utiles/types";
 interface CartItem extends Product {
   selectedSize: string | undefined;
@@ -335,8 +337,8 @@ export const getUsers = async (): Promise<User[]> => {
 };
 
 // Function to get all orders of the current user
-export const getOrders = async (): Promise<GetOrder[]> => {
-  const response = await axiosInstance.get<GetOrder[]>(`${API_BASE_URL}orders`);
+export const getOrders = async (): Promise<NewGetOrder[]> => {
+  const response = await axiosInstance.get<NewGetOrder[]>(`${API_BASE_URL}orders`);
   if (!response.data) {
     throw new Error("Failed to fetch orders");
   }
@@ -344,7 +346,7 @@ export const getOrders = async (): Promise<GetOrder[]> => {
 };
 
 // Function to create a new order
-export const createOrder = async (orderData: Order) => {
+export const createOrder = async (orderData: NewOrder) => {
   try {
     // Prepare the products data separately as per backend requirements
     const { products, ...restOrderData } = orderData;

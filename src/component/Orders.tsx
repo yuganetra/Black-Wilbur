@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { getOrders } from "../services/api";
-import { GetOrder } from "../utiles/types";
+import { NewGetOrder } from "../utiles/types";
 
 const Orders: React.FC = () => {
-  const [orders, setOrders] = useState<GetOrder[]>([]);
+  const [orders, setOrders] = useState<NewGetOrder[]>([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
       const token = localStorage.getItem("authToken");
       if (token) {
         try {
-          const fetchedOrders: GetOrder[] = await getOrders();
+          const fetchedOrders: NewGetOrder[] = await getOrders();
           setOrders(Array.isArray(fetchedOrders) ? fetchedOrders : []);
         } catch (error) {
           console.error("Error fetching orders:", error);

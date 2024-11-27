@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CartItemCheckout } from "../utiles/types";
+import { CartItemCheckout,CheckoutProductForbackend,NewOrder, ShippingAddress } from "../utiles/types";
 import { createOrder, sendSms } from "../services/api";
 import { v4 as uuidv4 } from "uuid";
-interface CheckoutProductForbackend {
-  id: number;
-  quantity: number;
-  product_id: string;
-  product_variation_id: string;
-}
+
 
 interface Order {
   order_id: string;
@@ -121,50 +116,52 @@ const Checkout: React.FC = () => {
     //   alert("Please verify your phone number.");
     //   return;
     // }
-
+  
     const orderId = generateOrderId();
     const user = localStorage.getItem("user");
     let userId: number | undefined;
-
+  
     if (user) {
       const parsedUser = JSON.parse(user);
       userId = parsedUser.id;
     }
-
+  
     // Transform products from frontend type to backend type
     const orderProducts: CheckoutProductForbackend[] = products.map((p) => {
       return {
-        id: p.id,
-        quantity: p.quantity,
-        product_id: p.product.id,
-        product_variation_id: p.size.id || p.product_variation_id,
+        product_id: p.product.id, // Product ID
+        quantity: p.quantity,      // Quantity
+        product_variation_id: p.size.id || p.product_variation_id, // Product Variation ID (e.g., size)
       };
     });
-
-    const orderData: Order = {
-      order_id: orderId,
-      status: "pending",
-      phone_number: data.phone_number,
-      address_line_1: data.address_line_1,
-      address_line_2: data.address_line_2 || "",
+  
+    // Prepare shipping address data
+    const shippingAddress: ShippingAddress = {
+      address_line1: data.address_line_1,
+      address_line2: data.address_line_2 || "",
       city: data.city,
       state: data.state,
-      zip_code: data.zip_code,
+      zipcode: data.zip_code,
       country: data.country,
-      email: data.email,
+      phone_number: data.phone_number,
+    };
+  
+    const orderData: NewOrder = {
       products: orderProducts,
-      payment_method: data.payment_method,
-      user: userId || 0,
-      payment_status: "pending",
+      shipping_address: shippingAddress,
       subtotal: finalAmount,
       discount_amount: couponDiscount,
-      tax_amount: 0,
+      tax_amount: 0, // You can replace this with actual tax if necessary
+      shipping_cost: 0, // Assuming you have `shippingCost` variable
       total_amount: totalAmount,
+      payment_method: data.payment_method,
+      phone_number: data.phone_number,
     };
-
+  
     try {
+      console.log("orderData",orderData)
       const response = await createOrder(orderData); // Create the order
-
+  
       if (response) {
         const { order_id, payment_url } = response; // Destructure response to get order_id and payment_url
         if (payment_url) {
@@ -172,11 +169,10 @@ const Checkout: React.FC = () => {
         } else {
           // If no payment URL is provided, navigate to the order confirmation page
           navigate(`/orderConfirmation/${orderId}`, {
-            // Corrected the template string
             state: {
               orderId: order_id,
               paymentMethod: orderData.payment_method,
-            }, // Pass order data
+            },
           });
         }
       } else {
@@ -189,7 +185,8 @@ const Checkout: React.FC = () => {
       navigate("/orderFailure"); // Navigate to failure page if an error occurs
     }
   };
-  console.log(products)
+  
+
   const totalAmount = products.reduce(
     (total, item) => total + item.product.price * item.quantity,
     0

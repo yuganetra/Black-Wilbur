@@ -1,14 +1,12 @@
 import uuid  # Import UUID module
 from decimal import Decimal
-from django.db.models import Sum, F
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, exceptions
+from rest_framework import status
 from blackwilbur import models, serializers, services
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 from decimal import Decimal
-from django.db import transaction
 
 class OrdersAPIView(APIView):
 
@@ -17,13 +15,10 @@ class OrdersAPIView(APIView):
 
         if user.is_authenticated:
             if user.is_superuser:
-                # Superuser: Fetch all orders
                 orders = models.Order.objects.all()
             else:
-                # Regular authenticated user: Fetch only their own orders
                 orders = models.Order.objects.filter(user=user)
         else:
-            # Fetch all orders if no specific user is authenticated
             orders = models.Order.objects.all()
 
         orders_data = []
@@ -32,7 +27,6 @@ class OrdersAPIView(APIView):
             order_items = models.OrderItem.objects.filter(order=order)
             items_data = []
 
-            # Collect item-specific details
             for item in order_items:
                 item_data = {
                     "product": {
@@ -53,22 +47,25 @@ class OrdersAPIView(APIView):
                 }
                 items_data.append(item_data)
 
-            # If authenticated, get user's name and phone number directly
             if user.is_authenticated:
                 if user.is_superuser:
-                    order_user = order.user  # Get the user associated with the order
-                    user_name = order_user.get_full_name() or order_user.username
-
+                    order_user = order.user
+                    user_name = order_user.get_full_name() or order_user.first_name
                 else:
-                    # Regular authenticated user: Fetch only their own orders
-                    user_name = user.get_full_name() or user.username
-                                    
+                    user_name = user.get_full_name() or user.first_name
             else:
-                # For unauthenticated requests, fetch the user's details by user_id for each order
-                order_user = order.user  # Get the user associated with the order
-                user_name = order_user.get_full_name() or order_user.username
+                order_user = order.user
+                user_name = order_user.get_full_name() or order_user.first_name
 
-            # Add user and order details
+            shipping_address = order.shipping_address
+            shipping_address_data = {
+                "address_line1": shipping_address.address_line1 if shipping_address else None,
+                "address_line2": shipping_address.address_line2 if shipping_address else None,
+                "city": shipping_address.city if shipping_address else None,
+                "state": shipping_address.state if shipping_address else None,
+                "zipcode": shipping_address.zipcode if shipping_address else None,
+                "country": shipping_address.country if shipping_address else None,
+            }
             order_data = {
                 "user_name": user_name,
                 "phone_number": order.phone_number,
@@ -80,62 +77,73 @@ class OrdersAPIView(APIView):
                 "discount_amount": str(order.discount_amount),
                 "tax_amount": str(order.tax_amount),
                 "total_amount": str(order.total_amount),
+                "shipping_address": shipping_address_data,
                 "items": items_data
             }
             orders_data.append(order_data)
 
         return Response(orders_data, status=status.HTTP_200_OK)
 
-    
     permission_classes = [IsAuthenticated]
     def post(self, request):
         print("Received POST request with data:", request.data)
 
-        products_data = request.data.pop('products', [])
+        # Extract the products data but do not pop the shipping_address
+        products_data = request.data.get('products', [])
         print("Extracted products data:", products_data)
+        shipping_address_data = request.data.get('shipping_address', {})  # Keep it in the data
+        print("shipping_address_data", shipping_address_data)
 
+        # Initialize the order serializer
         order_serializer = serializers.OrderSerializer(data=request.data)
         print("Order serializer initialized with data:", request.data)
+        shipping_address_data['user'] = request.user.id  # Add user to shipping address data
 
+        shipping_address_serializer = serializers.ShippingAddressSerializer(data=shipping_address_data)
+        if not shipping_address_serializer.is_valid():
+            print("Shipping address validation failed with errors:", shipping_address_serializer.errors)
+            return Response(shipping_address_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         if not order_serializer.is_valid():
-            print("Validation failed with errors:", order_serializer.errors)
+            print("Order validation failed with errors:", order_serializer.errors)
             return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        # Generate a new order ID and process the rest of the logic
         order_id = str(uuid.uuid4())
         print("Generated new order UUID:", order_id)
 
-        # Check for existing order
-        try:
-            order = models.Order.objects.get(order_id=order_id, user=request.user)
-            print("Order already exists with order_id:", order_id)
-            return Response({"error": "Order already exists!"}, status=status.HTTP_400_BAD_REQUEST)
-        except models.Order.DoesNotExist:
-            print("No existing order found. Creating new order...")
+        # Now, create the shipping address and link it to the order
+        new_shipping_address = models.ShippingAddress.objects.create(
+            user=request.user,  # Assign the user to the shipping address
+            address_line1=shipping_address_data.get('address_line1'),
+            address_line2=shipping_address_data.get('address_line2'),
+            zipcode=shipping_address_data.get('zipcode'),
+            city=shipping_address_data.get('city'),
+            state=shipping_address_data.get('state'),
+            country=shipping_address_data.get('country'),
+        )
+        print("Shipping address created:", new_shipping_address.id)
 
-            # Extract fields from request data to calculate initial order values
-            subtotal = Decimal(request.data.get('subtotal', 0))
-            discount_amount = Decimal(request.data.get('discount_amount', 0))
-            tax_amount = Decimal(request.data.get('tax_amount', 0))
-            shipping_cost = Decimal(request.data.get('shipping_cost', 0))
-            total_amount = Decimal(request.data.get('total_amount', 0))
+        # Now we can create the order first
+        # Remove shipping_address from the serializer data before creating the order
+        order_data = {key: value for key, value in order_serializer.validated_data.items() 
+                    if key not in ['user', 'shipping_address']}
 
-            print("subtotal",subtotal,"discount_amount",discount_amount,"tax_amount",tax_amount,"total_amount,",total_amount)
-            # Create a new order with values from the frontend
-            new_order = models.Order.objects.create(
-                **{key: value for key, value in order_serializer.validated_data.items() if key != 'user'},
-                user=request.user,
-                order_id=order_id,
-                subtotal=subtotal,
-                discount_amount=discount_amount,
-                tax_amount=tax_amount,
-                shipping_cost=shipping_cost,
-                total_amount=total_amount
-            )
-            print("New order created with ID:", new_order.order_id)
+        new_order = models.Order.objects.create(
+            **order_data,
+            user=request.user,
+            order_id=order_id,
+            shipping_address=new_shipping_address,
+        )
 
-        new_order.save()
+        print("Order created with ID:", new_order.order_id)
 
-        # Calculate subtotal from product prices and apply discount if provided
+        # Initialize subtotal to calculate the total price of all items
+        subtotal = Decimal(0)  # Ensure subtotal is a Decimal
+        total_discount_value = Decimal(request.data.get('discount_amount', 0))  # Convert to Decimal
+        total_tax = Decimal(request.data.get('tax_amount', 0))  # Convert to Decimal
+
+        # Process the products and calculate individual item price, discount, and tax
         for product_data in products_data:
             product_id = product_data.get('product_id')
             quantity = product_data.get('quantity')
@@ -145,57 +153,71 @@ class OrdersAPIView(APIView):
                 return Response({"error": f"Product variation for product ID {product_id} is missing."}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
+                # Fetch the product from the database
                 product = models.Product.objects.get(id=product_id)
-                print(f"Product found: {product.name}")
+                # Ensure item_price is a Decimal
+                item_price = Decimal(product.price) * quantity
 
-                item_price = product.price * quantity
-                subtotal += item_price  # Update subtotal for the order
+                # Add the item price to the subtotal (which is now a Decimal)
+                subtotal += item_price
 
-                # Create order item with calculated fields
+                # Calculate item discount for this product
+                item_discount = (item_price / subtotal) * total_discount_value if subtotal else Decimal(0)
+
+                # Calculate tax for this item (proportional if needed)
+                item_tax = (total_tax / len(products_data)) if total_tax else Decimal(0)
+
+                # Calculate the total price for this item after discount and tax
+                item_total_price = item_price - item_discount + item_tax
+                # Create OrderItem for this product
                 models.OrderItem.objects.create(
                     order=new_order,
                     product=product,
                     quantity=quantity,
                     product_variation_id=product_variation_id,
                     price=product.price,
-                    discount_amount=discount_amount,
-                    tax_amount=tax_amount,
-                    total_price=item_price
+                    discount_amount=item_discount,
+                    tax_amount=item_tax,
+                    total_price=item_total_price
                 )
-                print(f"OrderItem created for product: {product.name}, quantity: {quantity}")
 
-                # Update product variation quantity
+                # Update product variation quantity after order
                 product_variation = models.ProductVariation.objects.get(id=product_variation_id)
                 product_variation.quantity -= quantity
                 product_variation.save()
-                print(f"Updated product variation quantity for {product_variation.size}")
 
             except models.Product.DoesNotExist:
-                print(f"Product with ID {product_id} not found.")
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
-            
+
+        # Now, recalculate the total amount after all items are processed
+        total_amount = subtotal - total_discount_value + total_tax
+
+        # Update the order totals in the database
+        new_order.subtotal = subtotal
+        new_order.discount_amount = total_discount_value
+        new_order.tax_amount = total_tax
+        new_order.total_amount = total_amount
+
+        # Save the order and shipping address
+        new_shipping_address.save()
         new_order.save()
 
-        print(f"Order ID: {new_order.order_id}, Subtotal: {subtotal}, Discount: {discount_amount}, Tax: {tax_amount}, Shipping: {shipping_cost}, Total Amount: {total_amount}")
-
-        # Check payment method
+        # Handle Cash on Delivery logic
         if new_order.payment_method == 'cash_on_delivery':
-            # Delete the cart and its items after the order is placed
             try:
-                # Delete the cart and cart items associated with the user
+                # Clean up the cart if order is Cash on Delivery
                 user_cart = models.Cart.objects.get(user=request.user)
-                user_cart.items.all().delete()  # Delete cart items first
-                user_cart.delete()  # Then delete the cart
-                print("Cart and its items deleted for the user.")
+                user_cart.items.all().delete()
+                user_cart.delete()
             except models.Cart.DoesNotExist:
-                print("No cart found for the user.")
+                pass  # No cart found
 
             return Response({
                 'order_id': new_order.order_id,
                 'message': "Order successfully created with Cash on Delivery payment method."
             }, status=status.HTTP_200_OK)
 
-        # Proceed with payment if payment method is UPI
+        # Handle UPI payment logic (if applicable)
         payment_service = services.PaymentService()
         amount_in_paise = int(total_amount * 100)  # Convert rupees to paise
 

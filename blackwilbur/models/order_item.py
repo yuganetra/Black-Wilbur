@@ -17,13 +17,7 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.product.name} (Order ID: {self.order.order_id})"
 
-    @property
-    def calculate_subtotal(self):
-        # Access the related OrderItems correctly
-        return sum(item.total_price for item in self.order.orderitems.all())  
-
     def save(self, *args, **kwargs):
-        # Calculate total price for the item considering discount and tax
-        subtotal = self.calculate_subtotal
-        self.total_price = subtotal - self.discount_amount + self.tax_amount
+        # Set the total price for the order item manually (without calculations)
+        self.total_price = self.price * self.quantity - self.discount_amount + self.tax_amount
         super(OrderItem, self).save(*args, **kwargs)
