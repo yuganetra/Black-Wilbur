@@ -41,7 +41,6 @@ class OrdersAPIView(APIView):
                         "size": item.product_variation.size,
                     },
                     "price": str(item.price),
-                    "discount_amount": str(item.discount_amount),
                     "tax_amount": str(item.tax_amount),
                     "total_price": str(item.total_price),
                 }
@@ -75,6 +74,7 @@ class OrdersAPIView(APIView):
                 "payment_status": order.payment_status,
                 "subtotal": str(order.subtotal),
                 "discount_amount": str(order.discount_amount),
+                "discount_coupon_applied":order.discount_coupon_applied,
                 "tax_amount": str(order.tax_amount),
                 "total_amount": str(order.total_amount),
                 "shipping_address": shipping_address_data,
@@ -176,7 +176,6 @@ class OrdersAPIView(APIView):
                     quantity=quantity,
                     product_variation_id=product_variation_id,
                     price=product.price,
-                    discount_amount=item_discount,
                     tax_amount=item_tax,
                     total_price=item_total_price
                 )
@@ -204,6 +203,8 @@ class OrdersAPIView(APIView):
 
         # Handle Cash on Delivery logic
         if new_order.payment_method == 'cash_on_delivery':
+            new_order.payment_status = 'cash_on_delivery'
+            new_order.save()
             try:
                 # Clean up the cart if order is Cash on Delivery
                 user_cart = models.Cart.objects.get(user=request.user)

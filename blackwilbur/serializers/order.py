@@ -13,7 +13,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Order
-        fields = ['subtotal', 'discount_amount', 'tax_amount', 'shipping_cost', 'total_amount', 'payment_method', 'phone_number', 'shipping_address']
+        fields = ['subtotal', 'discount_amount', 'tax_amount', 'shipping_cost', 'total_amount', 'payment_method', 'phone_number', 'shipping_address','discount_coupon_applied']
         read_only_fields = ['order_id', 'created_at', 'updated_at', 'subtotal', 'discount_amount', 'tax_amount', 'total_amount']
 
 
@@ -21,14 +21,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_variation = serializers.SerializerMethodField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-    discount_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     tax_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = models.OrderItem
         fields = [
-            'product', 'quantity', 'product_variation', 'price', 'discount_amount',
+            'product', 'quantity', 'product_variation', 'price',
             'tax_amount', 'total_price'
         ]
 

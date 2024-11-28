@@ -345,6 +345,15 @@ export const getOrders = async (): Promise<NewGetOrder[]> => {
   return response.data;
 };
 
+export const updateOrderStatus = async (orderId: string, status: string): Promise<NewGetOrder[]> => {
+  const response = await axiosInstance.get<NewGetOrder[]>(`${API_BASE_URL}orders`);
+  if (!response.data) {
+    throw new Error("Failed to fetch orders");
+  }
+  return response.data;
+};
+
+
 // Function to create a new order
 export const createOrder = async (orderData: NewOrder) => {
   try {

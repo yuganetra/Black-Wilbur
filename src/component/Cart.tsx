@@ -154,7 +154,7 @@ const CartComponent: React.FC<CartComponentProps> = ({
         onClose();
         console.log(cartProducts);
         navigate("/checkout", {
-          state: { products: cartProducts, couponDiscount },
+          state: { products: cartProducts, couponDiscount ,couponCode},
         });
       } else {
         onClose();

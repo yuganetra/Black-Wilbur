@@ -164,6 +164,7 @@ export interface NewOrder {
   total_amount: number;  // Final amount after all calculations
   payment_method: string;  // Payment method selected by the user
   phone_number: string;  // Phone number (needed for UPI payment)
+  discount_coupon_applied:string;
 }
 
 export interface NewGetOrder {
@@ -171,6 +172,7 @@ export interface NewGetOrder {
   shipping_address: ShippingAddress;  // Shipping address for the order
   subtotal: number;  // Total amount before discounts
   discount_amount: number;  // Discount applied to the order
+  discount_coupon_applied:string;
   tax_amount: number;  // Tax applied to the order
   shipping_cost: number;  // Shipping cost
   total_amount: number;  // Final amount after all calculations

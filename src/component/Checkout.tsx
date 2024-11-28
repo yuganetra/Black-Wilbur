@@ -29,10 +29,11 @@ interface Order {
 
 const Checkout: React.FC = () => {
   const location = useLocation();
-  const { products: initialProducts = [], couponDiscount = 0 } =
+  const { products: initialProducts = [], couponDiscount = 0 ,couponCode = ""} =
     (location.state as {
       products: CartItemCheckout[];
       couponDiscount: number;
+      couponCode:string;
     }) || {};
   const [products, setProducts] = useState<CartItemCheckout[]>(initialProducts);
 
@@ -53,7 +54,7 @@ const Checkout: React.FC = () => {
       }, 1000);
     };
     fetchProducts();
-  }, [couponDiscount, initialProducts, products]);
+  }, [couponCode, couponDiscount, initialProducts, products]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -118,14 +119,6 @@ const Checkout: React.FC = () => {
     // }
   
     const orderId = generateOrderId();
-    const user = localStorage.getItem("user");
-    let userId: number | undefined;
-  
-    if (user) {
-      const parsedUser = JSON.parse(user);
-      userId = parsedUser.id;
-    }
-  
     // Transform products from frontend type to backend type
     const orderProducts: CheckoutProductForbackend[] = products.map((p) => {
       return {
@@ -145,17 +138,18 @@ const Checkout: React.FC = () => {
       country: data.country,
       phone_number: data.phone_number,
     };
-  
+    
     const orderData: NewOrder = {
       products: orderProducts,
       shipping_address: shippingAddress,
       subtotal: finalAmount,
-      discount_amount: couponDiscount,
+      discount_amount: final_discount,
       tax_amount: 0, // You can replace this with actual tax if necessary
       shipping_cost: 0, // Assuming you have `shippingCost` variable
       total_amount: totalAmount,
       payment_method: data.payment_method,
       phone_number: data.phone_number,
+      discount_coupon_applied: couponCode
     };
   
     try {
@@ -177,12 +171,12 @@ const Checkout: React.FC = () => {
         }
       } else {
         alert("Failed to place order.");
-        navigate("/orderFailure"); // Navigate to failure page if no response
+        // navigate("/orderFailure"); // Navigate to failure page if no response
       }
     } catch (error) {
       console.error("Error creating order:", error);
       alert("An error occurred while placing the order.");
-      navigate("/orderFailure"); // Navigate to failure page if an error occurs
+      // navigate("/orderFailure"); // Navigate to failure page if an error occurs
     }
   };
   
@@ -191,7 +185,7 @@ const Checkout: React.FC = () => {
     (total, item) => total + item.product.price * item.quantity,
     0
   );
-
+  const final_discount = (totalAmount * couponDiscount) / 100;
   const finalAmount = totalAmount - (totalAmount * couponDiscount) / 100;
 
   return (
@@ -268,7 +262,7 @@ const Checkout: React.FC = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Coupon Discount ({couponDiscount}%)</span>
-                      <span>-₹{(totalAmount * couponDiscount) / 100}</span>
+                      <span>-₹{final_discount}</span>
                     </div>
                     <div className="flex justify-between font-bold">
                       <span>Final Amount</span>

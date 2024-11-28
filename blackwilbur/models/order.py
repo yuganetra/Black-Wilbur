@@ -32,6 +32,7 @@ class Order(models.Model):
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     shipping_address = models.ForeignKey('ShippingAddress', on_delete=models.SET_NULL, null=True, blank=True)
+    discount_coupon_applied = models.CharField(max_length=50, blank=True, null=True)  
 
     def save(self, *args, **kwargs):
         super(Order, self).save(*args, **kwargs)

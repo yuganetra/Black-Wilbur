@@ -10,7 +10,6 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
     product_variation = models.ForeignKey(ProductVariation, on_delete=models.CASCADE, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
@@ -19,5 +18,4 @@ class OrderItem(models.Model):
 
     def save(self, *args, **kwargs):
         # Set the total price for the order item manually (without calculations)
-        self.total_price = self.price * self.quantity - self.discount_amount + self.tax_amount
         super(OrderItem, self).save(*args, **kwargs)
