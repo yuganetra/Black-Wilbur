@@ -1,0 +1,205 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlackWilbur Invoice #{{ order.order_id }}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .invoice-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .company-info {
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .company-info h1 {
+            font-size: 20px;
+            margin: 0;
+            color: #333;
+        }
+
+        .company-info p {
+            margin: 2px 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .shipping-info {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .shipping-info h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .shipping-info p {
+            font-size: 12px;
+            color: #666;
+            margin: 4px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        table th, table td {
+            padding: 6px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        table th {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+
+        table td {
+            color: #555;
+        }
+
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
+        .footer a {
+            color: #999;
+            text-decoration: none;
+        }
+
+        @media print {
+            body {
+                font-size: 10pt;
+            }
+
+            .invoice-container {
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+
+            .footer {
+                display: block;
+            }
+
+            table th, table td {
+                font-size: 10pt;
+            }
+
+            .shipping-info {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="company-info">
+            <h1>BLACKWILBUR BY Shivaay Fashion</h1>
+            <p>126-127 LEMA GARDEN CLUSTER ASSOCIATION</p>
+            <p>JABALPUR 9575555383</p>
+            <p>BLACKWILBUROFFICIAL@GMAIL.COM</p>
+        </div>
+
+        <div class="shipping-info">
+            <h3>Invoice Details</h3>
+            <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+            <p><strong>Customer Name:</strong> {{ order.user.first_name }} {{ order.user.last_name }}</p>
+            <p><strong>Shipping Address:</strong><br>
+                {{ shipping_address.address_line1 }},<br>
+                {{ shipping_address.city }}, {{ shipping_address.zipcode }}<br>
+                {{ shipping_address.state }}, {{ shipping_address.country }}
+            </p>
+            <p><strong>Contact Number:</strong> {{ order.phone_number }}</p>
+            <p><strong>Order Date:</strong> {{ order.created_at|date:"Y-m-d" }}</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                    <th>Discount</th>
+                    <th>Tax (5%)</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price|floatformat:2 }}</td>
+                    <td>{{ item.price|multiply:item.quantity|floatformat:2 }}</td>
+                    <td>- {{ order.discount_amount|floatformat:2 }}</td> <!-- Discount -->
+                    <td>{{ item.price|multiply:item.quantity|multiply:0.05|floatformat:2 }}</td> <!-- Tax (5%) -->
+                    <td>{{ item.price|multiply:item.quantity|multiply:0.05|add:order.total_amount|floatformat:2 }}</td> <!-- Total Amount with Tax -->                    
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table>
+            <tr>
+                <td colspan="3"><strong>Payment Status</strong></td>
+                <td>
+                    {% if order.payment_status == "cash_on_delivery" %}
+                    Cash on Delivery
+                    {% elif order.payment_status == "paid" %}
+                    Prepaid
+                    {% else %}
+                    {{ order.payment_status }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% for item in order_items %}
+            <tr>
+                <td colspan="3"><strong>Grand Total</strong></td>
+                <td>{{ item.price|multiply:item.quantity|multiply:0.05|add:order.total_amount|floatformat:2 }}</td> <!-- Total Amount with Tax -->                    
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="footer">
+            <p>Thank you for your purchase!</p>
+            <p>For support, contact us at <a href="mailto:BLACKWILBUROFFICIAL@GMAIL.COM">BLACKWILBUROFFICIAL@GMAIL.COM</a></p>
+        </div>
+    </div>
+</body>
+</html>

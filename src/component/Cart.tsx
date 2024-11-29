@@ -257,14 +257,6 @@ const CartComponent: React.FC<CartComponentProps> = ({
     }, 500);
   };
 
-  // // Filter cart items: Show only the product that matches both id and selectedSize
-  // const filteredCart = cartProducts.filter((item, index, self) =>
-  //   self.findIndex(
-  //     (t) =>
-  //       t.id === item.id && t.selectedSize === item.selectedSize
-  //   ) === index
-  // );
-
   const finalAmount = totalAmount - (totalAmount * couponDiscount) / 100;
 
   return (

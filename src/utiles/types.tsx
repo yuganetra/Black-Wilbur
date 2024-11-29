@@ -210,7 +210,7 @@ export interface CartItem {
 }
 
 export interface CartItemCheckout {
-  id: number;
+  id: string;
   quantity: number;
   product: CheckProduct;
   size: Size; 

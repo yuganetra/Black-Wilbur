@@ -28,11 +28,15 @@ const OrderDetailsPopup: React.FC<OrderDetailsPopupProps> = ({
 
         {/* Order Information (Mobile: Stacked, Desktop: Table) */}
         <div className="grid md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-gray-800 p-4 rounded-lg md:hidden">
+          <div className="bg-gray-800 p-4 rounded-lg md:hidden text-left">
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="font-bold">User:</span>
                 <span>{order.user_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-bold">Shipping Address:</span>
+                <span className="text-right">{order.shipping_address.address_line1}, {order.shipping_address.city}, {order.shipping_address.state}, {order.shipping_address.zipcode}, {order.shipping_address.country}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-bold">Phone:</span>
@@ -45,6 +49,18 @@ const OrderDetailsPopup: React.FC<OrderDetailsPopupProps> = ({
               <div className="flex justify-between">
                 <span className="font-bold">Payment Status:</span>
                 <span>{order.payment_status}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-bold">Discount Coupon Applied:</span>
+                <span>{order.discount_coupon_applied}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-bold">Subtotal Amount:</span>
+                <span>₹{order.subtotal}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-bold">Discount Amount:</span>
+                <span>₹{order.discount_amount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-bold">Total Amount:</span>
@@ -78,12 +94,16 @@ const OrderDetailsPopup: React.FC<OrderDetailsPopupProps> = ({
                 <td className="py-2 px-4 border-b">{order.payment_status}</td>
               </tr>
               <tr>
-                <td className="py-2 px-4 border-b text-left font-bold">Total Discount:</td>
-                <td className="py-2 px-4 border-b">₹{order.discount_amount}</td>
-              </tr>
-              <tr>
                 <td className="py-2 px-4 border-b text-left font-bold">Discount Code:</td>
                 <td className="py-2 px-4 border-b">{order.discount_coupon_applied}</td>
+              </tr>
+              <tr>
+                <td className="py-2 px-4 border-b text-left font-bold">Subtotal Amount:</td>
+                <td className="py-2 px-4 border-b">₹{order.subtotal}</td>
+              </tr>
+              <tr>
+                <td className="py-2 px-4 border-b text-left font-bold">Total Discount:</td>
+                <td className="py-2 px-4 border-b">₹{order.discount_amount}</td>
               </tr>
               <tr>
                 <td className="py-2 px-4 border-b text-left font-bold">Total Amount:</td>
@@ -110,7 +130,6 @@ const OrderDetailsPopup: React.FC<OrderDetailsPopupProps> = ({
               </div>
               <div className="text-right">
                 <p>₹{item.price} each</p>
-                <p className="font-bold">₹{item.total_price} total</p>
               </div>
             </div>
           ))}
@@ -124,7 +143,6 @@ const OrderDetailsPopup: React.FC<OrderDetailsPopupProps> = ({
               <th className="py-2 px-4 border-b text-left">Size</th>
               <th className="py-2 px-4 border-b text-left">Quantity</th>
               <th className="py-2 px-4 border-b text-left">Unit Price</th>
-              <th className="py-2 px-4 border-b text-left">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -134,7 +152,6 @@ const OrderDetailsPopup: React.FC<OrderDetailsPopupProps> = ({
                 <td className="py-2 px-4 border-b text-left">{item.product_variation.size}</td>
                 <td className="py-2 px-4 border-b text-left">{item.quantity}</td>
                 <td className="py-2 px-4 border-b text-left">₹{item.price}</td>
-                <td className="py-2 px-4 border-b text-left">₹{item.total_price}</td>
               </tr>
             ))}
           </tbody>

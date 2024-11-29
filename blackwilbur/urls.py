@@ -38,5 +38,5 @@ urlpatterns = [
     path('shipping-addresses/', views.ShippingAddressAPIView.as_view(), name='shipping-address-list'),  # GET and POST
     path('shipping-addresses/<uuid:pk>/', views.ShippingAddressAPIView.as_view(), name='shipping-address-detail'),  # GET by ID, DELETE
     path('shipping-addresses/user/<uuid:pk>/', views.ShippingAddressAPIView.as_view(), name='user-shipping-addresses'),  # GET by user ID
-
+    path('invoice/<str:order_id>/', views.generate_invoice, name='generate_invoice'),
 ]

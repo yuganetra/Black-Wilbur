@@ -15,4 +15,4 @@ class ShippingAddress(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.address_line_1}, {self.city}, {self.country}'
+        return f'{self.address_line1}, {self.address_line2}, {self.zipcode}, {self.city}, {self.country}'

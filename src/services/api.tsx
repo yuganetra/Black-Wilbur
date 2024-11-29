@@ -175,12 +175,6 @@ export const loginUser = async (loginData: AuthUser): Promise<any> => {
     localStorage.setItem("authToken", response.data.access_token);
     localStorage.setItem("refreshToken", response.data.refresh_token);
 
-    // Check if the user is an admin
-    if (response.data.user.isAdmin) {
-      // Redirect to /admin
-      window.location.href = "/admin"; // Redirects to the /admin page
-    }
-
     return response.data.user;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -632,5 +626,25 @@ export const deleteDiscount = async (id: string) => {
   } catch (error) {
     console.error("Error deleting discount:", error);
     throw error;
+  }
+};
+
+export const downloadInvoice = async (orderId: string): Promise<void> => {
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}invoice/${orderId}/`, {
+      responseType: "blob", 
+    });
+    
+    // Create a downloadable URL from the blob
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `invoice_${orderId}.pdf`); // Set the file name
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error("Error downloading invoice:", error);
+    throw new Error("Failed to download invoice");
   }
 };

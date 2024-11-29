@@ -96,7 +96,7 @@ const AdminPanel: React.FC = () => {
   // Logout handler
   const logout = () => {
     localStorage.removeItem("user");
-    navigate("/auth/login");
+    navigate("/");
   };
 
   // Close dropdowns when clicking outside

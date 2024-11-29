@@ -4,12 +4,13 @@ import AccountDetails from "./AccountDetails";
 import Wishlist from "./Wishlist";
 import Orders from "./Orders";
 import Refunds from "./Refunds";
-import { Menu, User, Heart, Package, RefreshCcw, LogOut } from "lucide-react";
+import { Menu, User, Heart, Package, RefreshCcw, LogOut, Shield } from "lucide-react";
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
+  onClick?: () => void;
 }
 
 const UserProfile: React.FC = () => {
@@ -17,13 +18,6 @@ const UserProfile: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string>("accountDetails");
   const [accountDetails, setAccountDetails] = useState<any | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const navItems: NavItem[] = [
-    { id: "accountDetails", label: "Account Details", icon: <User className="w-5 h-5" /> },
-    { id: "wishlist", label: "Wishlist", icon: <Heart className="w-5 h-5" /> },
-    { id: "orders", label: "Orders", icon: <Package className="w-5 h-5" /> },
-    { id: "refunds", label: "Refunds", icon: <RefreshCcw className="w-5 h-5" /> },
-  ];
 
   useEffect(() => {
     const fetchAccountDetails = () => {
@@ -36,11 +30,48 @@ const UserProfile: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    ["user", "authToken", "refreshToken"].forEach((item) => 
+    ["user", "authToken", "refreshToken"].forEach((item) =>
       localStorage.removeItem(item)
     );
     navigate("/auth/login");
   };
+
+  const navItems: NavItem[] = [
+    ...(accountDetails?.isAdmin
+      ? [
+          {
+            id: "admin",
+            label: "Admin Panel",
+            icon: <Shield className="w-5 h-5" />,
+            onClick: () => navigate("/admin"),
+          },
+        ]
+      : []),
+    {
+      id: "accountDetails",
+      label: "Account Details",
+      icon: <User className="w-5 h-5" />,
+      onClick: () => setActiveSection("accountDetails"),
+    },
+    {
+      id: "wishlist",
+      label: "Wishlist",
+      icon: <Heart className="w-5 h-5" />,
+      onClick: () => setActiveSection("wishlist"),
+    },
+    {
+      id: "orders",
+      label: "Orders",
+      icon: <Package className="w-5 h-5" />,
+      onClick: () => setActiveSection("orders"),
+    },
+    {
+      id: "refunds",
+      label: "Refunds",
+      icon: <RefreshCcw className="w-5 h-5" />,
+      onClick: () => setActiveSection("refunds"),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100">
@@ -49,7 +80,7 @@ const UserProfile: React.FC = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">My Account</h1>
-            <button 
+            <button
               className="md:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -63,25 +94,28 @@ const UserProfile: React.FC = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
-          <aside className={`
+          <aside
+            className={`
             md:w-64 flex-shrink-0
-            ${isMobileMenuOpen ? 'block' : 'hidden'} md:block
+            ${isMobileMenuOpen ? "block" : "hidden"} md:block
             bg-white dark:bg-black 
             border border-gray-200 dark:border-gray-700 
             rounded-lg shadow-sm
-          `}>
+          `}
+          >
             <nav className="p-4">
               <ul className="space-y-2">
                 {navItems.map((item) => (
                   <li key={item.id}>
                     <button
-                      onClick={() => setActiveSection(item.id)}
+                      onClick={item.onClick}
                       className={`
                         w-full px-4 py-2 rounded-md
                         flex items-center gap-3 transition-colors
-                        ${activeSection === item.id
-                          ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                        ${
+                          activeSection === item.id
+                            ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-700"
                         }
                       `}
                     >
@@ -107,13 +141,12 @@ const UserProfile: React.FC = () => {
           </aside>
 
           {/* Main Content Area */}
-          <main className="flex-1 bg-white dark:bg-black 
+          <main
+            className="flex-1 bg-white dark:bg-black 
             border border-gray-200 dark:border-gray-700 
             rounded-lg shadow-sm p-6"
           >
-            {activeSection === "accountDetails" && (
-              <AccountDetails  />
-            )}
+            {activeSection === "accountDetails" && <AccountDetails />}
             {activeSection === "wishlist" && <Wishlist />}
             {activeSection === "orders" && <Orders />}
             {activeSection === "refunds" && <Refunds />}

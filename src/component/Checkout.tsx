@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CartItemCheckout,CheckoutProductForbackend,NewOrder, ShippingAddress } from "../utiles/types";
-import { createOrder, sendSms } from "../services/api";
+import {
+  CartItemCheckout,
+  CheckoutProductForbackend,
+  Discount,
+  NewOrder,
+  ShippingAddress,
+} from "../utiles/types";
+import { createOrder, getDiscounts, sendSms } from "../services/api";
 import { v4 as uuidv4 } from "uuid";
-
+import { motion } from "framer-motion";
+import Confetti from "react-confetti";
 
 interface Order {
   order_id: string;
@@ -29,12 +36,15 @@ interface Order {
 
 const Checkout: React.FC = () => {
   const location = useLocation();
-  const { products: initialProducts = [], couponDiscount = 0 ,couponCode = ""} =
-    (location.state as {
-      products: CartItemCheckout[];
-      couponDiscount: number;
-      couponCode:string;
-    }) || {};
+  const {
+    products: initialProducts = [],
+    couponDiscount: couponDiscountstate = 0,
+    couponCode: couponCodestate = "",
+  } = (location.state as {
+    products: CartItemCheckout[];
+    couponDiscount: number;
+    couponCode: string;
+  }) || {};
   const [products, setProducts] = useState<CartItemCheckout[]>(initialProducts);
 
   const [loading, setLoading] = useState(true);
@@ -45,27 +55,48 @@ const Checkout: React.FC = () => {
   const [otpVarified, setotpVarified] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Simulating data fetch with a timeout
-    const fetchProducts = () => {
-      setTimeout(() => {
-        setProducts(initialProducts);
-        setLoading(false);
-      }, 1000);
-    };
-    fetchProducts();
-  }, [couponCode, couponDiscount, initialProducts, products]);
+  const [couponCode, setCouponCode] = useState<string>(couponCodestate);
+  const [couponDiscount, setCouponDiscount] =
+    useState<number>(couponDiscountstate);
+  const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const [isRemovingCoupon, setIsRemovingCoupon] = useState<boolean>(false);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [totalQuantity, setTotalQuantity] = useState<number>(0); // totalQuantity state
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (otpSent) {  
-      // Start a timer for 2 minutes
-      timer = setTimeout(() => {
-        setResendEnabled(true);
-      }, 120000); // 120000 ms = 2 minutes
+    const newTotalQuantity = products.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
+    setTotalQuantity(newTotalQuantity);
+  }, [products]); // This will recalculate totalQuantity whenever products change
+
+  const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [final_discount, setFinalDiscount] = useState<number>(0);
+  const [finalAmount, setFinalAmount] = useState<number>(0);
+
+  useEffect(() => {
+    if (loading) {
+      setProducts(initialProducts); // Only set if it's the initial load
+      setLoading(false);
     }
-    return () => clearTimeout(timer);
-  }, [initialProducts, otpSent]);
+  }, [initialProducts, loading]);
+
+  useEffect(() => {
+    const calculatedTotalAmount = products.reduce(
+      (total, item) => total + item.product.price * item.quantity,
+      0
+    );
+
+    const calculatedFinalDiscount =
+      (calculatedTotalAmount * couponDiscount) / 100;
+    const calculatedFinalAmount =
+      calculatedTotalAmount - calculatedFinalDiscount;
+
+    setTotalAmount(calculatedTotalAmount);
+    setFinalDiscount(calculatedFinalDiscount);
+    setFinalAmount(calculatedFinalAmount);
+  }, [products, couponDiscount]);
 
   const {
     register,
@@ -107,28 +138,21 @@ const Checkout: React.FC = () => {
     return uuidv4();
   };
 
-  const totalQuantity = products.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
-
   const onSubmit = async (data: Order) => {
     // if (!otpVarified) {
     //   alert("Please verify your phone number.");
     //   return;
     // }
-  
+
     const orderId = generateOrderId();
-    // Transform products from frontend type to backend type
     const orderProducts: CheckoutProductForbackend[] = products.map((p) => {
       return {
-        product_id: p.product.id, // Product ID
-        quantity: p.quantity,      // Quantity
-        product_variation_id: p.size.id || p.product_variation_id, // Product Variation ID (e.g., size)
+        product_id: p.product.id,
+        quantity: p.quantity,
+        product_variation_id: p.size.id || p.product_variation_id,
       };
     });
-  
-    // Prepare shipping address data
+
     const shippingAddress: ShippingAddress = {
       address_line1: data.address_line_1,
       address_line2: data.address_line_2 || "",
@@ -138,30 +162,29 @@ const Checkout: React.FC = () => {
       country: data.country,
       phone_number: data.phone_number,
     };
-    
+
     const orderData: NewOrder = {
       products: orderProducts,
       shipping_address: shippingAddress,
       subtotal: finalAmount,
       discount_amount: final_discount,
-      tax_amount: 0, // You can replace this with actual tax if necessary
-      shipping_cost: 0, // Assuming you have `shippingCost` variable
-      total_amount: totalAmount,
+      tax_amount: 0, // Adjust as necessary
+      shipping_cost: 0, // Adjust as necessary
+      total_amount: finalAmount,
       payment_method: data.payment_method,
       phone_number: data.phone_number,
-      discount_coupon_applied: couponCode
+      discount_coupon_applied: couponCode,
     };
-  
+
     try {
-      console.log("orderData",orderData)
-      const response = await createOrder(orderData); // Create the order
-  
+      console.log("orderData", orderData);
+      const response = await createOrder(orderData);
+
       if (response) {
-        const { order_id, payment_url } = response; // Destructure response to get order_id and payment_url
+        const { order_id, payment_url } = response;
         if (payment_url) {
-          window.location.href = payment_url; // Redirect to the payment URL
+          window.location.href = payment_url;
         } else {
-          // If no payment URL is provided, navigate to the order confirmation page
           navigate(`/orderConfirmation/${orderId}`, {
             state: {
               orderId: order_id,
@@ -171,22 +194,79 @@ const Checkout: React.FC = () => {
         }
       } else {
         alert("Failed to place order.");
-        // navigate("/orderFailure"); // Navigate to failure page if no response
       }
     } catch (error) {
       console.error("Error creating order:", error);
       alert("An error occurred while placing the order.");
-      // navigate("/orderFailure"); // Navigate to failure page if an error occurs
     }
   };
-  
 
-  const totalAmount = products.reduce(
-    (total, item) => total + item.product.price * item.quantity,
-    0
-  );
-  const final_discount = (totalAmount * couponDiscount) / 100;
-  const finalAmount = totalAmount - (totalAmount * couponDiscount) / 100;
+  useEffect(() => {
+    const fetchDiscounts = async () => {
+      try {
+        const discountData = await getDiscounts({});
+        setDiscounts(discountData);
+      } catch (error) {
+        console.error("Failed to fetch discounts", error);
+      }
+    };
+    fetchDiscounts();
+  }, []);
+
+  const handleCouponApply = () => {
+    const matchingCoupon = discounts.find(
+      (discount) => discount.coupon === couponCode
+    );
+
+    if (matchingCoupon) {
+      if (
+        matchingCoupon.quantity_threshold &&
+        totalQuantity >= matchingCoupon.quantity_threshold
+      ) {
+        setCouponDiscount(matchingCoupon.percent_discount);
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      } else if (!matchingCoupon.quantity_threshold) {
+        setCouponDiscount(matchingCoupon.percent_discount);
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      } else {
+        alert(
+          `You need at least ${matchingCoupon.quantity_threshold} items to use this coupon.`
+        );
+      }
+    } else {
+      alert("Invalid coupon code.");
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setIsRemovingCoupon(true);
+    setTimeout(() => {
+      setCouponCode("");
+      setCouponDiscount(0);
+      setShowConfetti(false);
+      setIsRemovingCoupon(false);
+    }, 500);
+  };
+
+  const handleUpdateQuantity = async (productId: string, change: number) => {
+    setProducts((prev) =>
+      prev.map((item) => {
+        if (item.id === productId) {
+          const newQuantity = Math.max(1, item.quantity + change); // Ensure quantity is not less than 1
+          return {
+            ...item,
+            quantity: newQuantity,
+          };
+        }
+        return item;
+      })
+    );
+
+    // Reset coupon when quantities change
+    setCouponDiscount(0);
+  };
 
   return (
     <div className="bg-black text-white min-h-screen flex flex-col font-montserrat">
@@ -217,40 +297,103 @@ const Checkout: React.FC = () => {
                         checkoutProduct.product.image ||
                         checkoutProduct.product.product_images;
                       return (
-                        <div
-                          key={checkoutProduct.id}
-                          className="flex justify-between items-center mb-4"
-                        >
-                          <div className="flex items-center">
-                            {productImages && (
-                              <img
-                                src={productImages}
-                                alt={product.name || "Product Image"}
-                                className="w-16 h-16 object-contain rounded"
-                              />
-                            )}
-                            <div className="ml-4">
-                              <h4 className="text-lg font-semibold">
-                                {product.name || "Unnamed Product"}
-                              </h4>
-                              <h4 className="text-lg font-semibold">
-                                {typeof checkoutProduct.size === "string"
-                                  ? checkoutProduct.size
-                                  : checkoutProduct.size?.size ??
-                                    "Default Size"}
-                              </h4>
+                        <>
+                          <div
+                            key={checkoutProduct.id}
+                            className="flex justify-between items-center mb-4 text-left"
+                          >
+                            <div className="flex items-center">
+                              {productImages && (
+                                <img
+                                  src={productImages}
+                                  alt={product.name || "Product Image"}
+                                  className="w-16 h-16 object-contain rounded"
+                                />
+                              )}
+                              <div className="ml-4">
+                                <h4 className="text-lg ">
+                                  {product.name || "Unnamed Product"}
+                                </h4>
+                                <h4 className="text-lg font-semibold">
+                                  {typeof checkoutProduct.size === "string"
+                                    ? checkoutProduct.size
+                                    : checkoutProduct.size?.size ??
+                                      "Default Size"}
+                                </h4>
+                              </div>
                             </div>
+                            <p className="text-lg font-bold">
+                              ₹
+                              {(
+                                Number(product.price) * checkoutProduct.quantity
+                              ).toFixed(2)}
+                            </p>
                           </div>
-                          <p className="text-lg font-bold">
-                            ₹{(Number(product.price) || 0).toFixed(2)}
-                          </p>
-                        </div>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(product.id, -1)
+                              }
+                              className="px-2 py-1 bg-gray-200 text-black rounded-lg mr-2"
+                            >
+                              -
+                            </button>
+                            <span className="text-lg">
+                              {checkoutProduct.quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(product.id, 1)
+                              }
+                              className="px-2 py-1 bg-gray-200 text-black rounded-lg ml-2"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </>
                       );
                     })
                   ) : (
                     <p>No products available.</p>
                   )}
-
+                  <div className="mt-6">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: isRemovingCoupon ? 0 : 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="mt-2"
+                    >
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          placeholder="Enter coupon code"
+                          className="p-1.5 border rounded w-full pr-10 text-sm"
+                        />
+                        {couponCode && (
+                          <button
+                            onClick={handleRemoveCoupon}
+                            className="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500 text-sm"
+                          >
+                            &times;
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={handleCouponApply}
+                        className="w-full mt-2 bg-black text-white py-1.5 rounded hover:bg-gray-600 transition-colors text-sm"
+                      >
+                        Apply Coupon
+                      </button>
+                    </motion.div>
+                    {showConfetti && (
+                    <Confetti
+                      width={window.innerWidth}
+                      height={window.innerHeight}
+                    />
+                  )}
+                  </div>
                   <div className="p-4 border-t">
                     <div className="flex justify-between">
                       <span>Total Quantity</span>

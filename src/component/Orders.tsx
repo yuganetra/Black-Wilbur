@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getOrders } from "../services/api";
+import { getOrders, downloadInvoice } from "../services/api";  // Import the downloadInvoice function
 import { NewGetOrder } from "../utiles/types";
 
 const Orders: React.FC = () => {
@@ -11,6 +11,7 @@ const Orders: React.FC = () => {
       if (token) {
         try {
           const fetchedOrders: NewGetOrder[] = await getOrders();
+          console.log(fetchedOrders)
           setOrders(Array.isArray(fetchedOrders) ? fetchedOrders : []);
         } catch (error) {
           console.error("Error fetching orders:", error);
@@ -20,6 +21,14 @@ const Orders: React.FC = () => {
 
     fetchOrders();
   }, []);
+
+  const handleDownloadInvoice = async (orderId: string) => {
+    try {
+      await downloadInvoice(orderId);  // Call the downloadInvoice function
+    } catch (error) {
+      console.error("Error downloading invoice:", error);
+    }
+  };
 
   return (
     <div className="text-left">
@@ -46,11 +55,18 @@ const Orders: React.FC = () => {
                       <span className="font-semibold">Size:</span> {item.product_variation.size}
                     </p>
                     <p>
-                      <span className="font-semibold">Total Price:</span> ₹{item.price}
+                      <span className="font-semibold">Total Price:</span> ₹{order.subtotal}
                     </p>
                   </li>
                 ))}
               </ul>
+              {/* Add Download Invoice button */}
+              <button
+                onClick={() => handleDownloadInvoice(order.order_id)}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Download Invoice
+              </button>
             </li>
           ))}
         </ul>

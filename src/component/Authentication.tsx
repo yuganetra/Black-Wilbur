@@ -42,7 +42,7 @@ const Authentication: React.FC = () => {
       if (response) {
         setOtpSent(true);
         setGeneratedOtp(otp);
-        setTimeout(() => setResendEnabled(true), 1000);
+        setTimeout(() => setResendEnabled(true), 10000);
       }
     } catch (error) {
       console.error("Error sending SMS:", error);
@@ -63,10 +63,10 @@ const Authentication: React.FC = () => {
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
-    // if (!otpVarified) {
-    //   alert("Please verify your phone number.");
-    //   return;
-    // }
+    if (!otpVarified) {
+      alert("Please verify your phone number.");
+      return;
+    }
     e.preventDefault();
     setApiError("");
     setSuccessMessage("");
@@ -121,10 +121,6 @@ const Authentication: React.FC = () => {
       });
 
       localStorage.setItem("user", JSON.stringify(response));
-      if (response.isAdmin) {
-        // Navigate to the admin dashboard
-        navigate("/admin");
-      } else {
         // Fetch and store cart items for the regular user
         const cartItems = fetchCartItems();
         localStorage.setItem("cart", JSON.stringify(cartItems));
@@ -134,7 +130,6 @@ const Authentication: React.FC = () => {
         navigate(previousState, {
           state: { products: location.state?.products || [] },
         });
-      }
 
     } catch (error) {
       setApiError("Invalid credentials. Please check your email and password.");
@@ -303,7 +298,7 @@ const Authentication: React.FC = () => {
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                 />
-                {/* {!otpSent && !otpVarified && (
+                {!otpSent && !otpVarified && (
                   <button
                     type="button"
                     onClick={handleGetOtp}
@@ -311,9 +306,9 @@ const Authentication: React.FC = () => {
                   >
                     Get OTP
                   </button>
-                )} */}
+                )}
               </div>
-              {/* {otpSent && !otpVarified && (
+              {otpSent && !otpVarified && (
                 <div className="mt-4 flex items-center space-x-4">
                   <input
                     type="text"
@@ -344,7 +339,7 @@ const Authentication: React.FC = () => {
                 <p className="mt-2 text-sm text-green-600">
                   Phone number verified ✓
                 </p>
-              )} */}
+              )}
             </div>
 
             <div>
