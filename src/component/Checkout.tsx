@@ -226,7 +226,7 @@ const Checkout: React.FC = () => {
                               <img
                                 src={productImages}
                                 alt={product.name || "Product Image"}
-                                className="w-16 h-16 object-cover rounded"
+                                className="w-16 h-16 object-contain rounded"
                               />
                             )}
                             <div className="ml-4">

@@ -30,6 +30,7 @@ const DiscountManage: React.FC = () => {
   // Handle discount creation
   const handleCreateDiscount = async () => {
     try {
+      console.log(newDiscount);
       const createdDiscount = await createDiscount(newDiscount);
       setDiscounts((prevDiscounts) => [...prevDiscounts, createdDiscount]);
       resetForm();

@@ -1,30 +1,52 @@
-import React from 'react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+
 const OffersBanner: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleNavigate = (path: string) => navigate(path);
 
   return (
-    <div className="relative">
-      {/* Banner with centered, systematic offer cards */}
-      <div className="bg-black text-white py-6 w-full cursor-pointer">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4">Exclusive Offers</h2>
-          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
-            {/* Individual Offer Cards */}
-            <div className="border border-gray-700 p-4 rounded-lg w-full sm:w-1/4 text-center">
-              <h3 className="text-lg font-semibold">New Designs Launched</h3>
-              <p className="text-gray-400">Explore our latest collection - shop now!</p>
-            </div>
-            <div className="border border-gray-700 p-4 rounded-lg w-full sm:w-1/4 text-center">
-              <h3 className="text-lg font-semibold">Buy 2, Get 15% Off</h3>
-              <p className="text-gray-400">Use code <strong>Buy2</strong> at cart.</p>
-            </div>
-            <div className="border border-gray-700 p-4 rounded-lg w-full sm:w-1/4 text-center">
-              <h3 className="text-lg font-semibold">Limited Edition</h3>
-              <p className="text-gray-400">Get exclusive items while stocks last!</p>
-            </div>
-            <div className="border border-gray-700 p-4 rounded-lg w-full sm:w-1/4 text-center">
-              <h3 className="text-lg font-semibold">Buy 3, Get 30% Off</h3>
-              <p className="text-gray-400">Use code <strong>Buy3</strong> at cart.</p>
-            </div>
+    <div className="bg-black text-white py-12">
+      <div className="container mx-auto px-6">
+        {/* Heading */}
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-6">
+          Black Friday Sale
+        </h2>
+        <p className="text-lg sm:text-xl text-center mb-4">
+          Flat 50% Off on All Products. Limited Time Only!
+        </p>
+        <p className="text-md sm:text-lg text-center text-gray-300 mb-8">
+          Use code <span className="font-semibold">Flat50</span> at cart.
+        </p>
+
+        {/* Call-to-Action */}
+        <div className="flex justify-center mb-10">
+          <button
+            className="px-8 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition duration-300"
+            onClick={() => handleNavigate("/collection")}
+          >
+            Shop Now
+          </button>
+        </div>
+
+        {/* Offer Highlights */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+          <div className="border border-white py-6 px-4 rounded-lg hover:bg-gray-800 transition duration-300">
+            <h3 className="text-xl font-semibold mb-2">Flat 50% Off</h3>
+            <p className="text-gray-400">On every product in our store.</p>
+          </div>
+          <div className="border border-white py-6 px-4 rounded-lg hover:bg-gray-800 transition duration-300">
+            <h3 className="text-xl font-semibold mb-2">Exclusive Products</h3>
+            <p className="text-gray-400">Limited stocks available, shop now!</p>
+          </div>
+          <div className="border border-white py-6 px-4 rounded-lg hover:bg-gray-800 transition duration-300">
+            <h3 className="text-xl font-semibold mb-2">
+              Hurry, Time is Ticking
+            </h3>
+            <p className="text-gray-400">
+              Sale ends soon. Don’t miss out on these deals!
+            </p>
           </div>
         </div>
       </div>

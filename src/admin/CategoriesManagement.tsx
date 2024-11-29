@@ -64,18 +64,18 @@ const CategoriesManagement: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-black text-white min-h-screen p-6">
+    <div className="bg-black text-white min-h-screen p-4 sm:p-6">
       <h1 className="text-2xl font-bold mb-4 text-left">Category Management</h1>
 
       <button
         onClick={() => setIsModalOpen(true)}
-        className="bg-gray-800 text-white p-2 rounded mb-4 hover:bg-gray-700 transition duration-200"
+        className="bg-gray-800 text-white py-2 px-4 rounded mb-4 hover:bg-gray-700 transition duration-200"
       >
         Add Category
       </button>
 
       <div className="overflow-x-auto">
-        <table className="table-auto w-full mt-4 border border-white">
+        <table className="table-auto w-full border border-white">
           <thead className="bg-gray-800">
             <tr>
               <th className="border border-white p-2">Category Name</th>
@@ -88,9 +88,9 @@ const CategoriesManagement: React.FC = () => {
               <tr key={category.id} className="hover:bg-gray-700">
                 <td className="border border-white p-2 text-left">{category.name}</td>
                 <td className="border border-white p-2 text-left">{category.description}</td>
-                <td className="border border-white p-2 flex space-x-2">
+                <td className="border border-white p-2 flex flex-wrap gap-2">
                   <button
-                    className="bg-gray-800 text-white p-2 rounded hover:bg-gray-700 transition duration-200"
+                    className="bg-gray-800 text-white py-1 px-3 rounded hover:bg-gray-700 transition duration-200"
                     onClick={() => {
                       setCurrentCategoryId(category.id);
                       setCategoryName(category.name);
@@ -101,7 +101,7 @@ const CategoriesManagement: React.FC = () => {
                     Edit
                   </button>
                   <button
-                    className="bg-gray-800 text-white p-2 rounded hover:bg-gray-700 transition duration-200"
+                    className="bg-gray-800 text-white py-1 px-3 rounded hover:bg-gray-700 transition duration-200"
                     onClick={() => handleDeleteCategory(category.id)}
                   >
                     Delete
@@ -115,8 +115,8 @@ const CategoriesManagement: React.FC = () => {
 
       {/* Modal for adding category */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
-          <div className="bg-gray-800 p-6 rounded shadow-lg w-full max-w-md">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+          <div className="bg-gray-800 p-6 rounded shadow-lg w-full max-w-sm sm:max-w-md">
             <h2 className="text-xl font-bold mb-4 text-left">Add New Category</h2>
             <input
               type="text"
@@ -132,11 +132,17 @@ const CategoriesManagement: React.FC = () => {
               className="border p-2 mb-4 w-full bg-gray-700 text-white rounded"
               rows={3}
             />
-            <div className="flex justify-end">
-              <button onClick={() => setIsModalOpen(false)} className="bg-gray-800 text-white p-2 rounded mr-2 hover:bg-gray-700 transition duration-200">
+            <div className="flex flex-col sm:flex-row justify-end gap-2">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="bg-gray-800 text-white py-2 px-4 rounded hover:bg-gray-700 transition duration-200"
+              >
                 Cancel
               </button>
-              <button onClick={handleAddCategory} className="bg-gray-800 text-white p-2 rounded hover:bg-gray-700 transition duration-200">
+              <button
+                onClick={handleAddCategory}
+                className="bg-gray-800 text-white py-2 px-4 rounded hover:bg-gray-700 transition duration-200"
+              >
                 Add Category
               </button>
             </div>
@@ -146,8 +152,8 @@ const CategoriesManagement: React.FC = () => {
 
       {/* Modal for editing category */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
-          <div className="bg-gray-800 p-6 rounded shadow-lg w-full max-w-md">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+          <div className="bg-gray-800 p-6 rounded shadow-lg w-full max-w-sm sm:max-w-md">
             <h2 className="text-xl font-bold mb-4 text-left">Edit Category</h2>
             <input
               type="text"
@@ -163,11 +169,17 @@ const CategoriesManagement: React.FC = () => {
               className="border p-2 mb-4 w-full bg-gray-700 text-white rounded"
               rows={3}
             />
-            <div className="flex justify-end">
-              <button onClick={() => setIsEditModalOpen(false)} className="bg-gray-800 text-white p-2 rounded mr-2 hover:bg-gray-700 transition duration-200">
+            <div className="flex flex-col sm:flex-row justify-end gap-2">
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="bg-gray-800 text-white py-2 px-4 rounded hover:bg-gray-700 transition duration-200"
+              >
                 Cancel
               </button>
-              <button onClick={handleEditCategory} className="bg-gray-800 text-white p-2 rounded hover:bg-gray-700 transition duration-200">
+              <button
+                onClick={handleEditCategory}
+                className="bg-gray-800 text-white py-2 px-4 rounded hover:bg-gray-700 transition duration-200"
+              >
                 Save Changes
               </button>
             </div>

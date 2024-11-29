@@ -36,21 +36,32 @@ class DiscountAPIView(APIView):
 
     def post(self, request):
         """Create a new discount."""
+        print("Received request data:", request.data)  # Debug: Print incoming request data
+
         serializer = DiscountSerializer(data=request.data)
         if serializer.is_valid():
-            # Custom validation to check if either coupon or quantity_threshold is provided
+            # Validate that both coupon and quantity_threshold are provided
             coupon = request.data.get('coupon')
             quantity_threshold = request.data.get('quantity_threshold')
 
-            if not coupon and not quantity_threshold:
-                return Response({"error": "Either a coupon code or a quantity threshold must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+            print(f"Coupon: {coupon}, Quantity Threshold: {quantity_threshold}")  # Debug
 
-            if coupon and quantity_threshold:
-                return Response({"error": "Coupon code and quantity threshold should not be provided together."}, status=status.HTTP_400_BAD_REQUEST)
+            if not coupon or not quantity_threshold:
+                # If either field is missing, return an error
+                print("Validation failed: Both coupon and quantity threshold are required.")
+                return Response(
+                    {"error": "Both coupon code and quantity threshold are required."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
+            # Save the data if validation passes
             serializer.save()
+            print("Discount created successfully.")  # Debug
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        print("Serializer errors:", serializer.errors)  # Debug
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def put(self, request, pk=None):
         """Update an existing discount."""

@@ -21,6 +21,7 @@ const Home: React.FC = () => {
   const [wishlist, setWishlist] = useState<Product[]>([]); // Wishlist state
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for managing popup visibility
   const [isInView, setIsInView] = useState(false); // State to track if video section is in view
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Fetch wishlist from localStorage on mount
@@ -59,30 +60,37 @@ const Home: React.FC = () => {
   }, [isInView,videoRef]);
 
   useEffect(() => {
-    // Fetch Best Sellers only once
     const fetchBestSellers = async () => {
       try {
+        setIsLoading(true);
         const fetchedCategories = await fetchBestSeller();
         setBestSeller(fetchedCategories);
       } catch (error) {
         console.error("Error fetching bestsellers:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
+    
     if (bestseller.length === 0) fetchBestSellers();
   }, [bestseller]);
 
   useEffect(() => {
-    // Fetch Explore products only once
     const fetchExploreProducts = async () => {
       try {
+        setIsLoading(true);
         const fetchedExplore = await fetchExplore();
         setExploreProducts(fetchedExplore);
       } catch (error) {
         console.error("Error fetching explore products:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
+    
     if (exploreProducts.length === 0) fetchExploreProducts();
   }, [exploreProducts]);
+
 
   const handleNavigate = (path: string) => navigate(path);
 
