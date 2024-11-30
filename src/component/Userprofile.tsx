@@ -30,12 +30,12 @@ const UserProfile: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    ["user", "authToken", "refreshToken"].forEach((item) =>
+    ["user", "authToken", "refreshToken", "cart"].forEach((item) =>
       localStorage.removeItem(item)
     );
     navigate("/auth/login");
   };
-
+  
   const navItems: NavItem[] = [
     ...(accountDetails?.isAdmin
       ? [

@@ -88,6 +88,10 @@ export interface AuthUser {
   password: string;
   password2?: string;
   isAdmin: number;
+  phone_verified?: boolean,
+  terms_accepted?: boolean,
+  referral_code?: string,
+  gender?: string,
 }
 
 export interface Address {

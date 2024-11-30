@@ -28,6 +28,10 @@ const Authentication: React.FC = () => {
     email: "",
     password: "",
     password2: "",
+    phone_verified: false,
+    terms_accepted: false,
+    referral_code: "",
+    gender: "",
   });
   const [errors, setErrors] = useState({} as Record<string, string>);
   const [apiError, setApiError] = useState("");
@@ -57,7 +61,9 @@ const Authentication: React.FC = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
@@ -92,8 +98,13 @@ const Authentication: React.FC = () => {
           email: formData.email,
           password: formData.password,
           password2: formData.password2,
-          isAdmin: 0
+          isAdmin: 0,
+          phone_verified: otpVarified,
+          terms_accepted: true,
+          referral_code: formData.referral_code,
+          gender: formData.gender,
         };
+        console.log(userData)
         const response = await registerUser(userData);
         localStorage.setItem("user", JSON.stringify(response));
         setSuccessMessage("Account created successfully! Please log in.");
@@ -117,24 +128,23 @@ const Authentication: React.FC = () => {
       const response = await loginUser({
         email: formData.email,
         password: formData.password,
-        isAdmin: 0
+        isAdmin: 0,
       });
 
       localStorage.setItem("user", JSON.stringify(response));
-        // Fetch and store cart items for the regular user
-        const cartItems = fetchCartItems();
-        localStorage.setItem("cart", JSON.stringify(cartItems));
+      // Fetch and store cart items for the regular user
+      const cartItems = fetchCartItems();
+      localStorage.setItem("cart", JSON.stringify(cartItems));
 
-        // Navigate to the previous state or user profile
-        const previousState = location.state?.from || "/user-profile";
-        navigate(previousState, {
-          state: { products: location.state?.products || [] },
-        });
-
+      // Navigate to the previous state or user profile
+      const previousState = location.state?.from || "/user-profile";
+      navigate(previousState, {
+        state: { products: location.state?.products || [] },
+      });
     } catch (error) {
       setApiError("Invalid credentials. Please check your email and password.");
     }
-};
+  };
 
   const inputClasses =
     "w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-1 focus:ring-black transition duration-200 text-gray-900 text-base";
@@ -248,14 +258,15 @@ const Authentication: React.FC = () => {
                 <input
                   type="text"
                   id="firstName"
+                  name="first_name"
                   className={inputClasses}
                   placeholder="First Name"
                   value={formData.firstName}
                   onChange={handleInputChange}
                 />
-                {errors.firstName && (
+                {errors.first_name && (
                   <p className="mt-1 text-sm text-red-600">
-                    {errors.firstName}
+                    {errors.first_name}
                   </p>
                 )}
               </div>
@@ -263,13 +274,16 @@ const Authentication: React.FC = () => {
                 <input
                   type="text"
                   id="lastName"
+                  name="last_name"
                   className={inputClasses}
                   placeholder="Last Name"
                   value={formData.lastName}
                   onChange={handleInputChange}
                 />
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                {errors.last_name && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.last_name}
+                  </p>
                 )}
               </div>
             </div>
@@ -278,6 +292,7 @@ const Authentication: React.FC = () => {
               <input
                 type="email"
                 id="email"
+                name="email"
                 className={inputClasses}
                 placeholder="Email address"
                 value={formData.email}
@@ -329,7 +344,7 @@ const Authentication: React.FC = () => {
                       type="button"
                       onClick={handleGetOtp}
                       className="whitespace-nowrap px-4 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 transition duration-200"
-                      >
+                    >
                       Resend OTP
                     </button>
                   )}
@@ -343,9 +358,46 @@ const Authentication: React.FC = () => {
             </div>
 
             <div>
+              <select
+                id="gender"
+                name="gender"
+                className={inputClasses}
+                value={formData.gender}
+                onChange={handleInputChange}
+              >
+                <option value="" disabled>
+                  Select Gender
+                </option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+              {errors.gender && (
+                <p className="mt-1 text-sm text-red-600">{errors.gender}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="text"
+                id="referralCode"
+                name="referral_code"
+                className={inputClasses}
+                placeholder="Referral Code (optional)"
+                value={formData.referral_code}
+                onChange={handleInputChange}
+              />
+              {errors.referral_code && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.referral_code}
+                </p>
+              )}
+            </div>
+            <div>
               <input
                 type="password"
                 id="password"
+                name="password"
                 className={inputClasses}
                 placeholder="Password"
                 value={formData.password}
@@ -360,6 +412,7 @@ const Authentication: React.FC = () => {
               <input
                 type="password"
                 id="password2"
+                name="password2"
                 className={inputClasses}
                 placeholder="Confirm Password"
                 value={formData.password2}
@@ -367,6 +420,29 @@ const Authentication: React.FC = () => {
               />
               {errors.password2 && (
                 <p className="mt-1 text-sm text-red-600">{errors.password2}</p>
+              )}
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="termsAccepted"
+                name="terms_accepted"
+                className="mr-2"
+                checked={formData.terms_accepted}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    terms_accepted: e.target.checked,
+                  }))
+                }
+              />
+              <label htmlFor="termsAccepted" className="text-sm">
+                I accept the terms and conditions
+              </label>
+              {errors.terms_accepted && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.terms_accepted}
+                </p>
               )}
             </div>
 

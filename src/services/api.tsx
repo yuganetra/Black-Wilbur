@@ -8,9 +8,6 @@ import {
   ProductResponse,
   ErrorResponse,
   SendSmsResponse,
-  Order,
-  // CartItem,
-  GetOrder,
   ProductAdmin,
   ProductVariation,
   ProductsImage,
@@ -142,6 +139,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+
 export const registerUser = async (userData: AuthUser): Promise<any> => {
   try {
     const response = await axios.post(`${API_BASE_URL}register`, userData);
@@ -151,15 +149,40 @@ export const registerUser = async (userData: AuthUser): Promise<any> => {
 
     let errorMessage = "An unknown error occurred.";
 
+    // Handle server errors
     if (axiosError.response && axiosError.response.data) {
       const serverErrors = axiosError.response.data.error;
       if (serverErrors) {
-        errorMessage = JSON.stringify(serverErrors);
+        if (typeof serverErrors === "string") {
+          // For simple string error messages (e.g., "Phone number is required.")
+          errorMessage = serverErrors;
+        } else if (typeof serverErrors === "object") {
+          // For field validation errors (e.g., missing first_name, last_name)
+          errorMessage = JSON.stringify(serverErrors);
+        }
       }
-    } else if (error instanceof Error) {
+    }
+    // Handle generic errors from axios or JS errors
+    else if (error instanceof Error) {
       errorMessage = error.message;
     }
 
+    // Check for specific error cases
+    if (axiosError.response?.status === 400) {
+      if (errorMessage === "Phone number is required.") {
+        throw new Error("Phone number is required. Please provide a valid phone number.");
+      } else if (errorMessage === "Phone number is already registered.") {
+        throw new Error("This phone number is already registered. Please use a different phone number.");
+      } else {
+        throw new Error(`Invalid data: ${errorMessage}`);
+      }
+    } else if (axiosError.response?.status === 500) {
+      if (errorMessage.includes("Database error occurred")) {
+        throw new Error("There was a database issue. Please try again later.");
+      }
+    }
+
+    // General error handler
     throw new Error(`Registration failed: ${errorMessage}`);
   }
 };

@@ -59,8 +59,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://blackwilbur.com",
     'https://mercury-uat.phonepe.com',
     'http://127.0.0.1:5000',  # Your local frontend URL
-  # PhonePe redirect URL (if necessary)
-
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -125,10 +123,3 @@ STATIC_URL = '/static/'  # URL prefix for static files
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Change 'staticfiles' to your desired directory
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-# PhonePe API credentials and configuration
-PHONEPE_MERCHANT_ID = 'M224GLLI0GBI1'  # Replace with your actual Merchant ID
-PHONEPE_SALT_KEY = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'  # Replace with your actual Test API Key
-PHONEPE_API_KEY_INDEX = 1  # Test API Key Index
-PHONEPE_HOST_URL = 'https://api.phonepe.com/apis/hermes'  # PhonePe API endpoint (preprod in this case)
