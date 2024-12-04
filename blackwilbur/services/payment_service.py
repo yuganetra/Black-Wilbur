@@ -65,7 +65,7 @@ class PaymentService:
 
     def pay(self, request, amount, user_id, mobile_number):
         # Domain validation
-        if not self.validate_domain(request):
+        if not self.validate_and_modify_domain(request):
             logger.error(f"Unauthorized domain: {request.META.get('HTTP_REFERER', 'No referrer')}")
             return HttpResponse("Unauthorized domain", status=403)
         
