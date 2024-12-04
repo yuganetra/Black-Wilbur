@@ -8,7 +8,8 @@ import shortuuid
 import logging
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
-from django.shortcuts import redirect
+from django.conf import settings
+import re
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -19,11 +20,23 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 class PaymentService:
+    WHITELISTED_DOMAINS = [
+        'https://www.blackwilbur.com',
+        'https://blackwilbur.com'
+    ]
+
     def __init__(self):
-        self.BASE_URL = 'https://blackwilbur.com/'  # No comma
-        self.MERCHANT_ID = 'M224GLLI0GBI1'#'PGTESTPAYUAT86' #'M224GLLI0GBI1'
-        self.SALT_KEY = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'#'96434309-7796-489d-8924-ab56988a6076'  # Corrected
+        self.BASE_URL = 'https://blackwilbur.com/'
+        self.MERCHANT_ID = 'M224GLLI0GBI1'
+        self.SALT_KEY = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'
         self.INDEX = "1"
+
+    def validate_domain(self, request):
+        """
+        Validate that request is from whitelisted domain
+        """
+        referer = request.META.get('HTTP_REFERER', '')
+        return any(domain in referer for domain in self.WHITELISTED_DOMAINS)
 
     def calculate_sha256_string(self, input_string):
         logger.debug(f"Calculating SHA-256 for: {input_string}")
@@ -41,8 +54,13 @@ class PaymentService:
         logger.debug(f"Base64 Encoded String: {encoded_string}")
         return encoded_string
 
-    def pay(self, amount, user_id, mobile_number):
-        logger.debug(f"Initiating payment for user_id={user_id}, amount={amount}, mobile_number={mobile_number}")
+    def pay(self, request, amount, user_id, mobile_number):
+        # Domain validation
+        if not self.validate_domain(request):
+            logger.error(f"Unauthorized domain: {request.META.get('HTTP_REFERER', 'No referrer')}")
+            return HttpResponse("Unauthorized domain", status=403)
+        
+        logger.debug(f"Initiating payment for user_id={user_id}, amount={amount}")
         
         transaction_id = shortuuid.uuid()
                 
@@ -51,9 +69,9 @@ class PaymentService:
             "merchantTransactionId": transaction_id,
             "merchantUserId": user_id,
             "amount": amount,
-            "redirectUrl": 'https://blackwilbur.com/payment/callback/',  # This stays the same
+            "redirectUrl": 'https://blackwilbur.com/payment/callback/',
             "redirectMode": "POST",
-            "callbackUrl": 'https://api.blackwilbur.com/phonepe-callback/',  # Update this to use the unified domain
+            "callbackUrl": 'https://api.blackwilbur.com/phonepe-callback/',
             "mobileNumber": mobile_number,
             "paymentInstrument": {
                 "type": "PAY_PAGE"
@@ -76,25 +94,26 @@ class PaymentService:
             'request': base64String,
         }
 
-        #'https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay',
-        logger.debug(f"Sending payment request to PhonePe API with headers: {headers}")
-        response = requests.post(
-            'https://api.phonepe.com/apis/hermes/pg/v1/pay',
-            headers=headers,
-            json=json_data
-        )
-
-        if response.status_code != 200:
-            logger.error(f"Request failed with status code {response.status_code}")
-            return HttpResponse(f"Error: Request failed with status code {response.status_code}", status=500)
-
-        responseData = response.json()
-        logger.debug(f"Response Data: {responseData}")
-
         try:
+            response = requests.post(
+                'https://api.phonepe.com/apis/hermes/pg/v1/pay',
+                headers=headers,
+                json=json_data
+            )
+
+            response.raise_for_status()  # Raise exception for bad status codes
+
+            responseData = response.json()
+            logger.debug(f"Response Data: {responseData}")
+
             url = responseData.get('data', {}).get('instrumentResponse', {}).get('redirectInfo', {}).get('url')
+            if not url:
+                logger.error("No redirect URL in response")
+                return HttpResponse("Payment initialization failed", status=500)
+
             logger.debug(f"Redirect URL: {url}")
-            return HttpResponse(f"Payment URL: {url}")  # Return the URL in the response
-        except KeyError:
-            logger.error("Missing 'instrumentResponse' in response data.")
-            return HttpResponse("Error: Missing 'instrumentResponse' in response data.", status=500)
+            return HttpResponse(f"Payment URL: {url}")
+
+        except requests.RequestException as e:
+            logger.error(f"Payment request failed: {str(e)}")
+            return HttpResponse(f"Payment request error: {str(e)}", status=500)

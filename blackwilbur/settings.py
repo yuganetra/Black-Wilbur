@@ -110,6 +110,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# In Django settings.py or middleware
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 LANGUAGE_CODE = 'en-us'
 
