@@ -225,7 +225,7 @@ class OrdersAPIView(APIView):
         user_id = str(request.user.id)
         mobile_number = request.data.get('phone_number', '9999999999')
 
-        payment_response = payment_service.pay(amount=amount_in_paise, user_id=user_id, mobile_number=mobile_number)
+        payment_response = payment_service.pay(request=request,amount=amount_in_paise, user_id=user_id, mobile_number=mobile_number)
 
         if isinstance(payment_response, HttpResponse) and payment_response.status_code != 200:
             return HttpResponse(payment_response.content, status=payment_response.status_code)
