@@ -51,9 +51,9 @@ class PaymentService:
             "merchantTransactionId": transaction_id,
             "merchantUserId": user_id,
             "amount": amount,
-            "redirectUrl": 'https://www.blackwilbur.com/api/phonepe-callback/',  # This stays the same
+            "redirectUrl": 'https://blackwilbur.com/payment/callback/',  # This stays the same
             "redirectMode": "POST",
-            "callbackUrl": 'https://www.blackwilbur.com/api/phonepe-callback/',  # Update this to use the unified domain
+            "callbackUrl": 'https://api.blackwilbur.com/phonepe-callback/',  # Update this to use the unified domain
             "mobileNumber": mobile_number,
             "paymentInstrument": {
                 "type": "PAY_PAGE"
