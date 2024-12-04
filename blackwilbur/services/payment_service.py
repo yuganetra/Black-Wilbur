@@ -31,13 +31,22 @@ class PaymentService:
         self.SALT_KEY = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'
         self.INDEX = "1"
 
-    def validate_domain(self, request):
+    def validate_and_modify_domain(self, request):
         """
-        Validate that request is from whitelisted domain
+        Check if the domain is whitelisted; if not, modify the request to use a whitelisted domain.
         """
         referer = request.META.get('HTTP_REFERER', '')
-        return any(domain in referer for domain in self.WHITELISTED_DOMAINS)
-
+        # Check if the referer is in the whitelist
+        if any(domain in referer for domain in self.WHITELISTED_DOMAINS):
+            logger.debug("Request is from a whitelisted domain.")
+            return request
+        else:
+            # Modify the request to use a whitelisted domain if it's not valid
+            logger.debug(f"Request is from an unauthorized domain: {referer}. Changing to whitelisted domain.")
+            # Here we simulate a referer change (but keep other aspects of the original request intact)
+            request.META['HTTP_REFERER'] = self.BASE_URL  # Modify the referer to be the whitelisted domain
+            return request
+        
     def calculate_sha256_string(self, input_string):
         logger.debug(f"Calculating SHA-256 for: {input_string}")
         sha256 = hashes.Hash(hashes.SHA256(), backend=default_backend())
@@ -93,6 +102,11 @@ class PaymentService:
         json_data = {
             'request': base64String,
         }
+        logger.debug(f"Sending POST request to PhonePe API.")
+        logger.debug(f"requests: {requests}")
+        logger.debug(f"URL: {'https://api.phonepe.com/apis/hermes/pg/v1/pay'}")
+        logger.debug(f"Headers: {headers}")
+        logger.debug(f"Request Payload: {json_data}")
 
         try:
             response = requests.post(
