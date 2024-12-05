@@ -36,16 +36,25 @@ class PaymentService:
         Check if the domain is whitelisted; if not, modify the request to use a whitelisted domain.
         """
         referer = request.META.get('HTTP_REFERER', '')
+        logger.debug(f"Validating domain. Referer received: {referer}")
+
         # Check if the referer is in the whitelist
         if any(domain in referer for domain in self.WHITELISTED_DOMAINS):
-            logger.debug("Request is from a whitelisted domain.")
+            logger.info(f"Request is from a whitelisted domain: {referer}")
             return request
         else:
-            # Modify the request to use a whitelisted domain if it's not valid
-            logger.debug(f"Request is from an unauthorized domain: {referer}. Changing to whitelisted domain.")
-            # Here we simulate a referer change (but keep other aspects of the original request intact)
-            request.META['HTTP_REFERER'] = self.BASE_URL  # Modify the referer to be the whitelisted domain
+            logger.warning(f"Request is from an unauthorized domain: {referer}")
+            logger.info(f"Modifying the referer to use the whitelisted domain: {self.BASE_URL}")
+
+            # Modify the request to use a whitelisted domain
+            original_referer = referer if referer else "No referer provided"
+            request.META['HTTP_REFERER'] = self.BASE_URL
+
+            # Log the modification explicitly
+            logger.debug(f"Original Referer: {original_referer}")
+            logger.debug(f"Modified Referer: {request.META['HTTP_REFERER']}")
             return request
+
         
     def calculate_sha256_string(self, input_string):
         logger.debug(f"Calculating SHA-256 for: {input_string}")
