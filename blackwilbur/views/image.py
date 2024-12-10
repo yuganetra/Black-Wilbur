@@ -5,6 +5,8 @@ from azure.storage.blob import BlobServiceClient
 import uuid
 from blackwilbur import models
 from blackwilbur import serializers
+from PIL import Image
+import io
 
 CONTAINER_NAME = 'blackwilbur-image'
 AZURE_STORAGE_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=blackwilbur;AccountKey=Vv2HZ0MjxWAibKuMgX6E3TmntwvLNHZz+lQpswpEvoXtuHdXP/M9OOoMv43rADP1xiYvpd33XI4O+AStYbhjXw==;EndpointSuffix=core.windows.net'
@@ -45,7 +47,7 @@ class ImageManageAPIView(APIView):
         except Exception as e:
             return Response({"error": "An error occurred while fetching images."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def post(self, request):
+    # def post(self, request):
         print("POST request received.")
         product_id = request.data.get('product')
         image_type = request.data.get('image_type', 'product')
@@ -75,6 +77,49 @@ class ImageManageAPIView(APIView):
         serializer = serializers.ImageSerializer(image_instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    def post(self, request):
+        print("POST request received.")
+        product_id = request.data.get('product')
+        image_type = request.data.get('image_type', 'product')
+        print(f"Product ID from request: {product_id}")
+        print(f"Image Type from request: {image_type}")
+
+        image_file = request.FILES.get('image')
+        if not image_file:
+            print("Error: No image file provided.")
+            return Response({"error": "No image file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        image_uuid = uuid.uuid4()
+        print(f"Generated UUID for image: {image_uuid}")
+
+        # Create the blob URL with product name if available
+        image_url = self.create_blob_url(product_id, image_uuid)
+        print(f"Generated blob URL: {image_url}")
+
+        # Compress the image
+        try:
+            image = Image.open(image_file)
+            image_buffer = io.BytesIO()
+            image.save(image_buffer, format="JPEG", quality=85)  # Compress the file size
+            image_buffer.seek(0)
+            print("Image successfully compressed.")
+        except Exception as e:
+            print(f"Error during image compression: {e}")
+            return Response({"error": "Failed to process the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Save the image instance to the database
+        image_instance = models.Image(product_id=product_id, image_url=image_url, image_type=image_type)
+        image_instance.save()
+        print("Image instance saved to database.")
+
+        # Upload the compressed image to the blob
+        self.upload_image_to_blob(product_id, image_uuid, image_buffer)
+        print("Image uploaded to Azure Blob Storage.")
+
+        # Serialize and return the response
+        serializer = serializers.ImageSerializer(image_instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
     def delete(self, request):
         print("DELETE request received.")
         image_id = request.data.get('id')

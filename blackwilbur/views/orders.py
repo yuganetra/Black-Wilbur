@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 from decimal import Decimal
 
+
 class OrdersAPIView(APIView):
 
     def get(self, request):
@@ -74,7 +75,7 @@ class OrdersAPIView(APIView):
                 "payment_status": order.payment_status,
                 "subtotal": str(order.subtotal),
                 "discount_amount": str(order.discount_amount),
-                "discount_coupon_applied":order.discount_coupon_applied,
+                "discount_coupon_applied": order.discount_coupon_applied,
                 "tax_amount": str(order.tax_amount),
                 "total_amount": str(order.total_amount),
                 "shipping_address": shipping_address_data,
@@ -85,27 +86,33 @@ class OrdersAPIView(APIView):
         return Response(orders_data, status=status.HTTP_200_OK)
 
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
         print("Received POST request with data:", request.data)
 
         # Extract the products data but do not pop the shipping_address
         products_data = request.data.get('products', [])
         print("Extracted products data:", products_data)
-        shipping_address_data = request.data.get('shipping_address', {})  # Keep it in the data
+        shipping_address_data = request.data.get(
+            'shipping_address', {})  # Keep it in the data
         print("shipping_address_data", shipping_address_data)
 
         # Initialize the order serializer
         order_serializer = serializers.OrderSerializer(data=request.data)
         print("Order serializer initialized with data:", request.data)
-        shipping_address_data['user'] = request.user.id  # Add user to shipping address data
+        # Add user to shipping address data
+        shipping_address_data['user'] = request.user.id
 
-        shipping_address_serializer = serializers.ShippingAddressSerializer(data=shipping_address_data)
+        shipping_address_serializer = serializers.ShippingAddressSerializer(
+            data=shipping_address_data)
         if not shipping_address_serializer.is_valid():
-            print("Shipping address validation failed with errors:", shipping_address_serializer.errors)
+            print("Shipping address validation failed with errors:",
+                  shipping_address_serializer.errors)
             return Response(shipping_address_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if not order_serializer.is_valid():
-            print("Order validation failed with errors:", order_serializer.errors)
+            print("Order validation failed with errors:",
+                  order_serializer.errors)
             return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # Generate a new order ID and process the rest of the logic
@@ -126,8 +133,8 @@ class OrdersAPIView(APIView):
 
         # Now we can create the order first
         # Remove shipping_address from the serializer data before creating the order
-        order_data = {key: value for key, value in order_serializer.validated_data.items() 
-                    if key not in ['user', 'shipping_address']}
+        order_data = {key: value for key, value in order_serializer.validated_data.items()
+                      if key not in ['user', 'shipping_address']}
 
         new_order = models.Order.objects.create(
             **order_data,
@@ -140,8 +147,10 @@ class OrdersAPIView(APIView):
 
         # Initialize subtotal to calculate the total price of all items
         subtotal = Decimal(0)  # Ensure subtotal is a Decimal
-        total_discount_value = Decimal(request.data.get('discount_amount', 0))  # Convert to Decimal
-        total_tax = Decimal(request.data.get('tax_amount', 0))  # Convert to Decimal
+        total_discount_value = Decimal(request.data.get(
+            'discount_amount', 0))  # Convert to Decimal
+        total_tax = Decimal(request.data.get(
+            'tax_amount', 0))  # Convert to Decimal
 
         # Process the products and calculate individual item price, discount, and tax
         for product_data in products_data:
@@ -162,10 +171,12 @@ class OrdersAPIView(APIView):
                 subtotal += item_price
 
                 # Calculate item discount for this product
-                item_discount = (item_price / subtotal) * total_discount_value if subtotal else Decimal(0)
+                item_discount = (item_price / subtotal) * \
+                    total_discount_value if subtotal else Decimal(0)
 
                 # Calculate tax for this item (proportional if needed)
-                item_tax = (total_tax / len(products_data)) if total_tax else Decimal(0)
+                item_tax = (total_tax / len(products_data)
+                            ) if total_tax else Decimal(0)
 
                 # Calculate the total price for this item after discount and tax
                 item_total_price = item_price - item_discount + item_tax
@@ -181,7 +192,8 @@ class OrdersAPIView(APIView):
                 )
 
                 # Update product variation quantity after order
-                product_variation = models.ProductVariation.objects.get(id=product_variation_id)
+                product_variation = models.ProductVariation.objects.get(
+                    id=product_variation_id)
                 product_variation.quantity -= quantity
                 product_variation.save()
 
@@ -225,19 +237,25 @@ class OrdersAPIView(APIView):
         user_id = str(request.user.id)
         mobile_number = request.data.get('phone_number', '9999999999')
 
-        payment_response = payment_service.pay(request=request,amount=amount_in_paise, user_id=user_id, mobile_number=mobile_number)
+        payment_response = payment_service.pay(
+            request=request, amount=amount_in_paise, user_id=user_id, mobile_number=mobile_number
+        )
 
-        if isinstance(payment_response, HttpResponse) and payment_response.status_code != 200:
-            return HttpResponse(payment_response.content, status=payment_response.status_code)
+        if "error" in payment_response:
+            return Response({"error": payment_response["error"]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        if isinstance(payment_response, HttpResponse):
-            url = payment_response.content.decode("utf-8").replace("Payment URL: ", "")
-            new_order.payment_status = 'paid'
-            new_order.save()
+        url = payment_response.get('data', {}).get('instrumentResponse', {}).get('redirectInfo', {}).get('url')
+        transaction_id = payment_response.get('data', {}).get('merchantTransactionId', {})
+        print("payment_response",payment_response)
+        print('url',url)
+        print('transaction_id',transaction_id)
+        if not url:
+            return Response({"error": "Payment URL not found in the response."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            return Response({
-                'order_id': new_order.order_id,
-                'payment_url': url
-            }, status=status.HTTP_200_OK)
+        new_order.transaction_id = transaction_id
+        new_order.save()
 
-        return Response({"error": "Payment initiation failed."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'order_id': new_order.order_id,
+            'payment_url': url
+        }, status=status.HTTP_200_OK)

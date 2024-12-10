@@ -21,39 +21,38 @@ logger.addHandler(console_handler)
 
 class PaymentService:
     WHITELISTED_DOMAINS = [
-        'https://www.blackwilbur.com',
-        'https://blackwilbur.com'
+        'https://api.blackwilbur.com/'
     ]
 
     def __init__(self):
-        self.BASE_URL = 'https://blackwilbur.com/'
+        # self.BASE_URL = 'https://blackwilbur.com/'
         self.MERCHANT_ID = 'M224GLLI0GBI1'
         self.SALT_KEY = 'bd10bbe8-5ec7-4093-9ab4-79e796d7e937'
         self.INDEX = "1"
 
-    def validate_and_modify_domain(self, request):
-        """
-        Check if the domain is whitelisted; if not, modify the request to use a whitelisted domain.
-        """
-        referer = request.META.get('HTTP_REFERER', '')
-        logger.debug(f"Validating domain. Referer received: {referer}")
+    # def validate_and_modify_domain(self, request):
+    #     """
+    #     Check if the domain is whitelisted; if not, modify the request to use a whitelisted domain.
+    #     """
+    #     referer = request.META.get('HTTP_REFERER', '')
+    #     logger.debug(f"Validating domain. Referer received: {referer}")
 
-        # Check if the referer is in the whitelist
-        if any(domain in referer for domain in self.WHITELISTED_DOMAINS):
-            logger.info(f"Request is from a whitelisted domain: {referer}")
-            return request
-        else:
-            logger.warning(f"Request is from an unauthorized domain: {referer}")
-            logger.info(f"Modifying the referer to use the whitelisted domain: {self.BASE_URL}")
+    #     # Check if the referer is in the whitelist
+    #     if any(domain in referer for domain in self.WHITELISTED_DOMAINS):
+    #         logger.info(f"Request is from a whitelisted domain: {referer}")
+    #         return request
+    #     else:
+    #         logger.warning(f"Request is from an unauthorized domain: {referer}")
+    #         logger.info(f"Modifying the referer to use the whitelisted domain: {self.BASE_URL}")
 
-            # Modify the request to use a whitelisted domain
-            original_referer = referer if referer else "No referer provided"
-            request.META['HTTP_REFERER'] = self.BASE_URL
+    #         # Modify the request to use a whitelisted domain
+    #         original_referer = referer if referer else "No referer provided"
+    #         request.META['HTTP_REFERER'] = self.BASE_URL
 
-            # Log the modification explicitly
-            logger.debug(f"Original Referer: {original_referer}")
-            logger.debug(f"Modified Referer: {request.META['HTTP_REFERER']}")
-            return request
+    #         # Log the modification explicitly
+    #         logger.debug(f"Original Referer: {original_referer}")
+    #         logger.debug(f"Modified Referer: {request.META['HTTP_REFERER']}")
+    #         return request
 
         
     def calculate_sha256_string(self, input_string):
@@ -74,9 +73,9 @@ class PaymentService:
 
     def pay(self, request, amount, user_id, mobile_number):
         # Domain validation
-        if not self.validate_and_modify_domain(request):
-            logger.error(f"Unauthorized domain: {request.META.get('HTTP_REFERER', 'No referrer')}")
-            return HttpResponse("Unauthorized domain", status=403)
+        # if not self.validate_and_modify_domain(request):
+        #     logger.error(f"Unauthorized domain: {request.META.get('HTTP_REFERER', 'No referrer')}")
+        #     return HttpResponse("Unauthorized domain", status=403)
         
         logger.debug(f"Initiating payment for user_id={user_id}, amount={amount}")
         
@@ -87,7 +86,7 @@ class PaymentService:
             "merchantTransactionId": transaction_id,
             "merchantUserId": user_id,
             "amount": amount,
-            "redirectUrl": 'https://blackwilbur.com/payment/callback/',
+            "redirectUrl": 'https://blackwilbur.com/user-profile',
             "redirectMode": "POST",
             "callbackUrl": 'https://api.blackwilbur.com/phonepe-callback/',
             "mobileNumber": mobile_number,
@@ -125,18 +124,26 @@ class PaymentService:
             )
 
             response.raise_for_status()  # Raise exception for bad status codes
+            response.raise_for_status()  # Raise exception for bad status codes
+            logger.debug(f"Response Data: {response.json()}")
 
-            responseData = response.json()
-            logger.debug(f"Response Data: {responseData}")
-
-            url = responseData.get('data', {}).get('instrumentResponse', {}).get('redirectInfo', {}).get('url')
-            if not url:
-                logger.error("No redirect URL in response")
-                return HttpResponse("Payment initialization failed", status=500)
-
-            logger.debug(f"Redirect URL: {url}")
-            return HttpResponse(f"Payment URL: {url}")
+            return response.json()  # Return the full JSON response
 
         except requests.RequestException as e:
             logger.error(f"Payment request failed: {str(e)}")
-            return HttpResponse(f"Payment request error: {str(e)}", status=500)
+            return {"error": str(e), "status": 500}
+
+        #     responseData = response.json()
+        #     logger.debug(f"Response Data: {responseData}")
+
+        #     url = responseData.get('data', {}).get('instrumentResponse', {}).get('redirectInfo', {}).get('url')
+        #     if not url:
+        #         logger.error("No redirect URL in response")
+        #         return HttpResponse("Payment initialization failed", status=500)
+
+        #     logger.debug(f"Redirect URL: {url}")
+        #     return HttpResponse(responseData)
+
+        # except requests.RequestException as e:
+        #     logger.error(f"Payment request failed: {str(e)}")
+        #     return HttpResponse(f"Payment request error: {str(e)}", status=500)

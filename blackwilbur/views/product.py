@@ -8,7 +8,8 @@ from azure.storage.blob import BlobServiceClient
 import re
 from decimal import Decimal, InvalidOperation
 import uuid
-
+from PIL import Image
+import io
 
 class BestsellerAPIView(APIView):
     def get(self, request):
@@ -182,17 +183,35 @@ class ProductManageAPIView(APIView):
         blob_url = f"https://{self.blob_service_client.account_name}.blob.core.windows.net/{CONTAINER_NAME}/{sanitized_product_name}/{product_id}.jpg"
         return blob_url
 
-    def upload_image_to_blob(self, product_id, product_name, image_file):
-        # Set up the blob path without duplicating container name in the path
-        sanitized_product_name = self.format_product_name(product_name)
+    # def upload_image_to_blob(self, product_id, product_name, image_file):
+    #     # Set up the blob path without duplicating container name in the path
+    #     sanitized_product_name = self.format_product_name(product_name)
 
-        blob_name = f"{sanitized_product_name}/{product_id}.jpg"  # Use product ID as file name with .jpg extension
+    #     blob_name = f"{sanitized_product_name}/{product_id}.jpg"  # Use product ID as file name with .jpg extension
         
+    #     # Retrieve the blob client
+    #     blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
+
+    #     # Upload the image
+    #     blob_client.upload_blob(image_file, overwrite=True)
+    def upload_image_to_blob(self, product_id, product_name, image_file):
+    # Set up the blob path without duplicating container name in the path
+        sanitized_product_name = self.format_product_name(product_name)
+        blob_name = f"{sanitized_product_name}/{product_id}.jpg"  # Use product ID as file name with .jpg extension
+
+        # Open the image using Pillow
+        image = Image.open(image_file)
+
+        # Save the image to a buffer with compression
+        image_buffer = io.BytesIO()
+        image.save(image_buffer, format="JPEG", quality=85)  # Adjust the quality (lower = more compression)
+        image_buffer.seek(0)
+
         # Retrieve the blob client
         blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
 
-        # Upload the image
-        blob_client.upload_blob(image_file, overwrite=True)
+        # Upload the compressed image
+        blob_client.upload_blob(image_buffer, overwrite=True)
 
     def format_product_name(self, product_name):
         # Convert to lowercase and replace spaces with hyphens
