@@ -86,9 +86,9 @@ class PaymentService:
             "merchantTransactionId": transaction_id,
             "merchantUserId": user_id,
             "amount": amount,
-            "redirectUrl": 'https://blackwilbur.com/user-profile',
+            "redirectUrl": 'https://blackwilbur.com/api/phonepe-callback/',
             "redirectMode": "POST",
-            "callbackUrl": 'https://api.blackwilbur.com/phonepe-callback/',
+            "callbackUrl": 'https://blackwilbur.com/api/phonepe-callback/',
             "mobileNumber": mobile_number,
             "paymentInstrument": {
                 "type": "PAY_PAGE"
