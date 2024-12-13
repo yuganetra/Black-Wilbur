@@ -163,6 +163,7 @@ const BillingDetails: React.FC<BillingDetailsProps> = ({
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black"
           >
             <option value="">Select a payment method</option>
+            <option value="upi">UPI</option>
             <option value="cash_on_delivery">Cash on Delivery</option>
           </select>
           {errors.payment_method && <p className="text-xs text-red-500">{errors.payment_method.message}</p>}

@@ -23,8 +23,8 @@ interface CartItem extends Product {
   selectedSize: string | undefined;
   quantity: number;
 }
-
-const API_BASE_URL ="https://api.blackwilbur.com/";
+  
+const API_BASE_URL ="https://blackwilbur.com/api/";
 //"https://blackwilbur.com/api/"
 //
 

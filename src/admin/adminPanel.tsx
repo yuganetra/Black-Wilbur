@@ -6,7 +6,6 @@ import {
   HiX, 
   HiHome, 
   HiShoppingBag, 
-  HiCube, 
   HiUsers, 
   HiClipboardList, 
   HiCash, 

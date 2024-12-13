@@ -11,13 +11,13 @@ const OffersBanner: React.FC = () => {
       <div className="container mx-auto px-6">
         {/* Heading */}
         <h2 className="text-3xl sm:text-4xl font-bold text-center mb-6">
-          Black Friday Sale
+          Special Offer
         </h2>
         <p className="text-lg sm:text-xl text-center mb-4">
-          Flat 50% Off on All Products. Limited Time Only!
+          Flat 30% Off on All Products. Limited Time Only!
         </p>
         <p className="text-md sm:text-lg text-center text-gray-300 mb-8">
-          Use code <span className="font-semibold">Flat50</span> at cart.
+          Use code <span className="font-semibold">Flat30</span> at cart.
         </p>
 
         {/* Call-to-Action */}
@@ -33,7 +33,7 @@ const OffersBanner: React.FC = () => {
         {/* Offer Highlights */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
           <div className="border border-white py-6 px-4 rounded-lg hover:bg-gray-800 transition duration-300">
-            <h3 className="text-xl font-semibold mb-2">Flat 50% Off</h3>
+            <h3 className="text-xl font-semibold mb-2">Flat 30% Off</h3>
             <p className="text-gray-400">On every product in our store.</p>
           </div>
           <div className="border border-white py-6 px-4 rounded-lg hover:bg-gray-800 transition duration-300">

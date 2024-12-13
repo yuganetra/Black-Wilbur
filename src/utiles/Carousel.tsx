@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import img from "../asset/collection-carousel.jpg";
-import carousel1 from "../asset/chpp-carousel.jpg";
+import carousel1 from "../asset/IMG_2431 (3).jpeg";
 
 // Types
 interface CarouselImage {

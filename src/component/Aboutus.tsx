@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import videoSrc from "../asset/homepage-vide-updated.MOV";
+import videoSrc from "../asset/homepage-vide-updated.mov";
 import ProductSustainability from "../utiles/ProductSustainability";
 import GetFeatured from "../utiles/Banners/GetFeatured";
 
