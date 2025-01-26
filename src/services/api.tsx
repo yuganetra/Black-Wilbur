@@ -25,6 +25,8 @@ interface CartItem extends Product {
 }
   
 const API_BASE_URL ="https://blackwilbur.com/api/";
+//"http://127.0.0.1:8000/api/"
+
 //"https://blackwilbur.com/api/"
 //
 
@@ -466,14 +468,13 @@ export const addProduct = async (formData: FormData): Promise<ProductAdmin> => {
     throw error;
   }
 };
-// Update Product
 export const updateProduct = async (
-  productId: number,
-  product: Product
-): Promise<Product> => {
+  productId: string,
+  product: ProductAdmin
+): Promise<ProductAdmin> => {
   try {
     const response = await axios.put(
-      `${API_BASE_URL}products-manage${productId}`,
+      `${API_BASE_URL}products-manage/${productId}/`,  // Include productId in the URL
       product
     );
     return response.data;
@@ -482,6 +483,7 @@ export const updateProduct = async (
     throw error;
   }
 };
+
 
 export const deleteProduct = async (productId: string) => {
   try {
