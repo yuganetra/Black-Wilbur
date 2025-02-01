@@ -44,7 +44,7 @@ const ReturnPolicy: React.FC = () => {
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4 text-base md:text-lg">
+          <h3 className="font-bold mt-4 mb-3 text-base  md:text-lg">
             EXCHANGE/RETURN OF PRODUCTS:
           </h3>
           <p className="text-justify text-sm md:text-base">
@@ -59,7 +59,7 @@ const ReturnPolicy: React.FC = () => {
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4 text-base md:text-lg">
+          <h3 className="font-bold mt-4 text-base mb-3 md:text-lg">
             CONDITIONS FOR EXCHANGE/RETURN:
           </h3>
           <p className="text-justify text-sm md:text-base">
@@ -102,7 +102,7 @@ const ReturnPolicy: React.FC = () => {
         </div>
         <div className="border-b border-black mb-4" />
         <div className="mb-4">
-          <h3 className="font-bold mt-4 text-base md:text-lg">
+          <h3 className="font-bold mt-4 text-base mb-3 md:text-lg">
             CUSTOMER SUPPORT:
           </h3>
           <p className="text-justify text-sm md:text-base">

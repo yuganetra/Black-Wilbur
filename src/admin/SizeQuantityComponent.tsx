@@ -1,195 +1,215 @@
 import React, { useEffect, useState } from 'react';
+import { Search } from 'lucide-react';
 import { fetchProducts, fetchProductVariations, createProductVariation, deleteProductVariation } from '../services/api';
 import { ProductAdmin, ProductVariation } from '../utiles/types';
-import Popup from './helper/Popup'; // Import your Popup component
+import Popup from './helper/Popup';
 
-const SizeQuantityManagement: React.FC = () => {
+interface SizeQuantityMap {
+  [key: string]: number | null;
+}
+
+const SizeQuantityManagement = () => {
   const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
   const [products, setProducts] = useState<ProductAdmin[]>([]);
-  const [sizes, setSize] = useState<ProductVariation[]>([]);
+  const [sizes, setSizes] = useState<ProductVariation[]>([]);
   const [selectedProduct, setSelectedProduct] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
-  const [newQuantity, setNewQuantity] = useState<number | ''>('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sizeQuantities, setSizeQuantities] = useState<SizeQuantityMap>({});
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [sizeToRemove, setSizeToRemove] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = async () => {
     try {
       const fetchedProducts = await fetchProducts();
       setProducts(fetchedProducts);
       const fetchedSizes = await fetchProductVariations();
-      setSize(fetchedSizes);
+      setSizes(fetchedSizes);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
+  // Initial data fetch only
   useEffect(() => {
     fetchData();
-    const intervalId = setInterval(() => {
-      fetchData();
-    }, 12000);
-
-    return () => clearInterval(intervalId);
   }, []);
 
-  const handleAddSize = async () => {
-    const productId = selectedProduct; 
-    if (selectedSize && newQuantity && productId) {
-      const newVariation = {
-        product: productId,
-        size: selectedSize,
-        quantity: Number(newQuantity),
-      };
-  
-      try {
-        const createdVariation = await createProductVariation(newVariation);
-        setSize((prevSizes) => [...prevSizes, createdVariation]);
-        setSelectedSize('');
-        setNewQuantity('');
-      } catch (error) {
-        console.error("Error adding size:", error);
+  // Initialize with existing sizes only when product is selected
+  useEffect(() => {
+    if (selectedProduct) {
+      const existingSizes = sizes
+        .filter(size => size.product === selectedProduct)
+        .reduce((acc, size) => ({
+          ...acc,
+          [size.size]: size.quantity
+        }), {} as SizeQuantityMap);
+
+      setSizeQuantities(existingSizes);
+    } else {
+      setSizeQuantities({});
+    }
+  }, [selectedProduct, sizes]);
+
+  const handleQuantityChange = (size: string, value: string) => {
+    const quantity = value === '' ? null : parseInt(value);
+    setSizeQuantities(prev => ({
+      ...prev,
+      [size]: quantity
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedProduct) return;
+    setIsSubmitting(true);
+
+    try {
+      const updatePromises = Object.entries(sizeQuantities)
+        .filter(([_, quantity]) => quantity !== null && quantity > 0)
+        .map(([size, quantity]) => {
+          return createProductVariation({
+            product: selectedProduct,
+            size,
+            quantity: quantity as number
+          });
+        });
+
+      if (updatePromises.length > 0) {
+        await Promise.all(updatePromises);
+        await fetchData(); // Refresh only after successful update
       }
+      setSelectedProduct('');
+      setSearchTerm('');
+      setSizeQuantities({});
+    } catch (error) {
+      console.error("Error updating sizes:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleRemoveSize = async (id: string) => {
-    setSizeToRemove(id);
-    setPopupVisible(true); // Show popup for confirmation
-  };
-
-  const confirmRemoveSize = async () => {
-    if (sizeToRemove) {
-      try {
-        await deleteProductVariation(sizeToRemove);
-        setSize(sizes.filter((variation) => variation.id !== sizeToRemove));
-        setSizeToRemove(null);
-      } catch (error) {
-        console.error("Error removing size:", error);
-      } finally {
-        setPopupVisible(false); // Hide popup after action
-      }
-    }
-  };
-
-  const closePopup = () => {
-    setSizeToRemove(null);
-    setPopupVisible(false);
-  };
-
-  // Group sizes by product
-  const groupedSizes = sizes.reduce((acc, variation) => {
-    if (!acc[variation.product]) {
-      acc[variation.product] = [];
-    }
-    acc[variation.product].push(variation);
-    return acc;
-  }, {} as Record<string, ProductVariation[]>);
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-6 bg-black text-white rounded shadow-lg min-h-screen">
       <h2 className="text-2xl font-bold mb-6">Size and Quantity Management</h2>
 
-      {/* Product Selection */}
-      <div className="mb-4">
+      <div className="mb-6">
         <label className="block mb-2 text-lg font-semibold">Select Product</label>
-        <select
-          value={selectedProduct}
-          onChange={(e) => setSelectedProduct(e.target.value)}
-          className="w-full p-2 rounded bg-gray-700 text-white"
-        >
-          <option value="" disabled>Select a product</option>
-          {products.map((product) => (
-            <option key={product.id} value={product.id}>
-              {product.name}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 p-2 rounded bg-gray-700 text-white"
+            placeholder="Search products..."
+          />
+        </div>
+        {searchTerm && (
+          <div className="mt-2 max-h-60 overflow-y-auto bg-gray-800 rounded">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                onClick={() => {
+                  setSelectedProduct(product.id);
+                  setSearchTerm(product.name);
+                }}
+                className="p-2 hover:bg-gray-700 cursor-pointer"
+              >
+                {product.name}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Size and Quantity Input */}
-      <div className="mb-6">
-        <label className="block mb-2 text-lg font-semibold">Add Size and Quantity</label>
-        <div className="flex space-x-2">
-          <select
-            value={selectedSize}
-            onChange={(e) => setSelectedSize(e.target.value)}
-            className="w-1/2 p-2 rounded bg-gray-700 text-white"
-          >
-            <option value="" disabled>Select a size</option>
+      {selectedProduct && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-4">Set Quantities for All Sizes</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {availableSizes.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
+              <div key={size} className="bg-gray-800 p-4 rounded">
+                <label className="block text-lg mb-2">{size}</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={sizeQuantities[size] ?? ''}
+                  onChange={(e) => handleQuantityChange(size, e.target.value)}
+                  placeholder="Enter quantity"
+                  className="w-full p-2 rounded bg-gray-700 text-white"
+                />
+              </div>
             ))}
-          </select>
-          <input
-            type="number"
-            placeholder="Quantity"
-            value={newQuantity}
-            onChange={(e) => setNewQuantity(Number(e.target.value))}
-            className="w-1/2 p-2 rounded bg-gray-700 text-white"
-          />
+          </div>
           <button
-            onClick={handleAddSize}
-            className="bg-blue-600 p-2 rounded text-white hover:bg-blue-500"
+            onClick={handleSubmit}
+            disabled={isSubmitting || Object.values(sizeQuantities).every(v => v === null)}
+            className="mt-4 bg-blue-600 p-2 px-4 rounded text-white hover:bg-blue-500 disabled:bg-gray-600"
           >
-            Add
+            {isSubmitting ? 'Updating...' : 'Update All Sizes'}
           </button>
+        </div>
+      )}
+
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-4">
+          Current Inventory
+          <button 
+            onClick={fetchData}
+            className="ml-4 px-3 py-1 text-sm bg-gray-700 rounded hover:bg-gray-600"
+          >
+            Refresh
+          </button>
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-700">
+            <thead className="bg-gray-800">
+              <tr>
+                <th className="p-2 text-left">Product</th>
+                {availableSizes.map(size => (
+                  <th key={size} className="p-2 text-center">{size}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {products.map(product => {
+                const productSizes = sizes.filter(s => s.product === product.id);
+                return (
+                  <tr key={product.id} className="border-t border-gray-700">
+                    <td className="p-2">{product.name}</td>
+                    {availableSizes.map(size => {
+                      const sizeData = productSizes.find(s => s.size === size);
+                      return (
+                        <td key={size} className="p-2 text-center">
+                          {sizeData ? sizeData.quantity : '-'}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                )}
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Display sizes grouped by product */}
-      <div className="overflow-x-auto">
-        {Object.keys(groupedSizes).map((productId) => (
-          <div key={productId} className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">
-              {products.find(product => product.id === productId)?.name || 'Unknown Product'}
-            </h3>
-            <table className="table-auto w-full border border-gray-600 mb-4">
-              <thead className="bg-gray-800">
-                <tr>
-                  <th className="border border-gray-600 p-2 text-left">Size</th>
-                  <th className="border border-gray-600 p-2 text-left">Quantity</th>
-                  <th className="border border-gray-600 p-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {groupedSizes[productId].length > 0 ? (
-                  groupedSizes[productId].map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-700">
-                      <td className="border border-gray-600 p-2 text-left">{item.size}</td>
-                      <td className="border border-gray-600 p-2 text-left">{item.quantity}</td>
-                      <td className="border border-gray-600 p-2 text-left">
-                        <button
-                          onClick={() => handleRemoveSize(item.id)}
-                          className="text-red-500 hover:text-red-400"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={3} className="border border-gray-600 p-2 text-left text-gray-400">
-                      No sizes and quantities added yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        ))}
-      </div>
-
-      {/* Popup for confirmation */}
       <Popup
         isVisible={isPopupVisible}
         title="Confirm Deletion"
         message="Are you sure you want to delete this size variation?"
-        onClose={closePopup}
-        onConfirm={confirmRemoveSize}
+        onClose={() => setPopupVisible(false)}
+        onConfirm={async () => {
+          if (sizeToRemove) {
+            await deleteProductVariation(sizeToRemove);
+            await fetchData();
+            setPopupVisible(false);
+          }
+        }}
       />
     </div>
   );

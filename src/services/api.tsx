@@ -23,8 +23,9 @@ interface CartItem extends Product {
   selectedSize: string | undefined;
   quantity: number;
 }
+  
 
-const API_BASE_URL ="https://api.blackwilbur.com/";
+export const API_BASE_URL ="https://blackwilbur.com/api/";
 //"https://blackwilbur.com/api/"
 //
 
@@ -387,14 +388,13 @@ export const createOrder = async (orderData: NewOrder) => {
         },
       }
     );
-    const { order_id, payment_url } = response.data;
+    const { order_id, payment_url, order_id_razorpay } = response.data;
 
     // Validate the payment URL before redirecting
     if (payment_url && isValidUrl(payment_url)) {
       return { order_id, payment_url };
     }
-
-    return { order_id };
+    return { order_id, order_id_razorpay };
   } catch (error) {
     console.error("Error creating order:", error);
     throw error;
@@ -466,14 +466,13 @@ export const addProduct = async (formData: FormData): Promise<ProductAdmin> => {
     throw error;
   }
 };
-// Update Product
 export const updateProduct = async (
-  productId: number,
-  product: Product
-): Promise<Product> => {
+  productId: string,
+  product: ProductAdmin
+): Promise<ProductAdmin> => {
   try {
     const response = await axios.put(
-      `${API_BASE_URL}products-manage${productId}`,
+      `${API_BASE_URL}products-manage/${productId}/`,  // Include productId in the URL
       product
     );
     return response.data;
@@ -482,6 +481,7 @@ export const updateProduct = async (
     throw error;
   }
 };
+
 
 export const deleteProduct = async (productId: string) => {
   try {

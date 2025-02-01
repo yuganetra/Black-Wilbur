@@ -3,11 +3,8 @@ from decimal import Decimal
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from blackwilbur import models, serializers, services
+from blackwilbur import models, serializers
 from rest_framework.permissions import IsAuthenticated
-from django.http import HttpResponse
-from decimal import Decimal
-
 
 class OrdersAPIView(APIView):
 
@@ -72,7 +69,6 @@ class OrdersAPIView(APIView):
                 "order_id": order.order_id,
                 "created_at": order.created_at,
                 "status": order.status,
-                "payment_status": order.payment_status,
                 "subtotal": str(order.subtotal),
                 "discount_amount": str(order.discount_amount),
                 "discount_coupon_applied": order.discount_coupon_applied,
@@ -90,17 +86,15 @@ class OrdersAPIView(APIView):
     def post(self, request):
         print("Received POST request with data:", request.data)
 
-        # Extract the products data but do not pop the shipping_address
         products_data = request.data.get('products', [])
         print("Extracted products data:", products_data)
         shipping_address_data = request.data.get(
-            'shipping_address', {})  # Keep it in the data
+            'shipping_address', {})
         print("shipping_address_data", shipping_address_data)
 
-        # Initialize the order serializer
         order_serializer = serializers.OrderSerializer(data=request.data)
         print("Order serializer initialized with data:", request.data)
-        # Add user to shipping address data
+
         shipping_address_data['user'] = request.user.id
 
         shipping_address_serializer = serializers.ShippingAddressSerializer(
@@ -115,13 +109,11 @@ class OrdersAPIView(APIView):
                   order_serializer.errors)
             return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Generate a new order ID and process the rest of the logic
         order_id = str(uuid.uuid4())
         print("Generated new order UUID:", order_id)
 
-        # Now, create the shipping address and link it to the order
         new_shipping_address = models.ShippingAddress.objects.create(
-            user=request.user,  # Assign the user to the shipping address
+            user=request.user,
             address_line1=shipping_address_data.get('address_line1'),
             address_line2=shipping_address_data.get('address_line2'),
             zipcode=shipping_address_data.get('zipcode'),
@@ -131,8 +123,6 @@ class OrdersAPIView(APIView):
         )
         print("Shipping address created:", new_shipping_address.id)
 
-        # Now we can create the order first
-        # Remove shipping_address from the serializer data before creating the order
         order_data = {key: value for key, value in order_serializer.validated_data.items()
                       if key not in ['user', 'shipping_address']}
 
@@ -145,14 +135,12 @@ class OrdersAPIView(APIView):
 
         print("Order created with ID:", new_order.order_id)
 
-        # Initialize subtotal to calculate the total price of all items
-        subtotal = Decimal(0)  # Ensure subtotal is a Decimal
+        subtotal = Decimal(0)
         total_discount_value = Decimal(request.data.get(
-            'discount_amount', 0))  # Convert to Decimal
+            'discount_amount', 0))
         total_tax = Decimal(request.data.get(
-            'tax_amount', 0))  # Convert to Decimal
+            'tax_amount', 0))
 
-        # Process the products and calculate individual item price, discount, and tax
         for product_data in products_data:
             product_id = product_data.get('product_id')
             quantity = product_data.get('quantity')
@@ -162,25 +150,19 @@ class OrdersAPIView(APIView):
                 return Response({"error": f"Product variation for product ID {product_id} is missing."}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                # Fetch the product from the database
                 product = models.Product.objects.get(id=product_id)
-                # Ensure item_price is a Decimal
                 item_price = Decimal(product.price) * quantity
 
-                # Add the item price to the subtotal (which is now a Decimal)
                 subtotal += item_price
 
-                # Calculate item discount for this product
                 item_discount = (item_price / subtotal) * \
                     total_discount_value if subtotal else Decimal(0)
 
-                # Calculate tax for this item (proportional if needed)
                 item_tax = (total_tax / len(products_data)
                             ) if total_tax else Decimal(0)
 
-                # Calculate the total price for this item after discount and tax
                 item_total_price = item_price - item_discount + item_tax
-                # Create OrderItem for this product
+
                 models.OrderItem.objects.create(
                     order=new_order,
                     product=product,
@@ -191,7 +173,6 @@ class OrdersAPIView(APIView):
                     total_price=item_total_price
                 )
 
-                # Update product variation quantity after order
                 product_variation = models.ProductVariation.objects.get(
                     id=product_variation_id)
                 product_variation.quantity -= quantity
@@ -200,62 +181,17 @@ class OrdersAPIView(APIView):
             except models.Product.DoesNotExist:
                 return Response({"error": f"Product with ID {product_id} not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Now, recalculate the total amount after all items are processed
         total_amount = subtotal - total_discount_value + total_tax
 
-        # Update the order totals in the database
         new_order.subtotal = subtotal
         new_order.discount_amount = total_discount_value
         new_order.tax_amount = total_tax
         new_order.total_amount = total_amount
 
-        # Save the order and shipping address
         new_shipping_address.save()
         new_order.save()
 
-        # Handle Cash on Delivery logic
-        if new_order.payment_method == 'cash_on_delivery':
-            new_order.payment_status = 'cash_on_delivery'
-            new_order.save()
-            try:
-                # Clean up the cart if order is Cash on Delivery
-                user_cart = models.Cart.objects.get(user=request.user)
-                user_cart.items.all().delete()
-                user_cart.delete()
-            except models.Cart.DoesNotExist:
-                pass  # No cart found
-
-            return Response({
-                'order_id': new_order.order_id,
-                'message': "Order successfully created with Cash on Delivery payment method."
-            }, status=status.HTTP_200_OK)
-
-        # Handle UPI payment logic (if applicable)
-        payment_service = services.PaymentService()
-        amount_in_paise = int(total_amount * 100)  # Convert rupees to paise
-
-        user_id = str(request.user.id)
-        mobile_number = request.data.get('phone_number', '9999999999')
-
-        payment_response = payment_service.pay(
-            request=request, amount=amount_in_paise, user_id=user_id, mobile_number=mobile_number
-        )
-
-        if "error" in payment_response:
-            return Response({"error": payment_response["error"]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        url = payment_response.get('data', {}).get('instrumentResponse', {}).get('redirectInfo', {}).get('url')
-        transaction_id = payment_response.get('data', {}).get('merchantTransactionId', {})
-        print("payment_response",payment_response)
-        print('url',url)
-        print('transaction_id',transaction_id)
-        if not url:
-            return Response({"error": "Payment URL not found in the response."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        new_order.transaction_id = transaction_id
-        new_order.save()
-
         return Response({
-            'order_id': new_order.order_id,
-            'payment_url': url
-        }, status=status.HTTP_200_OK)
+            "message": "Order created successfully.",
+            "order_id": new_order.order_id
+        }, status=status.HTTP_201_CREATED)

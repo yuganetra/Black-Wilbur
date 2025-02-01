@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import img from "../asset/collection-carousel.jpg";
-import carousel1 from "../asset/chpp-carousel.jpg";
+import carousel1 from "../asset/IMG_2431 (3).jpeg";
 
 // Types
 interface CarouselImage {
@@ -80,7 +80,7 @@ const CarouselSlide = memo(({ image, className, onTransitionEnd, isTransitioning
                       text-white flex flex-col justify-between items-center md:items-start 
                       md:flex-row md:justify-between px-4 sm:px-10 transition-opacity duration-500 
                       ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-        <h1 className="font-montserrat text-xl sm:text-2xl md:text-3xl lg:text-7xl font-semibold 
+        <h1 className="font-montserrat text-xl sm:text-2xl md:text-3xl lg:text-5xl font-semibold 
                       uppercase leading-tight text-center md:text-left mb-4 md:mb-0">
           {image.text.split('\n').map((line, i) => (
             <span key={i}>{line}<br /></span>
@@ -88,8 +88,8 @@ const CarouselSlide = memo(({ image, className, onTransitionEnd, isTransitioning
         </h1>
         <button
           onClick={() => navigate("/collection")}
-          className="px-4 py-2 sm:px-6 sm:py-3 bg-black text-white rounded-full 
-                    hover:bg-white hover:text-black transition-colors duration-300 lg:mt-20"
+          className="px-4 py-2 sm:px-6 sm:py-3 bg-white border-[1px] border-white text-black rounded-full 
+                    hover:bg-transparent hover:text-white hover:border-[1px] hover:border-white transition-colors duration-300 lg:mt-20"
         >
           Shop Now
         </button>

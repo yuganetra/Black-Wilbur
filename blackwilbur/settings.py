@@ -85,11 +85,11 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': 'blackwilbur',
+        'USER': 'blackwilbur_user',
+        'PASSWORD': 'root',
+        'HOST': '145.223.22.231',
+        'PORT': '3306',
     }
 }
 
@@ -125,3 +125,8 @@ STATIC_URL = '/static/'  # URL prefix for static files
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Change 'staticfiles' to your desired directory
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Razorpay Settings
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_CcaiEoRcHpwLa5')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '56CQ6JtFime5odK2A4Vb7L1O')
+RAZORPAY_CURRENCY = 'INR'

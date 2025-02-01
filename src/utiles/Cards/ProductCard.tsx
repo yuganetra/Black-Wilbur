@@ -36,46 +36,49 @@ const ProductCard: React.FC<ProductCardProps> = ({
   }
 
   return (
-    <div className="relative bg-[#0B0B0B] overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none">
-      {/* Product image */}
-      <img
-        className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
-        onClick={() => handleNavigate(`${product.id}`)}
-        src={product.image || "https://via.placeholder.com/300"} 
-        alt={product.name} 
-      />
-      
-      {/* Stock information banner */}
-      {stockMessage && (
-        <div
-          className="absolute top-0 left-0 text-white text-sm font-semibold py-1 px-1"
-          style={{
-            zIndex: 10, 
-            transformOrigin: "top left", 
-            width: "50px", 
-            whiteSpace: "nowrap", 
-          }}
-        >
-          {stockMessage}
-        </div>
-      )}
+    <div className="relative m-6 m-1 bg-black overflow-hidden">
+      {/* Product image container with smaller fixed aspect ratio */}
+      <div className="relative w-full h-[220px] sm:h-[260px] lg:h-[300px]">
+        <img
+          className="w-full h-full object-cover cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-95"
+          onClick={() => handleNavigate(`${product.id}`)}
+          src={product.image || "https://via.placeholder.com/300"} 
+          alt={product.name} 
+        />
+        
+        {/* Stock information banner */}
+        {stockMessage && (
+          <div
+            className="absolute top-0 left-0 text-white text-xs font-semibold py-1 px-1"
+            style={{
+              zIndex: 10, 
+              transformOrigin: "top left", 
+              width: "40px", 
+              whiteSpace: "nowrap", 
+            }}
+          >
+            {stockMessage}
+          </div>
+        )}
 
-      <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-8 sm:h-5 h-4 bg-white">
-        <div className="text-[#282828] text-[10px] sm:w-3/4 md:w-3/4 w-1/2 sm:text-base md:text-base font-semibold truncate">
-          {product.name.toUpperCase()}
-        </div>
-        <div className="text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold">
-          ₹ {product.price}
-        </div>
+        {/* Wishlist button */}
+        <button
+          onClick={() => onToggleWishlist(product)}
+          disabled={disableButton}
+          className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center ${
+            isWishlisted ? "bg-red-500" : "bg-gray-500/75"
+          } text-white`}
+        >
+          <AiOutlineHeart className="text-base" />
+        </button>
       </div>
 
-      <button
-        onClick={() => onToggleWishlist(product)}
-        disabled={disableButton}
-        className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center ${isWishlisted ? "bg-red-500" : "bg-gray-500"} text-white md:w-10 md:h-10 sm:w-10 sm:h-10`}
-      >
-        <AiOutlineHeart />
-      </button>
+      {/* Product name */}
+      <div className="w-full h-[32px] flex items-center px-2 bg-black">
+        <div className="text-white text-xs font-semibold truncate">
+          {product.name.toUpperCase()}
+        </div>
+      </div>
     </div>
   );
 };

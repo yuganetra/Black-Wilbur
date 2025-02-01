@@ -92,7 +92,7 @@ const SearchSidebar: React.FC<SearchSidebarProps> = ({ isOpen, onClose }) => {
                 className="border-b border-gray-600 py-2 cursor-pointer hover:bg-gray-700 transition"
                 onClick={() => handleNavigate(`${product.id}`)}
               >
-                {product.name} - ${product.price}
+                {product.name} - ₹{product.price}
               </li>
             ))}
           </ul>
