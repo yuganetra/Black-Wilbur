@@ -36,10 +36,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
   }
 
   return (
-    <div className="relative bg-[#0B0B0B] overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none">
+    <div className="relative m-4 bg-[#0B0B0B] overflow-hidden flex flex-col justify-between sm:min-h-[52vh] max-h-[72vh] rounded-sm sm:rounded-none">
       {/* Product image */}
       <img
-        className="w-full h-[94%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
+        className="w-full h-[88%] object-contain cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-95"
         onClick={() => handleNavigate(`${product.id}`)}
         src={product.image || "https://via.placeholder.com/300"} 
         alt={product.name} 
@@ -60,12 +60,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
       )}
 
-      <div className="flex justify-between items-center pl-2 pr-2 w-full md:h-8 sm:h-5 h-4 bg-white">
-        <div className="text-[#282828] text-[10px] sm:w-3/4 md:w-3/4 w-1/2 sm:text-base md:text-base font-semibold truncate">
+      <div className="flex justify-center items-center w-full md:h-8 sm:h-5 h-4 bg-black">
+        <div className="text-white text-[10px] sm:w-3/4 md:w-3/4 w-1/2 sm:text-base md:text-base font-semibold truncate">
           {product.name.toUpperCase()}
-        </div>
-        <div className="text-[#58595B] text-[10px] sm:text-sm md:text-sm font-semibold">
-          ₹ {product.price}
         </div>
       </div>
 

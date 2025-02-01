@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { MdMenu } from "react-icons/md";
 import { FaSearch, FaShoppingCart } from "react-icons/fa";
-import { FaCircleUser } from "react-icons/fa6";
+
+import { FaRegCircleUser, FaCircleUser } from "react-icons/fa6";
 import logo from "../asset/white-logo.svg";
 import SidebarMenu from "./Sidebar-Menu";
 import CartComponent from "./Cart";
@@ -75,10 +76,10 @@ const Navbar: React.FC = (): JSX.Element => {
           {/* For Large Screens */}
           <div className="hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-2 border-white">
             <div className="flex items-center space-x-4">
-              <MdMenu className="text-4xl cursor-pointer" onClick={toggleSidebar} />
-              <button onClick={toggleSearchSidebar} className="text-2xl">
+              <MdMenu className="text-2xl cursor-pointer" onClick={toggleSidebar} />
+              <button onClick={toggleSearchSidebar} className="text-xl">
                 <FaSearch />
-              </button>
+              </button> 
             </div>
 
             {/* Absolute positioning for logo */}
@@ -90,13 +91,13 @@ const Navbar: React.FC = (): JSX.Element => {
               onClick={() => handleNavigate("/")}
             />
             <div className="flex items-center space-x-4">
-              <FaCircleUser
+              <FaRegCircleUser
                 onClick={handleUserProfileNavigate} // Update the onClick handler
                 className="text-2xl cursor-pointer"
               />
 
               <div className="relative">
-                <FaShoppingCart onClick={toggleCartSidebar} className="text-2xl cursor-pointer" />
+                <FaShoppingCart onClick={toggleCartSidebar} className="text-xl cursor-pointer" />
                 <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs px-1.5 py-0.5">
                   {cartItemsCount || 0}
                 </span>

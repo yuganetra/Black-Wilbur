@@ -75,7 +75,7 @@ const Footer = () => {
             >
               ABOUT US
             </h4>
-            <ul className="space-y-2 text-[#7d7d7d] cursor-pointer">
+            <ul className="space-y-2 text-gray-500 cursor-pointer">
               <li
                 className="hover:text-white"
                 onClick={() => handleNavigate("/about-us/values")}
@@ -98,10 +98,11 @@ const Footer = () => {
           </div>
           <div className="flex flex-col space-y-4 w-full max-w-[260px] text-center lg:text-left">
             <h4 className="font-semibold text-lg">CONTACT</h4>
-            <ul className="space-y-2 text-[#7d7d7d]">
+            <ul className="space-y-2 text-gray-500">
               <li>
                 <a
                   href="mailto:Blackwilburofficial@gmail.com"
+
                   className="hover:text-white"
                 >
                   Blackwilburofficial@gmail.com
@@ -113,6 +114,39 @@ const Footer = () => {
               </li>
             </ul>
           </div>
+          <div className="flex flex-col items-center lg:items-start space-y-2">
+          <h3 className="text-lg font-semibold]">FOLLOW</h3>
+          <div className="flex flex-col text-gray-500 space-y-3">
+            <a
+
+              href="https://www.facebook.com/people/Black-Wilbur/61565342369272/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-3 hover:text-gray-400 transition"
+            >
+              <MdFacebook className="text-2xl" />
+              <span className="text-sm">Facebook</span>
+            </a>
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-3 hover:text-gray-400 transition"
+            >
+              <BsTwitterX className="text-2xl" />
+              <span className="text-sm">Twitter</span>
+            </a>
+            <a
+              href="https://www.instagram.com/blackwilburofficial?igsh=MTlndnFkMzVidmtrdQ=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-3 hover:text-gray-400 transition"
+            >
+              <FaInstagram className="text-2xl" />
+              <span className="text-sm">Instagram</span>
+            </a>
+          </div>
+        </div>
           {/* Popup for GetFeatured */}
           {isPopupOpen && (
             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-60">
@@ -128,41 +162,26 @@ const Footer = () => {
             </div>
           )}
         </div>
-        <div className="flex space-x-6 justify-center lg:justify-start">
-          <a
-            href="https://www.facebook.com/people/Black-Wilbur/61565342369272/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <MdFacebook className="text-2xl cursor-pointer hover:text-gray-400 transition" />
-          </a>
-          <a
-            href="https://twitter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <BsTwitterX className="text-2xl cursor-pointer hover:text-gray-400 transition" />
-          </a>
-          <a
-            href="https://www.instagram.com/blackwilburofficial?igsh=MTlndnFkMzVidmtrdQ=="
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FaInstagram className="text-2xl cursor-pointer hover:text-gray-400 transition" />
-          </a>
-        </div>
+        
       </div>
 
-      <div className="footer-section2 mt-20 md:mt-24 lg:mt-36 w-full max-w-[848px] px-4">
+      <div className="footer-section2 mt-0 md:mt-24 lg:mt-12 w-full max-w-[700px] px-4">
         <img src={logo} alt="Logo" className="w-full h-auto" />
       </div>
 
-      <div className="footer-section3 mt-8 md:mt-12 text-center text-sm w-full max-w-[848px] px-4">
-        <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-6">
-          <p className="mt-2">Copyrights by Kiorons</p>
+
+      <div className="footer-section3 mt-8 md:mt-12 text-center text-sm w-full max-w-[1000px] px-4">
+        <div className="flex flex-col md:flex-row justify-between gap-4 md:gap-6">
+          <div>
+            <p className="mt-2 select-none text-gray-500 cursor-default">
+              Copyright © {new Date().getFullYear()} BlackWilbur™. All Rights Reserved.
+            </p>
+          </div>
+          <div className="flex gap-4 text-gray-500 sm:items-center justify-center ">
           <p
             onClick={() => handleNavigate("/terms-and-condition")}
             className="mt-2 cursor-pointer hover:text-white text-[#7d7d7d]"
+
           >
             Terms & Conditions
           </p>
@@ -178,6 +197,7 @@ const Footer = () => {
           >
             Return Policy
           </p>
+          </div>
         </div>
       </div>
     </div>

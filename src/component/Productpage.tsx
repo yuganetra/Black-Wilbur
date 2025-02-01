@@ -58,6 +58,7 @@ const Productpage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [cartItems, setCartItems] = useState<CartItemCheckout[]>([]);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const handleNavigate = useCallback(
     (id: string) => {
@@ -274,6 +275,15 @@ const Productpage = () => {
       ? ratings.reduce((acc, rating) => acc + rating.rating, 0) / ratings.length
       : 0;
 
+  const handleThumbnailClick = (index: number) => {
+    setActiveImageIndex(index);
+    // Scroll to the selected image
+    const imageElements = document.querySelectorAll('.product-image');
+    if (imageElements[index]) {
+      imageElements[index].scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="bg-[#1B1B1B] text-white min-h-screen flex flex-col">
       {/* Display error message */}
@@ -282,20 +292,34 @@ const Productpage = () => {
       )}
       <section className="w-full flex flex-col lg:flex-row gap-10">
         {/* Image Section */}
-        <div className="md:h-[65vh] lg:h-[620px] lg:w-[43%] flex lg:flex-col flex-row overflow-x-hidden lg:overflow-y-visible overflow-y-hidden">
-          <div className="w-full h-full flex lg:flex-col flex-row overflow-x-auto overflow-y-hidden lg:overflow-y-visible gap-[1px]">
+        <div className="h-[50vh] md:h-[65vh] lg:h-[620px] w-full lg:w-[43%] flex flex-col lg:flex-row gap-4">
+          {/* Thumbnail Column - Horizontal on mobile, Vertical on desktop */}
+          <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-hidden w-full lg:w-[80px] h-[80px] lg:h-auto lg:mt-10 lg:ml-2 px-2 lg:px-0">
             {combinedImages.map((imageUrl, index) => (
-              <div
+              <div 
                 key={index}
-                className="flex-shrink-0 flex items-center justify-center bg-[#0B0B0B] w-full h-full"
+                className={`flex-shrink-0 w-[80px] h-[80px] border cursor-pointer transition-colors
+                  ${activeImageIndex === index ? 'border-black' : 'border-gray-200 hover:border-gray-400'}`}
+                onClick={() => handleThumbnailClick(index)}
               >
                 <img
-                  className="lg:w-[600px] md:w-[400px] md:h-full object-contain"
                   src={imageUrl}
-                  alt={`Product Image ${index + 1}`}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
                 />
               </div>
             ))}
+          </div>
+
+          {/* Main Image */}
+          <div className="flex-1 overflow-hidden">
+            <div className="w-full h-full flex items-center justify-center bg-[#0B0B0B]">
+              <img
+                className="w-full h-full md:w-[400px] lg:w-[600px] object-contain"
+                src={combinedImages[activeImageIndex]}
+                alt={`Product Image ${activeImageIndex + 1}`}
+              />
+            </div>
           </div>
         </div>
 

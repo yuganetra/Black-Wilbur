@@ -60,20 +60,25 @@ const VideoSection: React.FC<VideoSectionProps> = ({
   ) => (
     <section className={sectionClass}>
       <OffersBanner />
-      <div className="container mx-auto px-4 md:px-6 text-center">
-        <div className="relative mt-10 w-full h-[90vh] overflow-hidden">
+      <div className="container mx-auto px-2 py-2 md:px-6 text-center">
+        <div className="relative h-screen
+         flex flex-col items-center justify-center">
           <video
             ref={videoRef}
             src={videoSrc}
             loop
             muted
             playsInline
-            className="absolute top-1/2 left-1/2 w-full h-full object-contain"
+            className="absolute top-1/2 left-1/2 w-[85%] md:w-[75%] lg:w-[55%] h-auto object-contain -translate-y-[60%]"
             style={{ transform: "translate(-50%, -50%)" }}
           />
+          
           <button
             onClick={togglePopup}
-            className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:bg-gray-800 transition text-lg"
+            className="absolute bottom-[15%] left-1/2 transform -translate-x-1/2 
+                       bg-black text-white font-bold py-3 px-8 rounded-lg 
+                       shadow-lg hover:bg-gray-800 transition duration-300 
+                       text-base md:text-lg tracking-wide"
           >
             Featured on BlackWilbur.com
           </button>
@@ -85,7 +90,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({
   return (
     <>
       {/* Desktop Video Section */}
-      {isDesktop && renderVideoSection(true, desktopVideoRef, "py-16 bg-[#1B1B1B] relative hidden md:block")}
+      {isDesktop && renderVideoSection(true, desktopVideoRef, "py-1 bg-[#1B1B1B] relative hidden md:block")}
 
       {/* Mobile Video Section */}
       {!isDesktop && renderVideoSection(false, mobileVideoRef, "py-16 bg-[#1B1B1B] relative block md:hidden")}
