@@ -150,21 +150,39 @@ class ProductManageAPIView(APIView):
         serializer = serializers.ProductAdminSerializer(product)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def put(self, request, pk=None):
-        product = models.Product.objects.get(id=pk)
+    def put(self, request, pk):
+        try:
+            # Fetch the product by its ID (pk)
+            product = models.Product.objects.get(id=pk)
+        except models.Product.DoesNotExist:
+            # Return a 404 response if the product doesn't exist
+            return Response({"error": "Product not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serialize the updated data (using partial=True to allow partial updates)
         serializer = serializers.ProductAdminSerializer(product, data=request.data, partial=True)
-        
+
+        # Check if the serialized data is valid
         if serializer.is_valid():
+            # Get the image from the request (if it exists)
             image = request.FILES.get('image')
+
+            # If a new image is provided, upload it and update the product's image URL
             if image:
-                # Generate a new blob URL for the updated image
+                # Generate the image URL
                 product.image = self.create_blob_url(product.id, product.name)
+
+                # Upload the image (check if it exists first and overwrite if necessary)
                 self.upload_image_to_blob(product.id, product.name, image)
-            
+
+            # Save the updated product data
             serializer.save()
-            return Response(serializer.data)
-        
+
+            # Return the updated product data as a response
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # If there are validation errors, return a 400 response with the errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def delete(self, request):
             product_id = request.data.get('id')  # Get product ID from request body
@@ -185,34 +203,58 @@ class ProductManageAPIView(APIView):
         return blob_url
 
     # def upload_image_to_blob(self, product_id, product_name, image_file):
-    #     # Set up the blob path without duplicating container name in the path
+    # # Set up the blob path without duplicating container name in the path
     #     sanitized_product_name = self.format_product_name(product_name)
-
     #     blob_name = f"{sanitized_product_name}/{product_id}.jpg"  # Use product ID as file name with .jpg extension
-        
+
+    #     # Open the image using Pillow
+    #     image = Image.open(image_file)
+
+    #     # Save the image to a buffer with compression
+    #     image_buffer = io.BytesIO()
+    #     image.save(image_buffer, format="JPEG", quality=85)  # Adjust the quality (lower = more compression)
+    #     image_buffer.seek(0)
+
     #     # Retrieve the blob client
     #     blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
 
-    #     # Upload the image
-    #     blob_client.upload_blob(image_file, overwrite=True)
+    #     # Upload the compressed image
+    #     blob_client.upload_blob(image_buffer, overwrite=True)
     def upload_image_to_blob(self, product_id, product_name, image_file):
-    # Set up the blob path without duplicating container name in the path
+        # Sanitize product name to prevent issues with spaces or special characters
         sanitized_product_name = self.format_product_name(product_name)
-        blob_name = f"{sanitized_product_name}/{product_id}.jpg"  # Use product ID as file name with .jpg extension
+        
+        # Define the blob name using the sanitized product name and product ID
+        blob_name = f"{sanitized_product_name}/{product_id}.jpg"  # Use product ID as the file name with .jpg extension
 
-        # Open the image using Pillow
+        # Retrieve the blob client for the specified container and blob
+        blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
+        
+        # Check if the blob already exists
+        try:
+            # Try to fetch the blob (this will throw an error if the blob doesn't exist)
+            blob_client.get_blob_properties()
+            image_exists = True
+        except Exception as e:
+            # If an error is thrown (blob not found), we know the image does not exist
+            image_exists = False
+
+        # If the image already exists, we will overwrite it
+        if image_exists:
+            print(f"Image already exists. Overwriting the existing image: {blob_name}")
+        else:
+            print(f"Uploading new image: {blob_name}")
+
+        # Open the image using Pillow to handle the file
         image = Image.open(image_file)
 
         # Save the image to a buffer with compression
         image_buffer = io.BytesIO()
-        image.save(image_buffer, format="JPEG", quality=85)  # Adjust the quality (lower = more compression)
+        image.save(image_buffer, format="JPEG", quality=85)  # Adjust quality for compression
         image_buffer.seek(0)
 
-        # Retrieve the blob client
-        blob_client = self.blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
-
-        # Upload the compressed image
-        blob_client.upload_blob(image_buffer, overwrite=True)
+        # Upload the image (overwrite if exists)
+        blob_client.upload_blob(image_buffer, overwrite=True)  # `overwrite=True` ensures the image is updated
 
     def format_product_name(self, product_name):
         # Convert to lowercase and replace spaces with hyphens

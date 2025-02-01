@@ -19,6 +19,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   const [productImage, setProductImage] = useState<File | null>(null); // Changed to File
   const [productCategory, setProductCategory] = useState<Category | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false); // To manage the loading state for the button
 
   useEffect(() => {
     const fetchCategoriesdata = async () => {
@@ -69,6 +70,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
     formData.append("category", productCategory.id.toString());
     formData.append("image", productImage); // Ensure this is the File object
 
+    setLoading(true); // Start loading
+
     // Call the API to add the product
     addProduct(formData)
       .then((newProduct) => {
@@ -83,6 +86,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
       .catch((error) => {
         console.error("Error adding product:", error);
         alert("Failed to add product. Please try again.");
+      })
+      .finally(() => {
+        setLoading(false); // Stop loading after the response
       });
   };
 
@@ -143,6 +149,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
               ))}
             </select>
 
+            {/* Display Selected Category */}
             <div className="text-white mb-2">
               Selected Category: {productCategory?.name || "None"}
             </div>
@@ -173,9 +180,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
             <div className="mt-4">
               <button
                 onClick={handleAddProduct}
+                disabled={loading} // Disable the button while loading
                 className="bg-white text-black p-2 rounded mr-2"
               >
-                Add Product
+                {loading ? (
+                  <div className="animate-spin border-2 border-t-2 border-white rounded-full w-4 h-4"></div> // Show spinner while loading
+                ) : (
+                  "Add Product"
+                )}
               </button>
               <button
                 onClick={onClose}

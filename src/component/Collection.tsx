@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { fetchCollection } from "../services/api";
 import type { Product, ProductCollection } from "../utiles/types";
 import SkeletonLoader from "../utiles/Skeletons/SkeletonLoader";
@@ -9,7 +9,7 @@ import { MdClose, MdFilterList } from "react-icons/md";
 import ProductCard from "../utiles/Cards/ProductCard"; // Import the ProductCard component
 
 // Constants
-const PRODUCTS_PER_PAGE = 9;
+const PRODUCTS_PER_PAGE = 20;
 const PRICE_RANGES = ["Low to High", "High to Low"] as const;
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 const CATEGORIES = ["knitted", "polo", "round-neck", "oversize"] as const;
@@ -47,9 +47,20 @@ const FilterSection = ({
 const Collection: React.FC = () => {
   const { category = "all" } = useParams<{ category?: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get page from URL or default to 1
+  const [currentPage, setCurrentPage] = useState(() => 
+    Number(searchParams.get("page")) || 1
+  );
+
+  // Update URL when page changes
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setSearchParams({ ...Object.fromEntries(searchParams), page: newPage.toString() });
+  };
 
   // State
-  const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     sizes: [],
@@ -120,7 +131,9 @@ const Collection: React.FC = () => {
     // Sort products if price filter is applied
     if (filters.price) {
       filtered.sort((a, b) => {
-        return filters.price === "High to Low" ? b.price - a.price : a.price - b.price;
+        return filters.price === "High to Low"
+          ? b.price - a.price
+          : a.price - b.price;
       });
     }
 
@@ -161,13 +174,10 @@ const Collection: React.FC = () => {
     });
   };
 
-  const updateFilters = useCallback(
-    (key: keyof FilterState, value: any) => {
-      setFilters((prev) => ({ ...prev, [key]: value }));
-      setCurrentPage(1);
-    },
-    []
-  );
+  const updateFilters = useCallback((key: keyof FilterState, value: any) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  }, []);
 
   if (isLoading) return <SkeletonLoader />;
 
@@ -221,7 +231,7 @@ const Collection: React.FC = () => {
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
           <button
-            onClick={() => setCurrentPage((prev) => prev - 1)}
+            onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="w-7 h-7 text-black rounded-full bg-white disabled:bg-gray-400 flex items-center justify-center"
           >
@@ -231,7 +241,7 @@ const Collection: React.FC = () => {
             {currentPage} of {totalPages}
           </span>
           <button
-            onClick={() => setCurrentPage((prev) => prev + 1)}
+            onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="w-7 h-7 text-black rounded-full bg-white disabled:bg-gray-400 flex items-center justify-center"
           >

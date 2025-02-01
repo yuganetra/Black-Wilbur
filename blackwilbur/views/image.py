@@ -187,3 +187,81 @@ class ImageManageAPIView(APIView):
         product_name = self.get_product_name(product_id)
         sanitized_product_name = self.format_product_name(product_name)
         return f"{sanitized_product_name}/{image_uuid}.jpg"
+
+    def put(self, request):
+        """
+        Update an existing image in blob storage and database.
+        
+        Expected request data:
+        - id: ID of the existing image to update
+        - product: (optional) new product ID
+        - image: new image file
+        - image_type: (optional) new image type
+        """
+        print("PUT request received for image update.")
+        
+        # Validate required parameters
+        image_id = request.data.get('id')
+        if not image_id:
+            return Response({"error": "Image ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Fetch the existing image instance
+            existing_image = models.Image.objects.get(id=image_id)
+            
+            # Check if a new image file is provided
+            new_image_file = request.FILES.get('image')
+            if not new_image_file:
+                return Response({"error": "New image file is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Generate a new UUID for the image
+            new_image_uuid = uuid.uuid4()
+            
+            # Determine product ID (use existing or new)
+            product_id = request.data.get('product', existing_image.product_id)
+            
+            # Create new blob URL
+            new_image_url = self.create_blob_url(product_id, new_image_uuid)
+            
+            # Compress the new image
+            try:
+                image = Image.open(new_image_file)
+                image_buffer = io.BytesIO()
+                image.save(image_buffer, format="JPEG", quality=85)  # Compress the file size
+                image_buffer.seek(0)
+                print("New image successfully compressed.")
+            except Exception as e:
+                print(f"Error during image compression: {e}")
+                return Response({"error": "Failed to process the new image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Delete the old blob from Azure Storage
+            try:
+                # Construct the old blob name
+                old_blob_name = self.construct_blob_name(existing_image.product_id, existing_image.id)
+                blob_service_client = self.get_blob_service_client()
+                blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=old_blob_name)
+                blob_client.delete_blob()
+                print(f"Old image deleted from blob storage: {old_blob_name}")
+            except Exception as e:
+                print(f"Warning: Could not delete old blob - {str(e)}")
+
+            # Upload the new image to blob storage
+            self.upload_image_to_blob(product_id, new_image_uuid, image_buffer)
+            
+            # Update image instance in database
+            existing_image.product_id = product_id
+            existing_image.image_url = new_image_url
+            existing_image.image_type = request.data.get('image_type', existing_image.image_type)
+            existing_image.save()
+            
+            print("Image updated successfully.")
+            
+            # Serialize and return the updated image
+            serializer = serializers.ImageSerializer(existing_image)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except models.Image.DoesNotExist:
+            return Response({"error": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Error during image update: {str(e)}")
+            return Response({"error": "An error occurred while updating the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
