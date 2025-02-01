@@ -116,6 +116,14 @@ const Home: React.FC = () => {
     <>
       <Carousel />
       
+      <Suspense fallback={<div>Loading Explore Section...</div>}>
+        <ExploreSection
+          exploreProducts={exploreProducts}
+          handleNavigate={handleNavigate2}
+          wishlist={wishlist}
+          toggleWishlist={(product) => console.log(product)}
+        />
+      </Suspense>
       {/* Best Sellers Section */}
       <Suspense fallback={<div>Loading Bestseller Section...</div>}>
         <BestSellersSection
@@ -136,14 +144,6 @@ const Home: React.FC = () => {
       </Suspense>
       
       {/* Explore Our Collections Section */}
-      <Suspense fallback={<div>Loading Explore Section...</div>}>
-        <ExploreSection
-          exploreProducts={exploreProducts}
-          handleNavigate={handleNavigate2}
-          wishlist={wishlist}
-          toggleWishlist={(product) => console.log(product)}
-        />
-      </Suspense>
 
       {/* Why Black Section */}
       <section className="relative py-16 bg-black mb-28">

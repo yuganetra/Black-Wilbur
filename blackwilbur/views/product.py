@@ -29,22 +29,23 @@ class ExploreAPIView(APIView):
             .annotate(latest_product_id=Max('id'))
             .values_list('latest_product_id', flat=True)
         )
+        
 
         # Fetch distinct products based on the latest IDs
         distinct_products = models.Product.objects.filter(
             id__in=latest_product_ids
-        )[:6]  # Fetch the first 6 products without any specific order
+        )[:7]  # Fetch the first 6 products without any specific order
 
         # If there are fewer than 6 products, fetch random additional products
-        if len(distinct_products) < 6:
-            additional_products_count = 6 - len(distinct_products)
+        if len(distinct_products) < 7:
+            additional_products_count = 7 - len(distinct_products)
             random_products = models.Product.objects.exclude(
                 id__in=[p.id for p in distinct_products]
             ).order_by('?')[:additional_products_count]
             distinct_products = list(distinct_products) + list(random_products)
 
         # Limit the result to a maximum of 6 products
-        distinct_products = distinct_products[:6]
+        distinct_products = distinct_products[:7]
 
         # Serialize the products
         serializer = serializers.ProductSerializer(distinct_products, many=True)

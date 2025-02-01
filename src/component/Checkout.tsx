@@ -12,6 +12,9 @@ import { createOrder, getDiscounts } from "../services/api";
 import { v4 as uuidv4 } from "uuid";
 import OrderSummary from "./Checkout/OrderSummary";
 import BillingDetails from "./Checkout/BillingDetails";
+import Razorpay from "react-razorpay/dist/razorpay";
+import axios from "axios";
+import { API_BASE_URL } from "../services/api";
 
 interface Order {
   order_id: string;
@@ -58,6 +61,8 @@ const Checkout: React.FC = () => {
   const [isRemovingCoupon, setIsRemovingCoupon] = useState<boolean>(false);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [totalQuantity, setTotalQuantity] = useState<number>(0); // totalQuantity state
+  const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     const newTotalQuantity = products.reduce(
@@ -101,12 +106,107 @@ const Checkout: React.FC = () => {
   } = useForm<Order>();
 
 
+  const handlePaymentError = (error: any) => {
+    setError(error.message || 'Payment failed. Please try again.');
+    setLoading(false);
+    
+  };
+
+  const [userData, setUserData] = useState<{
+    name: string;
+    email: string;
+    phone_number: string;
+    user_id: string;
+  }>({
+    name: '',
+    email: '',
+    phone_number: '',
+    user_id: ''
+  });
+
+  useEffect(()=>{
+    const storedUser = localStorage.getItem("user");
+    if(storedUser){
+      const user = JSON.parse(storedUser);
+      setUserData({
+        name: user.name || '',
+        email: user.email || '',
+        phone_number: user.phone_number || '',
+        user_id: user.id || ''
+      });
+    }
+  },[]);
+
+  const razorPayHandler = async (orderData: any,order_id:string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log(order_id);
+      const response = await axios.post(`${API_BASE_URL}create-razorpay-order/`, {
+        amount: orderData.total_amount,
+        order_id: order_id,
+        user_id: userData.user_id
+        
+      });
+
+      const options = {
+        key: response.data.key_id,
+        amount: response.data.amount,
+        currency: response.data.currency,
+        name: "Black Wilber",
+        description: "Payment for your order",
+        order_id: response.data.order_id,
+        handler: function (response: any) {
+          verifyPayment(response);
+        },
+        prefill: {
+          name: userData.name,
+          email: userData.email,
+          contact: userData.phone_number
+        },
+        theme: {
+          color: "#121212"
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.on('payment.failed', handlePaymentError);
+      rzp.open();
+    } catch (error: any) {
+      handlePaymentError(error);
+    }
+  };
+
+  const verifyPayment = async (paymentResponse: any) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}verify-payment/`, paymentResponse);
+      if (response.data.success) {
+        const orderId = response.data.order_id;
+        // Handle successful payment verification
+        navigate(`/orderConfirmation/${orderId}`, {
+          state: {
+            orderId: orderId,
+            paymentMethod: 'razorpay'
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Payment verification failed:', error);
+    }
+  };
+
   const generateOrderId = (): string => {
     return uuidv4();
   };
 
+  const generateSimpleOrderId = (): number => {
+    const timestamp = Date.now();
+    return parseInt(timestamp.toString().slice(-6));
+  };
+
   const onSubmit = async (data: Order) => {
     const orderId = generateOrderId();
+    const orderIdRazorpay = generateSimpleOrderId();
     const orderProducts: CheckoutProductForbackend[] = products.map((p) => {
       return {
         product_id: p.product.id,
@@ -140,12 +240,14 @@ const Checkout: React.FC = () => {
 
     try {
       const response = await createOrder(orderData);
-
+      
       if (response) {
         const { order_id, payment_url } = response;
-        if (payment_url) {
-          window.location.href = payment_url;
-        } else {
+        if (orderData.payment_method === 'upi') {
+          console.log("from frontend order_id",order_id);
+          await razorPayHandler(orderData,order_id); 
+        } 
+        else {
           navigate(`/orderConfirmation/${orderId}`, {
             state: {
               orderId: order_id,

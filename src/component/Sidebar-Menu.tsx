@@ -41,27 +41,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const closePopup = () => setIsPopupOpen(false); // Close popup
 
   const menuItems = [
-    { label: "LOGIN", path: "/auth/login" },
     { label: "CONTACT", path: "/about-us/contact" },
     { label: "COLLECTION", path: "/collection" },
     { label: "ABOUT US", path: "/about-us" },
     { label: "DISTRIBUTORSHIP", action: handleDistributorshipClick },
+    { label: "LOGIN", path: "/auth/login" },
   ];
 
   return (
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60]" onClick={onClose}></div>
+        <div className="fixed  inset-0 bg-black bg-opacity-50 z-[60]" onClick={onClose}></div>
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#141414] text-white transform transition-transform duration-300 ease-in-out z-[70] ${
+        className={`fixed top-0 bg-black left-0 h-full w-80 bg-[#141414] text-white transform transition-transform duration-300 ease-in-out z-[70] ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-start p-4">
+        <div className="flex items-center  justify-start p-4">
           <MdClose className="text-2xl cursor-pointer" onClick={onClose} />
         </div>
         <div className="flex flex-col items-start justify-center gap-6 pt-20 pl-10 pb-8 font-light tracking-wide">
@@ -75,10 +75,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </button>
           ))}
         </div>
-        <div className="flex items-start justify-center space-x-4 pr-14 pt-16">
+        <div className="flex flex-col items-start justify-center  pt-20 pl-10 pb-4 font-light tracking-wide">
+          <div className="text-xl">follow us:</div>
+        <div className="flex items-start justify-center space-x-4 pr-14 pt-8">
           <MdFacebook className="text-2xl" />
           <BsTwitterX className="text-2xl" />
           <FaInstagram className="text-2xl" />
+          </div>
         </div>
       </div>
 

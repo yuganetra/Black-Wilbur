@@ -24,9 +24,8 @@ interface CartItem extends Product {
   quantity: number;
 }
   
-const API_BASE_URL ="https://blackwilbur.com/api/";
-//"http://127.0.0.1:8000/api/"
 
+export const API_BASE_URL ="https://blackwilbur.com/api/";
 //"https://blackwilbur.com/api/"
 //
 
@@ -389,14 +388,13 @@ export const createOrder = async (orderData: NewOrder) => {
         },
       }
     );
-    const { order_id, payment_url } = response.data;
+    const { order_id, payment_url, order_id_razorpay } = response.data;
 
     // Validate the payment URL before redirecting
     if (payment_url && isValidUrl(payment_url)) {
       return { order_id, payment_url };
     }
-
-    return { order_id };
+    return { order_id, order_id_razorpay };
   } catch (error) {
     console.error("Error creating order:", error);
     throw error;
