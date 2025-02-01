@@ -24,7 +24,8 @@ api_url_patterns =[
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('send-sms/', views.SendSmsView.as_view(), name='send_sms'),
     path('ratings/', views.RatingAPIView.as_view(), name='rating-list'),
-    path('products-manage', views.ProductManageAPIView.as_view()),
+    path('products-manage/<str:pk>/', views.ProductManageAPIView.as_view()),  # Use <str:pk> for product ID
+    path('products-manage', views.ProductManageAPIView.as_view()),  # Use <str:pk> for product ID
     path('product-variation/', views.ProductVariationAPIView.as_view(), name='product-variations'),
     path('product-variation/<str:pk>/', views.ProductVariationAPIView.as_view(), name='product-variation-detail'),
     path('product-variation/product/<str:product_id>/', views.ProductVariationAPIView.as_view(), name='product-variations-by-product'),    path('images/', views.ImageManageAPIView.as_view(), name='image-list'),
