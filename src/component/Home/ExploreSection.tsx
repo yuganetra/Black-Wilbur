@@ -24,10 +24,11 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({
   return (
     <section className="py-16 bg-[#1b1b1b] text-white">
       <div className="container mx-auto">
-        <h2 className=" ml-12 text-[20px] sm:text-4xl md:text-3xl font-normal font-montserrat uppercase leading-tight text-white mb-4 text-start">
-          Explore Our Collections
+        <h2 className=" ml-14 text-[20px] sm:text-4xl md:text-3xl font-normal font-montserrat uppercase leading-tight text-white mb-4 text-start">
+          Categories
         </h2>
         <div className="product-container w-full mt-6 px-0">
+
           <div className="p-2 m-7 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-[5px] sm:gap-[2px] md:gap[3px]">
             {exploreProducts.map((product) => (
               <Suspense
@@ -43,7 +44,7 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({
                 />
               </Suspense>
             ))}
-            <button className="bg-black text-xl md:text-2xl lg:text-4xl text-white p-2 m-4 lg:px-10 hover:bg-[#1b1b1b] hover:text-black hover:border-2 hover:border-black" onClick={() => handleNavigate2("/collection")}>
+            <button className="bg-black m-7 text-xl md:text-2xl lg:text-4xl text-white p-2 m-4 lg:px-10 hover:bg-[#1b1b1b] hover:text-black hover:border-2 hover:border-black" onClick={() => handleNavigate2("/collection")}>
               <div className=" items-center justify-center flex  font-bold">
               Explore 
               </div>

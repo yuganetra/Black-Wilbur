@@ -312,10 +312,10 @@ const Productpage = () => {
           </div>
 
           {/* Main Image */}
-          <div className="flex-1 overflow-hidden">
-            <div className="w-full h-full flex items-center justify-center bg-[#0B0B0B]">
+          <div className="flex-1">
+            <div className="w-full h-[400px] sm:h-[500px] lg:h-[600px]">
               <img
-                className="w-full h-full md:w-[400px] lg:w-[600px] object-contain"
+                className="w-full h-full object-cover"
                 src={combinedImages[activeImageIndex]}
                 alt={`Product Image ${activeImageIndex + 1}`}
               />

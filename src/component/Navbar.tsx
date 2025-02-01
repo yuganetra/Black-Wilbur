@@ -74,7 +74,7 @@ const Navbar: React.FC = (): JSX.Element => {
       <nav className="navbar sticky top-0 left-0 w-full flex items-center justify-between pl-4 pr-4 pb-2 bg-black z-50">
         <div className="hidden md:flex h-24 flex-col w-full">
           {/* For Large Screens */}
-          <div className="hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-2 border-white">
+          <div className="hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-[1px] border-gray-200">
             <div className="flex items-center space-x-4">
               <MdMenu className="text-2xl cursor-pointer" onClick={toggleSidebar} />
               <button onClick={toggleSearchSidebar} className="text-xl">
