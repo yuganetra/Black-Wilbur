@@ -77,11 +77,11 @@ const CarouselSlide = memo(({ image, className, onTransitionEnd, isTransitioning
         style={{ objectPosition: "center top", willChange: 'transform' }}
       />
       <div className={`absolute bottom-4 left-4 right-4 sm:bottom-10 sm:left-10 sm:right-10 
-                      text-white flex flex-col justify-between items-center md:items-start 
-                      md:flex-row md:justify-between px-4 sm:px-10 transition-opacity duration-500 
+                      text-white flex flex-col  items-center  
+                       px-4 sm:px-10 transition-opacity duration-500 
                       ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
         <h1 className="font-montserrat text-xl sm:text-2xl md:text-3xl lg:text-5xl font-semibold 
-                      uppercase leading-tight text-center md:text-left mb-4 md:mb-0">
+                      uppercase leading-tight  md:text-left mb-8 md:mb-0">
           {image.text.split('\n').map((line, i) => (
             <span key={i}>{line}<br /></span>
           ))}
@@ -89,7 +89,7 @@ const CarouselSlide = memo(({ image, className, onTransitionEnd, isTransitioning
         <button
           onClick={() => navigate("/collection")}
           className="px-4 py-2 sm:px-6 sm:py-3 bg-white border-[1px] border-white text-black rounded-full 
-                    hover:bg-transparent hover:text-white hover:border-[1px] hover:border-white transition-colors duration-300 lg:mt-20"
+                    hover:bg-transparent hover:text-white hover:border-[1px] hover:border-white transition-colors duration-300 lg:mt-8"
         >
           Shop Now
         </button>
