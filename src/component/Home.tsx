@@ -109,9 +109,9 @@ const Home: React.FC = () => {
   const togglePopup = () => setIsPopupOpen(!isPopupOpen);
 
   // If still loading, show full-page loader
-  if (isLoading) {
-    return <FullPageLoader />;
-  }
+  // if (isLoading) {
+  //   return <FullPageLoader />;
+  // }
 
   return (
     <>
