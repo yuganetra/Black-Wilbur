@@ -1,4 +1,5 @@
 import React, { useRef, lazy, Suspense } from "react";
+
 import { Product } from "../../utiles/types";
 
 // Lazy load BestSellerProductCard
@@ -32,9 +33,9 @@ const BestSellersSection: React.FC<BestSellersSectionProps> = ({
   };
 
   return (
-    <section className="py-16 bg-[#1B1B1B] w-full relative overflow-x-hidden">
+    <section className="py-16 bg-[#1B1B1B]  w-full relative overflow-x-hidden">
       <div className="container mx-auto px-4 sm:px-8">
-        <h2 className="md:ml-8 text-[24px] sm:text-4xl md:text-3xl font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
+        <h2 className="md:ml-8 text-center font-semibold text-[20px] sm:text-4xl md:text-3xl font-normal font-montserrat uppercase leading-tight text-white mb-8 ">
           Our Bestsellers
         </h2>
         <div className="flex items-center">
