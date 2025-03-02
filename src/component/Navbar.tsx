@@ -71,12 +71,12 @@ const Navbar: React.FC = (): JSX.Element => {
 
   return (
     <>
-      <nav className="navbar sticky top-0 left-0 w-full flex items-center justify-between pl-4 pr-4 pb-2 bg-black z-50">
+      <nav className="navbar sticky top-0 left-0 w-full flex items-center justify-between  pb-2 bg-black z-50">
         <div className="hidden md:flex h-24 flex-col w-full">
           {/* For Large Screens */}
-          <div className="hidden h-20 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-[1px] border-gray-200">
+          <div className="hidden h-16 md:flex items-center justify-between w-full pl-16 pr-16 text-white border-b-[1px] border-gray-500">
             <div className="flex items-center space-x-4">
-              <MdMenu className="text-2xl cursor-pointer" onClick={toggleSidebar} />
+              <MdMenu className="text-3xl cursor-pointer" onClick={toggleSidebar} />
               <button onClick={toggleSearchSidebar} className="text-xl">
                 <FaSearch />
               </button> 
@@ -86,7 +86,7 @@ const Navbar: React.FC = (): JSX.Element => {
             <img
               src={logo}
               alt="BlackWilbur"
-              className="absolute left-1/2 transform -translate-x-1/2 h-18 w-40 text-white cursor-pointer"
+              className="absolute left-1/2 transform -translate-x-1/2 h-22 w-44 text-white cursor-pointer"
               style={{ filter: "invert(1)" }}
               onClick={() => handleNavigate("/")}
             />
@@ -97,7 +97,7 @@ const Navbar: React.FC = (): JSX.Element => {
               />
 
               <div className="relative">
-                <FaShoppingCart onClick={toggleCartSidebar} className="text-xl cursor-pointer" />
+                <FaShoppingCart onClick={toggleCartSidebar} className="text-2xl cursor-pointer" />
                 <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs px-1.5 py-0.5">
                   {cartItemsCount || 0}
                 </span>

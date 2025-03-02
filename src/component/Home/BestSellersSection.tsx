@@ -1,4 +1,5 @@
 import React, { useRef, lazy, Suspense } from "react";
+
 import { Product } from "../../utiles/types";
 
 // Lazy load BestSellerProductCard
@@ -32,18 +33,13 @@ const BestSellersSection: React.FC<BestSellersSectionProps> = ({
   };
 
   return (
-    <section className="py-16 bg-[#1B1B1B] w-full relative overflow-x-hidden">
+    <section className="py-16 bg-[#1B1B1B]  w-full relative overflow-x-hidden">
       <div className="container mx-auto px-4 sm:px-8">
-        <h2 className="md:ml-8 text-[24px] sm:text-4xl md:text-3xl font-normal font-montserrat uppercase leading-tight text-white mb-8 text-start">
+        <h2 className="md:ml-8 text-center font-semibold text-[20px] sm:text-4xl md:text-3xl font-normal font-montserrat uppercase leading-tight text-white mb-8 ">
           Our Bestsellers
         </h2>
-        <div className="flex items-center">
-          <button
-            onClick={scrollLeft}
-            className="hidden md:block text-white bg-black rounded-full p-2 mr-2 hover:bg-gray-800 transition"
-          >
-            &lt;
-          </button>
+        <div className="items-center">
+          
           <div
             ref={productRef}
             className="flex gap-1 sm:gap-2 overflow-x-auto w-full snap-x snap-mandatory"
@@ -60,12 +56,20 @@ const BestSellersSection: React.FC<BestSellersSectionProps> = ({
               </Suspense>
             ))}
           </div>
+          <div className="flex mt-8 justify-center">
+          <button
+            onClick={scrollLeft}
+            className="hidden md:block w-12 h-12 text-[20px] font-bold text-black bg-white rounded-full p-1 mr-2 hover:bg-[#1b1b1b] hover:text-white transition"
+          >
+            &lt;
+          </button>
           <button
             onClick={scrollRight}
-            className="hidden md:block text-white bg-black rounded-full p-2 ml-2 hover:bg-gray-800 transition"
+            className="hidden md:block w-12 h-12 text-[20px] font-bold text-black bg-white rounded-full p-1 ml-2 hover:bg-[#1b1b1b] hover:text-white transition"
           >
             &gt;
           </button>
+          </div>
         </div>
       </div>
     </section>

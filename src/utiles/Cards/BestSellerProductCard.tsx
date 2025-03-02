@@ -21,10 +21,10 @@ const BestSellerProductCard: React.FC<BestSellerProps> = ({
   return (
     <div
       key={bestseller.id}
-      className="relative min-w-[200px] sm:min-w-[350px] lg:min-w-[300px] bg-[#0B0B0B]"
+      className="relative min-w-[200px] sm:min-w-[350px] lg:min-w-[300px] bg-[#1b1b1b]"
     >
       {/* Image container with fixed aspect ratio */}
-      <div className="relative w-full aspect-[3/4]">
+      <div className="relative w-full h-[220px] sm:h-[260px] lg:h-[300px] aspect-[3/4]">
         <img
           className="w-full h-full object-cover cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-95"
           onClick={() => handleNavigate(`/Product/${bestseller.id}`)}
@@ -42,7 +42,7 @@ const BestSellerProductCard: React.FC<BestSellerProps> = ({
       </div>
 
       {/* Product info with minimal height */}
-      <div className="w-full text-left bg-black py-2 px-3">
+      <div className="w-full text-left bg-[#1b1b1b] py-2 px-3">
         <div className="text-white text-[10px] w-3/4 sm:text-base md:text-base font-semibold truncate">
           {bestseller.name.toUpperCase()}
         </div>

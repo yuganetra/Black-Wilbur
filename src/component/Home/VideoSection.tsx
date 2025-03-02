@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import OffersBanner from "../../utiles/Banners/OffersBanner";
 import GetFeatured from "../../utiles/Banners/GetFeatured";
 
 interface VideoSectionProps {
@@ -58,10 +57,9 @@ const VideoSection: React.FC<VideoSectionProps> = ({
     videoRef: React.RefObject<HTMLVideoElement>,
     sectionClass: string
   ) => (
-    <section className={sectionClass}>
-      <OffersBanner />
-      <div className="container mx-auto px-2 py-2 md:px-6 text-center">
-        <div className="relative h-screen
+    <section className={sectionClass} >
+      <div className="container mx-auto my-14 lg:bg-black md:bg-black px-2 py-2 md:px-6 text-center">
+        <div className="lg:relative md:relative md:h-screen lg:h-screen
          flex flex-col items-center justify-center">
           <video
             ref={videoRef}
@@ -69,21 +67,22 @@ const VideoSection: React.FC<VideoSectionProps> = ({
             loop
             muted
             playsInline
-            className="absolute top-1/2 left-1/2 w-[85%] md:w-[75%] lg:w-[55%] h-auto object-contain -translate-y-[60%]"
+            className="absolute top-1/2 left-1/2 sm:w-[100%] md:w-[%] lg:w-[80%] h-auto object-contain -translate-y-[60%]"
             style={{ transform: "translate(-50%, -50%)" }}
           />
           
           <button
             onClick={togglePopup}
-            className="absolute bottom-[15%] left-1/2 transform -translate-x-1/2 
-                       bg-black text-white font-bold py-3 px-8 rounded-lg 
-                       shadow-lg hover:bg-gray-800 transition duration-300 
-                       text-base md:text-lg tracking-wide"
+            className="absolute border border-3 border-[#1b1b1b] bottom-[3%] left-1/2 transform -translate-x-1/2 
+            bg-black text-white font-bold py-3 px-8 rounded-lg 
+            shadow-lg hover:bg-gray-800 transition duration-300 
+            text-base md:text-lg tracking-wide"
           >
             Featured on BlackWilbur.com
           </button>
         </div>
       </div>
+            
     </section>
   );
 
@@ -109,6 +108,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({
           </div>
         </div>
       )}
+      <div className="border-b border-gray-500"></div>
     </>
   );
 };

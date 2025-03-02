@@ -215,7 +215,7 @@ const Collection: React.FC = () => {
 
         {/* Product Grid */}
         <div className="product-container w-full mt-6 px-0">
-          <div className="p-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-[5px] sm:gap-[2px] md:gap[3px]">
+          <div className="p-2 grid grid-cols-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[5px] sm:gap-[2px] md:gap[3px]">
             {currentProducts.map((product) => (
               <ProductCard
                 key={product.id}

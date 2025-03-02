@@ -36,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   }
 
   return (
-    <div className="relative m-6 m-1 bg-black overflow-hidden">
+    <div className="relative m-6 m-1 bg-[#1b1b1b] overflow-hidden">
       {/* Product image container with smaller fixed aspect ratio */}
       <div className="relative w-full h-[220px] sm:h-[260px] lg:h-[300px]">
         <img
@@ -74,8 +74,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Product name */}
-      <div className="w-full h-[32px] flex items-center px-2 bg-black">
-        <div className="text-white text-xs font-semibold truncate">
+      <div className="flex justify-center w-full h-[32px] flex items-center px-2 bg-[#1b1b1b]">
+        <div className="text-center text-white text-sm font-semibold truncate">
           {product.name.toUpperCase()}
         </div>
       </div>

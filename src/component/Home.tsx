@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import videoSrc from "../asset/homepage-vide-updated.mov";
+import OffersBanner from "../utiles/Banners/OffersBanner"; 
 import blackBackground from "../asset/blackBackground.png";
 import { fetchBestSeller, fetchExplore } from "../services/api";
 import { Product } from "../utiles/types";
@@ -108,20 +109,28 @@ const Home: React.FC = () => {
   const togglePopup = () => setIsPopupOpen(!isPopupOpen);
 
   // If still loading, show full-page loader
-  if (isLoading) {
-    return <FullPageLoader />;
-  }
+  // if (isLoading) {
+  //   return <FullPageLoader />;
+  // }
 
   return (
     <>
       <Carousel />
-      
+      <div className="px-10 bg-[#1b1b1b]">
       <Suspense fallback={<div>Loading Explore Section...</div>}>
         <ExploreSection
           exploreProducts={exploreProducts}
           handleNavigate={handleNavigate2}
           wishlist={wishlist}
           toggleWishlist={(product) => console.log(product)}
+        />
+      </Suspense>
+      {/* Video Section */}
+      <Suspense fallback={<div>Loading Video Section...</div>}>
+        <VideoSection
+          videoSrc={videoSrc}
+          isPopupOpen={isPopupOpen}
+          togglePopup={togglePopup}
         />
       </Suspense>
       {/* Best Sellers Section */}
@@ -134,43 +143,63 @@ const Home: React.FC = () => {
         />
       </Suspense>
       
-      {/* Video Section */}
-      <Suspense fallback={<div>Loading Video Section...</div>}>
-        <VideoSection
-          videoSrc={videoSrc}
-          isPopupOpen={isPopupOpen}
-          togglePopup={togglePopup}
-        />
-      </Suspense>
-      
-      {/* Explore Our Collections Section */}
+      {/*Offersection* */}
+      <section className="mt-4">
+      <OffersBanner />
+      </section>
 
       {/* Why Black Section */}
-      <section className="relative py-16 bg-black mb-28">
-        <div className="absolute inset-0 w-[100%] h-[706px]">
-          <img
-            src={blackBackground}
-            alt="Black Background"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="relative z-10 flex items-center justify-center h-full text-center text-white px-4 py-16">
-          <div className="flex flex-col items-center justify-center">
-            <h2
-              className="font-montserrat text-[48px] lg:text-[93px] font-semibold leading-[81px] text-center mt-20 mb-24"
-              style={{ width: "100%", maxWidth: "599px" }}
-            >
-              Why Black
-            </h2>
+      <section className="relative py-2 mb-28">
+  <div className="flex h-[150px] lg:h-[450px]">
+    {/* Left Section - 50% width for the Image */}
+    <div className=" w-1/2 relative">
+      <img
+        src={blackBackground}
+        alt="Black Background"
+        className="w-full h-full object-cover"
+      />
+    </div>
+
+    {/* Right Section - 50% width for the Text */}
+    <div className="w-1/2   text-white py-2 px-4 lg:px-12  lg:py-20 lg:pr-40 text-left">
+      <h4 className="font-montserrat  sm:text-[48px] lg:text-[72px] font-semibold ">
+        WHY BLACK
+      </h4>
+      <h1 className="border w-[30%]"></h1>
+      <p className="lg:text-[30px] mt-8">little about story will come here about brand</p>
+    </div>
+  </div>
+  <div className="flex h-[150px] lg:h-[450px]">
+  {/* Left Section - 50% width for the Text */}
+  <div className="w-1/2 text-white py-2 px-4 lg:px-12 lg:py-20 lg:pl-40 text-right">
+    <h4 className="font-montserrat sm:text-[48px] lg:text-[72px] font-semibold">
+      LITTLE ABOUT
+    </h4>
+    <div className="border border-white w-[30%] ml-auto"></div>
+    <p className="lg:text-[30px] mt-8">
+      Little about story will come here about brand
+    </p>
+  </div>
+
+  {/* Right Section - 50% width for the Image */}
+  <div className="w-1/2 relative">
+    <img
+      src={blackBackground}
+      alt="Black Background"
+      className="w-full h-full object-cover"
+    />
+  </div>
+</div>
+
+</section>
+
             <button
-              className="px-6 py-3 bg-white text-black rounded-full hover:bg-gray-200 transition"
+              className="px-6 mb-9 py-3 bg-white text-black rounded-full hover:bg-gray-200 transition"
               onClick={() => handleNavigate("/about-us")}
             >
               Learn More
             </button>
-          </div>
-        </div>
-      </section>
+      </div>
     </>
   );
 };
